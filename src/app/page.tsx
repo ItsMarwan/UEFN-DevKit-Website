@@ -26,7 +26,7 @@ export default function Home() {
               UEFN Helper Bot
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-              The ultimate Discord bot for managing your UEFN projects. Track progress, manage teams, and automate your workflow with powerful commands.
+              The ultimate Discord bot for Fortnite Creative and UEFN developers. Track island stats, manage customers and coupons, host Verse scripts, monitor server invites, and automate your workflow with powerful tools built for creators and development teams.
             </p>
             <div className="flex gap-4 flex-wrap">
               <a

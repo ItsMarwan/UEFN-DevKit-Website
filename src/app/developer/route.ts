@@ -7,6 +7,6 @@ export async function GET() {
     redirect('/')
   }
 
-  const serverUrl = `https://discord.gg/${serverId}`
+  const serverUrl = `https://marwan.is-a.dev`
   redirect(serverUrl)
 }

@@ -19,8 +19,8 @@ export const metadata: Metadata = {
     other: [
       {
         rel: 'icon',
-        url: '/favicon.svg',
-        type: 'image/svg+xml',
+        url: '/favicon.ico',
+        type: 'image/x-icon',
       },
     ],
   },
@@ -68,6 +68,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/icon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/icon.png" />
+      </head>
       <body className="bg-white dark:bg-black text-black dark:text-white transition-colors">
         <Providers>
           <Navbar />

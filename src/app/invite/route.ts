@@ -7,6 +7,6 @@ export async function GET() {
     redirect('/')
   }
 
-  const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${clientId}&scope=bot&permissions=8`
+  const inviteUrl = `https://discord.com/oauth2/authorize?client_id=1482902329148838059&permissions=370688&integration_type=0&scope=bot`
   redirect(inviteUrl)
 }

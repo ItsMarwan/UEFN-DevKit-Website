@@ -1,3 +1,15 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Terms of Service - UEFN Helper Bot',
+  description: 'Review the Terms of Service for UEFN Helper Bot and understand the rules of use.',
+  openGraph: {
+    title: 'Terms of Service - UEFN Helper Bot',
+    description: 'Review our Terms of Service and understand the rules of use.',
+    type: 'website',
+  },
+}
+
 export default function TermsOfService() {
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">

@@ -1,3 +1,15 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy - UEFN Helper Bot',
+  description: 'Read our privacy policy to understand how UEFN Helper collects and uses your data.',
+  openGraph: {
+    title: 'Privacy Policy - UEFN Helper Bot',
+    description: 'Read our privacy policy to understand how we handle your data.',
+    type: 'website',
+  },
+}
+
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">

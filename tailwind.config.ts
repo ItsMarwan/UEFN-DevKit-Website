@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss'
+import { siteConfig } from './src/config/site'
 
 const config: Config = {
   content: [
@@ -11,9 +12,17 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          blue: '#2399df',
-          cyan: '#64dcfb',
+          blue: siteConfig.colors.primary,
+          cyan: siteConfig.colors.secondary,
         },
+      },
+      backgroundColor: {
+        dark: siteConfig.colors.dark,
+        light: siteConfig.colors.light,
+      },
+      textColor: {
+        dark: siteConfig.colors.dark,
+        light: siteConfig.colors.light,
       },
     },
   },

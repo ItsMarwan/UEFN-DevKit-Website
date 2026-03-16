@@ -8,8 +8,19 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="pt-20 pb-32 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-white via-blue-50 to-cyan-50 dark:from-black dark:via-slate-950 dark:to-slate-900">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      <section className="pt-20 pb-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/banner-blurred.jpg"
+            alt="Hero Background"
+            fill
+            priority
+            className="object-cover object-center"
+            quality={85}
+          />
+          <div className="absolute inset-0 bg-white/80 dark:bg-black/80"></div>
+        </div>
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative z-10">
           <div>
             <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-[#2399df] to-[#64dcfb] bg-clip-text text-transparent">
               UEFN Helper Bot

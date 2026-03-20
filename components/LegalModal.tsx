@@ -17,8 +17,9 @@ const PRIVACY_CONTENT = (
     <div className="p-4 rounded-xl border border-blue-500/30 bg-blue-500/5">
       <p className="text-blue-300 font-semibold text-lg mb-1">🔒 The short version</p>
       <p className="text-white/80">
-        You provide data. We encrypt it at the field level before it hits our database. We don't read it, sell it, or trade it.
-        If you supply your own passphrase, <strong>we derive a key from it and encrypt your data with that — meaning even we cannot decrypt it.</strong>
+        You provide data. We encrypt it at the field level before it hits our database. We don&apos;t read it,
+        sell it, or trade it. If you supply your own passphrase,{' '}
+        <strong>we derive a key from it and encrypt your data with that — meaning even we cannot decrypt it.</strong>
       </p>
     </div>
 
@@ -49,7 +50,7 @@ const PRIVACY_CONTENT = (
       <h3 className="text-xl font-bold text-white mb-3">2. How Encryption Works</h3>
       <p className="text-white/70 mb-4">
         Sensitive fields are encrypted <strong>before</strong> they are written to the database using
-        <strong> Fernet symmetric encryption</strong> (AES-128-CBC with HMAC-SHA256 for integrity).
+        {' '}<strong>Fernet symmetric encryption</strong> (AES-128-CBC with HMAC-SHA256 for integrity).
         This happens at the field level — only the columns listed above are encrypted, not the entire row.
       </p>
 
@@ -58,7 +59,7 @@ const PRIVACY_CONTENT = (
           <p className="text-white font-semibold text-sm">🔐 Server-Side Key (default)</p>
           <p className="text-white/60 text-sm mt-1">
             By default, data is encrypted using a Fernet key stored in our server environment.
-            This means we hold the key and could theoretically decrypt your data — but we don't,
+            This means we hold the key and could theoretically decrypt your data — but we don&apos;t,
             and we have no reason to.
           </p>
         </div>
@@ -66,7 +67,8 @@ const PRIVACY_CONTENT = (
           <p className="text-blue-300 font-semibold text-sm">🗝️ Your Own Passphrase (optional — true zero-knowledge)</p>
           <p className="text-white/60 text-sm mt-1">
             If you supply your own passphrase or Fernet key, we derive an encryption key from it using
-            SHA-256 and use that to encrypt your data instead. <strong className="text-white">We never store your passphrase.</strong>{' '}
+            SHA-256 and use that to encrypt your data instead.{' '}
+            <strong className="text-white">We never store your passphrase.</strong>{' '}
             Only you can decrypt the data. If you lose your passphrase, the data is permanently unreadable —
             not even we can recover it. This is true zero-knowledge encryption.
           </p>
@@ -120,7 +122,7 @@ const PRIVACY_CONTENT = (
     </section>
 
     <section>
-      <h3 className="text-xl font-bold text-white mb-3">5. Data Retention & Deletion</h3>
+      <h3 className="text-xl font-bold text-white mb-3">5. Data Retention &amp; Deletion</h3>
       <p className="text-white/70">
         Your data is retained for as long as you use the bot. You can delete any data at any time using
         the <code className="text-cyan-400">/files</code> command or by contacting us. Upon server removal or
@@ -131,7 +133,7 @@ const PRIVACY_CONTENT = (
     <section>
       <h3 className="text-xl font-bold text-white mb-3">6. Third-Party Services</h3>
       <p className="text-white/70">
-        UEFN Helper runs on Discord's platform and stores data in Supabase (our database provider).
+        UEFN Helper runs on Discord&apos;s platform and stores data in Supabase (our database provider).
         Verse scripts may optionally be sent to Pastebin — only when you explicitly choose to during the{' '}
         <code className="text-cyan-400">/verse</code> command. Each of these services has its own privacy policy.
         We share only the minimum data necessary for each feature to function.
@@ -159,8 +161,8 @@ const TOS_CONTENT = (
     <div className="p-4 rounded-xl border border-yellow-500/30 bg-yellow-500/5">
       <p className="text-yellow-300 font-semibold text-lg mb-1">⚠️ The short version</p>
       <p className="text-white/80">
-        Use the bot for what it's built for. Don't abuse it, don't try to use it as a storage bucket,
-        and don't do anything illegal with it. Be decent. That's basically it.
+        Use the bot for what it&apos;s built for. Don&apos;t abuse it, don&apos;t try to use it as a storage bucket,
+        and don&apos;t do anything illegal with it. Be decent. That&apos;s basically it.
       </p>
     </div>
 
@@ -191,26 +193,26 @@ const TOS_CONTENT = (
       <h3 className="text-xl font-bold text-white mb-3">3. Prohibited Use</h3>
       <p className="text-white/70 mb-3">You may <strong className="text-white">not</strong> use UEFN Helper to:</p>
       <ul className="space-y-2 text-white/70 list-disc list-inside">
-        <li>Store arbitrary files, data, or content unrelated to the bot's intended purpose</li>
+        <li>Store arbitrary files, data, or content unrelated to the bot&apos;s intended purpose</li>
         <li>
           Use the bot as a general-purpose cloud storage service — it is a bot, not a database or file host.
           If you need persistent storage capabilities, upgrade to Premium where storage features are properly supported.
         </li>
         <li>Spam commands or intentionally abuse rate limits</li>
-        <li>Attempt to access other servers' data or exploit security vulnerabilities</li>
-        <li>Use the bot in violation of Discord's own Terms of Service</li>
-        <li>Automate commands in ways not intended by the bot's design</li>
-        <li>Impersonate other users, sellers, or parties through the bot's systems</li>
+        <li>Attempt to access other servers&apos; data or exploit security vulnerabilities</li>
+        <li>Use the bot in violation of Discord&apos;s own Terms of Service</li>
+        <li>Automate commands in ways not intended by the bot&apos;s design</li>
+        <li>Impersonate other users, sellers, or parties through the bot&apos;s systems</li>
         <li>Post illegal content, hate speech, or content that violates applicable laws</li>
         <li>Use the bot for any fraudulent, deceptive, or scam-related activities</li>
-        <li>Reverse-engineer, copy, or attempt to replicate the bot's core functionality</li>
+        <li>Reverse-engineer, copy, or attempt to replicate the bot&apos;s core functionality</li>
         <li>Circumvent bans, blocks, or suspensions imposed by us</li>
         <li>Use the bot in any server that violates Discord Community Guidelines</li>
       </ul>
     </section>
 
     <section>
-      <h3 className="text-xl font-bold text-white mb-3">4. Storage & Fair Use</h3>
+      <h3 className="text-xl font-bold text-white mb-3">4. Storage &amp; Fair Use</h3>
       <p className="text-white/70 mb-3">
         UEFN Helper provides data storage as a functional component of its features, not as a standalone
         service. Free tier users have usage limits designed for normal bot use.
@@ -222,12 +224,12 @@ const TOS_CONTENT = (
       </p>
       <p className="text-white/70">
         We reserve the right to limit, throttle, or remove data stored in bad faith or outside the intended
-        scope of the bot's features.
+        scope of the bot&apos;s features.
       </p>
     </section>
 
     <section>
-      <h3 className="text-xl font-bold text-white mb-3">5. Account & Server Responsibility</h3>
+      <h3 className="text-xl font-bold text-white mb-3">5. Account &amp; Server Responsibility</h3>
       <p className="text-white/70">
         Server owners are responsible for how UEFN Helper is used within their server. If a server is
         found to be using the bot in violation of these terms, the entire server may be suspended or banned
@@ -238,7 +240,7 @@ const TOS_CONTENT = (
     <section>
       <h3 className="text-xl font-bold text-white mb-3">6. Service Availability</h3>
       <p className="text-white/70">
-        UEFN Helper is provided on an "as is" and "as available" basis. We do not guarantee 100% uptime.
+        UEFN Helper is provided on an &quot;as is&quot; and &quot;as available&quot; basis. We do not guarantee 100% uptime.
         We may perform maintenance, updates, or experience outages. We are not liable for any losses
         resulting from service unavailability.
       </p>
@@ -249,7 +251,7 @@ const TOS_CONTENT = (
       <p className="text-white/70 mb-3">
         Premium plans are billed as described on our pricing page. Subscriptions auto-renew unless cancelled.
         Refunds are available within 30 days of purchase if you are unsatisfied. We reserve the right to
-        modify pricing with 30 days notice. Abuse of Premium features may result in termination without refund.
+        modify pricing with 30 days&apos; notice. Abuse of Premium features may result in termination without refund.
       </p>
     </section>
 
@@ -276,7 +278,7 @@ const TOS_CONTENT = (
       <h3 className="text-xl font-bold text-white mb-3">10. Changes to Terms</h3>
       <p className="text-white/70">
         We may update these terms from time to time. Material changes will be announced in our Discord
-        server and reflected by an updated "Last updated" date at the top of this document. Continued use
+        server and reflected by an updated &quot;Last updated&quot; date at the top of this document. Continued use
         of the bot after changes constitutes acceptance of the new terms.
       </p>
     </section>

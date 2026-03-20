@@ -1,0 +1,8 @@
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+
+  this should be added when im testing locally, is this practical? no. why? vercel

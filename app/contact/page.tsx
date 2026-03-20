@@ -115,7 +115,7 @@ export default function ContactPage() {
             Contact Us
           </h1>
           <p className="text-xl text-white/70">
-            Have a question, feedback, or need support? We're here to help.
+            Have a question, feedback, or need support? We&apos;re here to help.
           </p>
         </div>
       </section>
@@ -129,7 +129,7 @@ export default function ContactPage() {
               <div className="text-6xl mb-6">✅</div>
               <h2 className="text-2xl font-bold text-white mb-3">Message Sent!</h2>
               <p className="text-white/60 mb-8">
-                Thanks for reaching out. We'll get back to you as soon as possible,
+                Thanks for reaching out. We&apos;ll get back to you as soon as possible,
                 usually within 24–48 hours.
               </p>
               <button
@@ -236,7 +236,7 @@ export default function ContactPage() {
                   <p className="text-white font-semibold text-sm">Prefer Discord?</p>
                   <p className="text-white/50 text-sm mt-0.5">
                     Join our{' '}
-                    <a href="https://discord.gg/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">
+                    <a href="https://discord.gg/uefnhelper" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">
                       support server
                     </a>{' '}
                     for faster responses from our team and community.

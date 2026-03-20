@@ -1,6 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/invite", "destination": "https://discord.com/oauth2/authorize?client_id=1482902329148838059&permissions=370688&integration_type=0&scope=bot" },
-    { "source": "/developer", "destination": "https://marwan.is-a.dev" }
-  ]
-}

@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /.next/
+Disallow: /api/
+
+# Specific crawl rules
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Sitemap
+Sitemap: https://uefnhelper.com/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1

@@ -1,84 +1,55 @@
-# UEFN Helper Bot - Website
+# UEFN Helper Bot - Official Website
 
-A modern, responsive website for the UEFN Helper Discord bot. Built with Next.js, TypeScript, and Tailwind CSS.
+Professional Next.js website for the UEFN Helper Discord Bot featuring command documentation, pricing tiers, and more.
 
 ## Features
 
 ✨ **Modern Design**
-- Clean, intuitive UI with glassmorphism effects
-- Responsive design for all devices
+- Gradient-based UI with primary (`#2399df`) and secondary (`#64dcfb`) colors
+- Responsive design for mobile, tablet, and desktop
 - Smooth animations and transitions
 
-🌙 **Dark/Light Mode**
-- Toggle between dark and light themes
-- Persisted user preference
-- Smooth theme transitions
+🌓 **Theme Support**
+- Automatic dark/light mode detection based on system preferences
+- Seamless theme switching without page reload
 
-🎯 **Key Pages**
-- **Home**: Showcase bot features and benefits
-- **Commands**: Browse all bot commands with descriptions
-- **Premium**: Premium subscription offerings
-- **Tiers**: Detailed pricing tier comparison
-- **Contact**: Get in touch with us
-- **Privacy Policy**: Data protection information
-- **Terms of Service**: Legal terms
+📚 **Complete Documentation**
+- 50+ commands fully documented with examples
+- Categorized command library
+- Individual command pages with detailed guides
 
-🔗 **API Integration**
-- Fetches commands from `/api/commands`
-- Fetches pricing tiers from `/api/tiers`
-- Contact form handling
+💰 **Pricing Pages**
+- Free, Premium, and Enterprise tiers
+- Clear feature comparison
+- FAQ section
 
-## Tech Stack
-
-- **Framework**: Next.js 14+
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Icons**: Lucide React
-- **Deployment**: Vercel Ready
+🎨 **UI Components**
+- Reusable command cards
+- Interactive navigation
+- Footer with links
 
 ## Getting Started
 
 ### Prerequisites
-
 - Node.js 18+ 
 - npm or yarn
 
 ### Installation
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/uefn-helper-website.git
-cd uefn-helper-website
-```
-
-2. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Create `.env.local` from `.env.example`:
-```bash
-cp .env.example .env.local
-```
-
-4. Update your environment variables:
-```
-NEXT_PUBLIC_DISCORD_CLIENT_ID=your_bot_client_id
-NEXT_PUBLIC_DISCORD_SERVER_ID=your_discord_server_id
-```
-
 ### Development
 
-Start the development server:
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Build
 
-Build for production:
 ```bash
 npm run build
 npm start
@@ -87,148 +58,76 @@ npm start
 ## Project Structure
 
 ```
-src/
-├── app/
-│   ├── layout.tsx          # Root layout with theme provider
-│   ├── page.tsx            # Home page
-│   ├── globals.css         # Global styles
-│   ├── commands/page.tsx   # Commands page
-│   ├── premium/page.tsx    # Premium page
-│   ├── tiers/page.tsx      # Pricing tiers page
-│   ├── contact/page.tsx    # Contact page
-│   ├── tos/page.tsx        # Terms of Service
-│   ├── privacy/page.tsx    # Privacy Policy
-│   └── api/
-│       ├── commands/route.ts
-│       └── tiers/route.ts
-└── components/
-    ├── Navbar.tsx          # Navigation bar with theme toggle
-    ├── Footer.tsx          # Footer with links
-    └── Providers.tsx       # Theme context provider
+├── app/                      # Next.js app directory
+│   ├── layout.tsx           # Root layout with providers
+│   ├── page.tsx             # Home page
+│   ├── globals.css          # Global styles with animations
+│   ├── commands/            # Commands listing page
+│   ├── docs/                # Documentation pages
+│   │   ├── page.tsx         # Docs index
+│   │   └── [command]/       # Individual command docs
+│   ├── premium/             # Premium/pricing page
+│   └── not-found.tsx        # 404 page
+├── components/              # Reusable React components
+│   ├── Navigation.tsx       # Top navigation bar
+│   ├── Footer.tsx           # Footer component
+│   ├── CommandCard.tsx      # Command display card
+│   └── ThemeProvider.tsx    # Dark mode provider
+├── lib/                     # Utility functions
+│   └── commands.ts          # Command data and helpers
+├── public/                  # Static assets
+│   └── icon.png            # Bot icon/favicon
+└── tailwind.config.js       # Tailwind CSS config
 ```
 
-## Customization
+## Colors
 
-### Color Palette
+- **Primary**: `#2399df` (Vibrant Blue)
+- **Secondary**: `#64dcfb` (Cyan)
+- **Dark**: `#030712` (Near Black)
+- **Light**: `#ffffff` (White)
 
-The site uses the following colors (easily customizable in `tailwind.config.ts`):
-- Primary Blue: `#2399df`
-- Cyan Accent: `#64dcfb`
-- White: `#ffffff`
-- Black: `#000000`
+## Technologies Used
 
-### Adding Your Logo
+- **Framework**: Next.js 14
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Animation**: CSS animations
+- **Theme**: Automatic dark/light mode with system detection
 
-Replace placeholder branding in:
-- `src/components/Navbar.tsx` - Logo in navbar
-- `src/components/Footer.tsx` - Logo in footer
-- `public/` - Add your actual brand assets
+## Key Features
 
-### Discord Bot Integration
+### Commands Documentation
+- 50+ Discord bot commands fully documented
+- Organized by category
+- Usage examples and related commands
+- Permission levels and premium indicators
 
-Update the invite link in:
-- `src/components/Navbar.tsx` - Line with Discord OAuth URL
-- `src/app/page.tsx` - CTA buttons
-- Other pages as needed
+### Responsive Design
+- Mobile-first approach
+- Works on all screen sizes
+- Touch-friendly navigation
 
-Replace `YOUR_CLIENT_ID` with your actual Discord bot client ID.
+### Performance
+- Static site generation where possible
+- Optimized images and assets
+- Fast page loads
 
-## API Endpoints
+### Accessibility
+- Semantic HTML
+- Proper color contrast
+- Keyboard navigation support
 
-### GET `/api/commands`
+## Deployment
 
-Returns array of bot commands:
-```json
-[
-  {
-    "name": "fortnite-tracker",
-    "description": "Track Fortnite player statistics",
-    "usage": "/fortnite-tracker <player-name>",
-    "premium": false
-  }
-]
+The site is optimized for deployment on Vercel:
+
+```bash
+npm run build
 ```
 
-### GET `/api/tiers`
-
-Returns pricing tier configuration matching your bot's limits.
-
-## Deployment to Vercel
-
-1. Push your repository to GitHub
-2. Go to [vercel.com](https://vercel.com)
-3. Connect your GitHub repository
-4. Add environment variables:
-   - `NEXT_PUBLIC_DISCORD_CLIENT_ID`
-   - `NEXT_PUBLIC_DISCORD_SERVER_ID`
-5. Deploy!
-
-The site will automatically rebuild on every push to your main branch.
-
-## Customizing API Endpoints
-
-If you have a backend API:
-
-1. Update `.env.local`:
-```
-NEXT_PUBLIC_API_BASE_URL=https://your-api.com
-```
-
-2. Modify API calls in components:
-```typescript
-const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/commands`)
-```
-
-## Theme Toggle
-
-The theme toggle is built-in and persistent:
-- Uses localStorage to save user preference
-- Respects system dark mode preference on first visit
-- Smooth CSS transitions between themes
-
-## Browser Support
-
-- Chrome/Edge 90+
-- Firefox 88+
-- Safari 14+
-- Mobile browsers (iOS Safari, Chrome Mobile)
-
-## Performance
-
-- Optimized for Core Web Vitals
-- Image optimization with Next.js Image component
-- CSS minimization with Tailwind
-- Code splitting with dynamic imports
-
-## Security
-
-- No sensitive data stored in client
-- Environment variables for secrets
-- HTTPS ready for Vercel deployment
-- CSP headers configured
-
-## Legal Pages
-
-The site includes templated legal pages:
-- **Privacy Policy**: Emphasizes data security and consent requirements
-- **Terms of Service**: Standard ToS with service limitations
-
-Customize these with your actual legal requirements!
-
-## Support
-
-For questions or issues:
-- Discord: [Your Server]
-- Email: contact@uefnhelper.com
+Then push to your repository and deploy through Vercel dashboard.
 
 ## License
 
-[Specify your license here]
-
-## Credits
-
-Created for the UEFN Helper Discord bot community.
-
----
-
-**Ready to deploy?** Use Vercel for instant deployments with zero configuration. Just connect your GitHub repo and you're live!
+All rights reserved © 2024 UEFN Helper

@@ -45,7 +45,7 @@ export function Footer() {
             <h4 className="font-semibold mb-4 text-white">Resources</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="https://discord.gg/uefnhelper" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-blue-400 transition-colors">
+                <a href="/discord" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-blue-400 transition-colors">
                   Support Server
                 </a>
               </li>
@@ -111,7 +111,7 @@ export function Footer() {
                 Terms
               </button>
               <span className="text-white/20">·</span>
-              <a href="https://discord.gg/" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-blue-400 transition-colors">
+              <a href="/discord" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-blue-400 transition-colors">
                 Discord
               </a>
             </div>

@@ -108,7 +108,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   url: BASE_URL,
                   logo: { '@type': 'ImageObject', url: `${BASE_URL}/images/logo.png`, width: 512, height: 512 },
                   image: { '@type': 'ImageObject', url: `${BASE_URL}/images/banner.png`, width: 1200, height: 630 },
-                  sameAs: ['https://discord.gg/uefnhelper'],
+                  sameAs: ['/discord'],
                 },
                 {
                   '@type': 'SoftwareApplication',

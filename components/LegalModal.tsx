@@ -145,7 +145,7 @@ const PRIVACY_CONTENT = (
       <p className="text-white/70">
         For privacy questions, data access requests, or deletion requests, reach us via our{' '}
         <a href="/contact" className="text-blue-400 hover:text-blue-300 underline">contact page</a>{' '}
-        or our <a href="https://discord.gg/uefnhelper" className="text-blue-400 hover:text-blue-300 underline">Discord server</a>.
+        or our <a href="/discord" className="text-blue-400 hover:text-blue-300 underline">Discord server</a>.
       </p>
     </section>
   </div>
@@ -296,7 +296,7 @@ const TOS_CONTENT = (
       <p className="text-white/70">
         Questions about these terms? Reach us via our{' '}
         <a href="/contact" className="text-blue-400 hover:text-blue-300 underline">contact page</a>{' '}
-        or our <a href="https://discord.gg/uefnhelper" className="text-blue-400 hover:text-blue-300 underline">Discord server</a>.
+        or our <a href="/discord" className="text-blue-400 hover:text-blue-300 underline">Discord server</a>.
       </p>
     </section>
   </div>

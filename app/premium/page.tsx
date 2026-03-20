@@ -240,7 +240,7 @@ export default function PremiumPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="https://discord.gg/uefnhelper"
+              href="/discord"
               className="px-8 py-4 bg-white text-blue-600 font-bold rounded-lg hover:shadow-2xl transition-all transform hover:scale-105"
             >
               Join Discord

@@ -236,7 +236,7 @@ export default function ContactPage() {
                   <p className="text-white font-semibold text-sm">Prefer Discord?</p>
                   <p className="text-white/50 text-sm mt-0.5">
                     Join our{' '}
-                    <a href="https://discord.gg/uefnhelper" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">
+                    <a href="/discord" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">
                       support server
                     </a>{' '}
                     for faster responses from our team and community.

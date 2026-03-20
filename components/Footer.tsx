@@ -111,7 +111,7 @@ export function Footer() {
                 Terms
               </button>
               <span className="text-white/20">·</span>
-              <a href="https://discord.gg/uefnhelper" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-blue-400 transition-colors">
+              <a href="https://discord.gg/" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-blue-400 transition-colors">
                 Discord
               </a>
             </div>

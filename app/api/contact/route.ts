@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Only allow requests from your own site
+// someone would prolly break this and get the token, if so make an issue and let me know so i can patch!
+
 const ALLOWED_ORIGINS = [
   'https://uefnhelper.frii.site',
-  'https://www.uefnhelper.frii.site',
   // Allow localhost in development
   'http://localhost:3000',
 ];
@@ -11,7 +11,6 @@ const ALLOWED_ORIGINS = [
 async function verifyCaptcha(token: string, ip: string): Promise<boolean> {
   const secret = process.env.HCAPTCHA_SECRET_KEY;
   if (!secret) {
-    // In dev with test keys, skip verification
     if (process.env.NODE_ENV === 'development') return true;
     return false;
   }
@@ -45,13 +44,8 @@ async function sendEmail({
   subject: string;
   message: string;
 }) {
-  // ─────────────────────────────────────────────────────────────────────────
-  // OPTION A — Resend (recommended, simple API)
-  // Install: npm install resend
-  // Set env: RESEND_API_KEY, CONTACT_TO_EMAIL
-  // ─────────────────────────────────────────────────────────────────────────
   const resendKey = process.env.RESEND_API_KEY;
-  const toEmail = process.env.CONTACT_TO_EMAIL || 'your@email.com';
+  const toEmail = process.env.CONTACT_TO_EMAIL;
 
   if (resendKey) {
     const res = await fetch('https://api.resend.com/emails', {
@@ -61,7 +55,7 @@ async function sendEmail({
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'UEFN Helper Contact <noreply@uefnhelper.frii.site>',
+        from: 'UEFN Helper <onboarding@resend.dev>',
         to: [toEmail],
         reply_to: email,
         subject: `[Contact] ${subject} — from ${name}`,
@@ -99,30 +93,10 @@ async function sendEmail({
     return;
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // OPTION B — Nodemailer / SMTP (if you prefer)
-  // Set env: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, CONTACT_TO_EMAIL
-  // ─────────────────────────────────────────────────────────────────────────
-  // Uncomment and install nodemailer: npm install nodemailer @types/nodemailer
-  //
-  // const nodemailer = require('nodemailer');
-  // const transporter = nodemailer.createTransport({
-  //   host: process.env.SMTP_HOST,
-  //   port: Number(process.env.SMTP_PORT) || 587,
-  //   secure: false,
-  //   auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-  // });
-  // await transporter.sendMail({
-  //   from: `"UEFN Helper" <${process.env.SMTP_USER}>`,
-  //   to: process.env.CONTACT_TO_EMAIL,
-  //   replyTo: email,
-  //   subject: `[Contact] ${subject} — from ${name}`,
-  //   text: `Name: ${name}\nEmail: ${email}\nSubject: ${subject}\n\n${message}`,
-  // });
-
   // Fallback: log to console in development
   if (process.env.NODE_ENV === 'development') {
-    console.log('[Contact Form]', { name, email, subject, message });
+    // console.log('[Contact Form]', { name, email, subject, message });
+    // yea no im not giving any chances
     return;
   }
 
@@ -138,13 +112,11 @@ function escapeHtml(str: string) {
 }
 
 export async function POST(req: NextRequest) {
-  // ── Origin check (only allow our own site) ────────────────────────────
   const origin = req.headers.get('origin') || '';
   if (!ALLOWED_ORIGINS.includes(origin)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  // ── Parse body ────────────────────────────────────────────────────────
   let body: any;
   try {
     body = await req.json();
@@ -154,7 +126,6 @@ export async function POST(req: NextRequest) {
 
   const { name, email, subject, message, captchaToken } = body;
 
-  // ── Basic validation ──────────────────────────────────────────────────
   if (!name?.trim() || !email?.trim() || !subject?.trim() || !message?.trim()) {
     return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
   }
@@ -171,7 +142,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Captcha token missing.' }, { status: 400 });
   }
 
-  // ── hCaptcha verification ─────────────────────────────────────────────
   const clientIp =
     req.headers.get('cf-connecting-ip') ||
     req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
@@ -182,7 +152,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Captcha verification failed. Please try again.' }, { status: 400 });
   }
 
-  // ── Send email ────────────────────────────────────────────────────────
   try {
     await sendEmail({ name: name.trim(), email: email.trim(), subject, message: message.trim() });
     return NextResponse.json({ success: true });
@@ -195,7 +164,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Block all other methods
 export async function GET() {
   return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
 }

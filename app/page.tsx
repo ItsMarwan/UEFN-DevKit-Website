@@ -2,10 +2,35 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useLegal } from '@/components/LegalProvider';
+
+// Separated into its own component because useSearchParams requires Suspense
+function LegalParamHandler() {
+  const searchParams = useSearchParams();
+  const { openLegal } = useLegal();
+
+  useEffect(() => {
+    const legal = searchParams.get('legal');
+    if (legal === 'tos' || legal === 'privacy') {
+      // Small delay so the page renders before the modal opens
+      const t = setTimeout(() => openLegal(legal), 50);
+      return () => clearTimeout(t);
+    }
+  }, [searchParams, openLegal]);
+
+  return null;
+}
 
 export default function Home() {
   return (
     <div className="bg-black text-white min-h-screen pt-16">
+      {/* Reads ?legal=tos or ?legal=privacy and opens the modal */}
+      <Suspense fallback={null}>
+        <LegalParamHandler />
+      </Suspense>
+
       {/* Hero Section */}
       <section className="relative py-20 md:py-32 overflow-hidden">
         <div className="absolute inset-0 opacity-20">
@@ -26,10 +51,10 @@ export default function Home() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <a
-                  href="https://discord.gg/uefnhelper"
+                  href="/invite"
                   className="inline-block px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-blue-500/50 transition-all transform hover:scale-105"
                 >
-                  Join Discord
+                  Invite Me
                 </a>
                 <Link
                   href="/commands"
@@ -40,7 +65,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right – logo. mix-blend-mode:screen erases the dark PNG background on black. */}
+            {/* Right – logo */}
             <div className="hidden md:flex justify-center items-center animate-slideInRight relative">
               <div className="absolute w-72 h-72 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 opacity-30 blur-3xl animate-pulse-glow" />
               <div className="relative z-10 animate-float">
@@ -95,9 +120,9 @@ export default function Home() {
           </p>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: 'Free', price: '€0', description: 'Perfect for small communities', features: ['Basic customer management','Coupon system','Basic commands','Community support','10 customers max'] },
-              { name: 'Premium', price: '€9.99', period: '/month', description: 'For growing communities', highlight: true, features: ['Unlimited customers','Advanced analytics','Session system','Verse script uploads','Priority support','All Free features'] },
-              { name: 'Enterprise', price: 'Custom', description: 'For large-scale operations', features: ['Unlimited everything','Dedicated support','Custom integrations','API access','SLA guarantee'] },
+              { name: 'Free', price: '€0', description: 'Perfect for small communities', features: ['Basic customer management', 'Coupon system', 'Basic commands', 'Community support', '10 customers max'] },
+              { name: 'Premium', price: '€9.99', period: '/month', description: 'For growing communities', highlight: true, features: ['Unlimited customers', 'Advanced analytics', 'Session system', 'Verse script uploads', 'Priority support', 'All Free features'] },
+              { name: 'Enterprise', price: 'Custom', description: 'For large-scale operations', features: ['Unlimited everything', 'Dedicated support', 'Custom integrations', 'API access', 'SLA guarantee'] },
             ].map((tier, idx) => (
               <div key={idx} className={`rounded-xl transition-all feature-card ${tier.highlight ? 'border-2 border-blue-500 scale-105 shadow-xl shadow-blue-500/20 bg-black/50' : 'border border-white/10 bg-black/30'}`}>
                 <div className="p-8">

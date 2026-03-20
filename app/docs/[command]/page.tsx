@@ -1,8 +1,13 @@
 'use client';
 
-import { getCommandByName, getAllCategories } from '@/lib/commands';
+import { getCommandByName } from '@/lib/commands';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+
+// Single shared helper — keeps slug logic in one place
+function toSlug(name: string) {
+  return name.replace(/ /g, '-');
+}
 
 interface PageProps {
   params: Promise<{
@@ -26,7 +31,7 @@ export default function CommandDocPage({ params }: PageProps) {
         return;
       }
       setCommand(cmd);
-      
+
       const relatedCmds = cmd.relatedCommands
         .map((name: string) => getCommandByName(name))
         .filter(Boolean);
@@ -90,7 +95,7 @@ export default function CommandDocPage({ params }: PageProps) {
               </div>
               <div className="feature-card p-4 rounded-lg">
                 <p className="text-white/50 text-sm font-semibold mb-2">TIER</p>
-                <p className="text-lg font-bold text-green-400">Free</p>
+                <p className="text-lg font-bold text-green-400">{command.premium ? 'Premium' : 'Free'}</p>
               </div>
               <div className="feature-card p-4 rounded-lg">
                 <p className="text-white/50 text-sm font-semibold mb-2">STATUS</p>
@@ -140,7 +145,7 @@ export default function CommandDocPage({ params }: PageProps) {
                 {related.map((relatedCmd: any) => (
                   <Link
                     key={relatedCmd.name}
-                    href={`/docs/${relatedCmd.name}`}
+                    href={`/docs/${toSlug(relatedCmd.name)}`}
                     className="command-card feature-card p-4 rounded-lg hover:border-blue-500/50"
                   >
                     <h3 className="font-bold text-blue-400 hover:text-blue-300 transition-colors">

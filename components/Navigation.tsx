@@ -71,12 +71,12 @@ export function Navigation() {
                 </Link>
               ))}
               <a
-                href="https://discord.gg/uefnhelper"
+                href="/invite"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="ml-4 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-blue-500/50 transition-all hover:scale-105"
               >
-                Join Discord
+                Invite Me
               </a>
             </div>
 
@@ -141,13 +141,13 @@ export function Navigation() {
                 ))}
               </div>
               <a
-                href="https://discord.gg/"
+                href="/invite"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setIsOpen(false)}
                 className="block mt-3 mx-4 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-medium text-center hover:shadow-lg hover:shadow-blue-500/50 transition-all"
               >
-                Join Discord
+                Invite Me
               </a>
             </div>
           )}

@@ -17,74 +17,84 @@ const PRIVACY_CONTENT = (
     <div className="p-4 rounded-xl border border-blue-500/30 bg-blue-500/5">
       <p className="text-blue-300 font-semibold text-lg mb-1">🔒 The short version</p>
       <p className="text-white/80">
-        Your data is yours. We encrypt it. We don't read it. We don't sell it. We don't trade it.
-        You can even encrypt it yourself so <strong>we literally cannot read it</strong> even if we wanted to.
+        You provide data. We encrypt it at the field level before it hits our database. We don't read it, sell it, or trade it.
+        If you supply your own passphrase, <strong>we derive a key from it and encrypt your data with that — meaning even we cannot decrypt it.</strong>
       </p>
     </div>
 
     <section>
       <h3 className="text-xl font-bold text-white mb-3">1. What Data We Collect</h3>
       <p className="text-white/70 mb-3">
-        UEFN Helper only stores data that <strong>you explicitly provide</strong> through bot commands. We do not
-        collect, track, or harvest any data passively. Specifically:
+        UEFN Helper only stores data that <strong>you explicitly provide</strong> through bot commands.
+        We do not passively collect, track, or harvest any data. The following fields are what we store
+        (and what gets encrypted — see Section 2):
       </p>
       <ul className="space-y-2 text-white/70 list-disc list-inside">
-        <li>Customer records you create via <code className="text-cyan-400">/customer add</code></li>
-        <li>Coupon codes you create via <code className="text-cyan-400">/coupon add</code></li>
-        <li>Verse scripts you upload via <code className="text-cyan-400">/verse</code></li>
-        <li>Build logs and tasks you enter via <code className="text-cyan-400">/buildlog</code> and <code className="text-cyan-400">/task</code></li>
-        <li>Seller profile information you fill in via <code className="text-cyan-400">/seller create</code></li>
-        <li>Session data created during service delivery</li>
-        <li>Server configuration settings you apply</li>
+        <li>Customer records you create via <code className="text-cyan-400">/customer add</code> — stored in the <code className="text-cyan-400">customer_data</code> field</li>
+        <li>Seller profile info from <code className="text-cyan-400">/seller create</code> — bio, contact method, website email</li>
+        <li>Verse scripts you upload via <code className="text-cyan-400">/verse</code> — code content and Pastebin URL</li>
+        <li>Coupon data from <code className="text-cyan-400">/coupon add</code> — discount value</li>
+        <li>Redeem codes — feature grants and grant strings</li>
+        <li>Build logs, tasks, and session data you enter via the relevant commands</li>
+        <li>Guild/server settings you configure</li>
+        <li>Reports filed via <code className="text-cyan-400">/report</code> — details field</li>
       </ul>
       <p className="text-white/60 mt-3 text-sm">
-        We do <strong className="text-white">not</strong> collect: your messages, voice activity, browsing history,
-        IP addresses, device information, or any data beyond what you explicitly submit through bot commands.
+        We do <strong className="text-white">not</strong> collect your messages, voice activity, IP addresses,
+        browsing history, or anything beyond what you explicitly submit through a bot command.
       </p>
     </section>
 
     <section>
-      <h3 className="text-xl font-bold text-white mb-3">2. How Your Data Is Encrypted</h3>
-      <p className="text-white/70 mb-3">
-        All data stored by UEFN Helper is protected using multiple layers of encryption:
+      <h3 className="text-xl font-bold text-white mb-3">2. How Encryption Works</h3>
+      <p className="text-white/70 mb-4">
+        Sensitive fields are encrypted <strong>before</strong> they are written to the database using
+        <strong> Fernet symmetric encryption</strong> (AES-128-CBC with HMAC-SHA256 for integrity).
+        This happens at the field level — only the columns listed above are encrypted, not the entire row.
       </p>
+
       <div className="space-y-3">
         <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-          <p className="text-white font-semibold text-sm">🔐 Layer 1 — Transport Encryption</p>
-          <p className="text-white/60 text-sm mt-1">All data in transit is encrypted using TLS 1.3.</p>
-        </div>
-        <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-          <p className="text-white font-semibold text-sm">🔐 Layer 2 — Storage Encryption</p>
-          <p className="text-white/60 text-sm mt-1">All data at rest is encrypted using AES-256, an industry-standard cipher used by banks and governments.</p>
-        </div>
-        <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-          <p className="text-white font-semibold text-sm">🔐 Layer 3 — Field-Level Encryption</p>
-          <p className="text-white/60 text-sm mt-1">Sensitive fields (customer names, reasons, private notes) are encrypted individually before being stored in the database.</p>
+          <p className="text-white font-semibold text-sm">🔐 Server-Side Key (default)</p>
+          <p className="text-white/60 text-sm mt-1">
+            By default, data is encrypted using a Fernet key stored in our server environment.
+            This means we hold the key and could theoretically decrypt your data — but we don't,
+            and we have no reason to.
+          </p>
         </div>
         <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30">
-          <p className="text-blue-300 font-semibold text-sm">🗝️ Layer 4 — Your Own Encryption Key (Optional)</p>
+          <p className="text-blue-300 font-semibold text-sm">🗝️ Your Own Passphrase (optional — true zero-knowledge)</p>
           <p className="text-white/60 text-sm mt-1">
-            Don't trust us? You don't have to. Premium users can supply their own encryption key.
-            When you do, <strong className="text-white">only you can decrypt your data</strong>. Even we cannot read it.
-            If you lose your key, the data is permanently unreadable — not even we can recover it.
+            If you supply your own passphrase or Fernet key, we derive an encryption key from it using
+            SHA-256 and use that to encrypt your data instead. <strong className="text-white">We never store your passphrase.</strong>{' '}
+            Only you can decrypt the data. If you lose your passphrase, the data is permanently unreadable —
+            not even we can recover it. This is true zero-knowledge encryption.
           </p>
         </div>
       </div>
+
+      <p className="text-white/60 mt-4 text-sm">
+        Fields encrypted per table: <code className="text-cyan-400">customers.customer_data</code>,{' '}
+        <code className="text-cyan-400">seller_profiles.bio/website_email/contact_method</code>,{' '}
+        <code className="text-cyan-400">verse_scripts.code/pastebin_url</code>,{' '}
+        <code className="text-cyan-400">coupons.discount_value</code>,{' '}
+        <code className="text-cyan-400">redeem_codes.feature/grant_string</code>,{' '}
+        <code className="text-cyan-400">guild_settings.settings</code>,{' '}
+        <code className="text-cyan-400">user_reports.details</code>.
+      </p>
     </section>
 
     <section>
-      <h3 className="text-xl font-bold text-white mb-3">3. We Will Never Sell Your Data</h3>
-      <p className="text-white/70 mb-3">
-        We will <strong className="text-white">never</strong>:
-      </p>
+      <h3 className="text-xl font-bold text-white mb-3">3. We Will Never Sell or Trade Your Data</h3>
+      <p className="text-white/70 mb-3">We will <strong className="text-white">never</strong>:</p>
       <ul className="space-y-2 text-white/70 list-disc list-inside">
         <li>Sell your data to any third party</li>
         <li>Trade your data for any service or product</li>
         <li>Share your data with advertisers</li>
-        <li>Use your data to train AI models</li>
+        <li>Use your data to train AI or machine learning models</li>
         <li>Monetize your data in any form</li>
         <li>Provide your data to data brokers</li>
-        <li>Access your data for any purpose other than running the bot</li>
+        <li>Manually read or access your data for any purpose other than keeping the bot operational</li>
       </ul>
     </section>
 
@@ -96,46 +106,44 @@ const PRIVACY_CONTENT = (
       <ul className="space-y-2 text-white/70 list-disc list-inside">
         <li>
           <strong className="text-white">Legal obligation</strong> — A valid court order, subpoena, or legal process
-          compels us to. In such cases, we will notify you if legally permitted to do so.
+          compels us to. We will notify you if legally permitted.
+          Note: if you used your own passphrase, the data is unreadable to us regardless.
         </li>
         <li>
           <strong className="text-white">Your explicit consent</strong> — You ask us to share specific data
           with a specific party for a specific purpose.
         </li>
         <li>
-          <strong className="text-white">Safety emergencies</strong> — To prevent imminent harm to a person
-          in a verified emergency situation.
+          <strong className="text-white">Safety emergencies</strong> — To prevent imminent harm in a verified emergency.
         </li>
       </ul>
-      <p className="text-white/60 mt-3 text-sm">
-        In all other cases, your data stays with us, encrypted, and inaccessible to anyone else.
-      </p>
     </section>
 
     <section>
       <h3 className="text-xl font-bold text-white mb-3">5. Data Retention & Deletion</h3>
       <p className="text-white/70">
-        Your data is retained for as long as you use the bot. You may delete any data at any time using
-        the <code className="text-cyan-400">/files</code> command or by contacting us. Upon server removal or account
-        deletion request, all associated data is permanently purged within 30 days.
+        Your data is retained for as long as you use the bot. You can delete any data at any time using
+        the <code className="text-cyan-400">/files</code> command or by contacting us. Upon server removal or
+        an explicit deletion request, all associated data is permanently purged within 30 days.
       </p>
     </section>
 
     <section>
       <h3 className="text-xl font-bold text-white mb-3">6. Third-Party Services</h3>
       <p className="text-white/70">
-        UEFN Helper operates on Discord's platform and may optionally integrate with Pastebin for Verse script uploads
-        (only when you explicitly choose to). These third parties have their own privacy policies independent of ours.
-        We do not share your bot data with these services beyond what is necessary for the feature to function.
+        UEFN Helper runs on Discord's platform and stores data in Supabase (our database provider).
+        Verse scripts may optionally be sent to Pastebin — only when you explicitly choose to during the{' '}
+        <code className="text-cyan-400">/verse</code> command. Each of these services has its own privacy policy.
+        We share only the minimum data necessary for each feature to function.
       </p>
     </section>
 
     <section>
       <h3 className="text-xl font-bold text-white mb-3">7. Contact</h3>
       <p className="text-white/70">
-        For any privacy-related requests, questions, or data deletion requests, contact us at our{' '}
+        For privacy questions, data access requests, or deletion requests, reach us via our{' '}
         <a href="/contact" className="text-blue-400 hover:text-blue-300 underline">contact page</a>{' '}
-        or join our <a href="https://discord.gg/uefnhelper" className="text-blue-400 hover:text-blue-300 underline">Discord server</a>.
+        or our <a href="https://discord.gg/uefnhelper" className="text-blue-400 hover:text-blue-300 underline">Discord server</a>.
       </p>
     </section>
   </div>

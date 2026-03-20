@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://uefnhelper.com';
+  const baseUrl = 'https://uefnhelper.frii.site';
   const lastModified = new Date();
 
   const routes: MetadataRoute.Sitemap = [

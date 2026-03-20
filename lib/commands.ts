@@ -10,6 +10,8 @@ export interface Command {
   relatedCommands: string[];
 }
 
+// yea no way in hell im updating this again with alot of commands. im getting a "friend" to help me add the new commands.
+
 export const commands: Record<string, Command> = {
   'help': {
     name: 'help',

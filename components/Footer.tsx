@@ -38,17 +38,17 @@ export function Footer() {
             <h4 className="font-semibold mb-4 text-white">Resources</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="https://discord.gg/uefnhelper" className="text-white/60 hover:text-blue-400 transition-colors">
+                <a href="https://discord.gg/" className="text-white/60 hover:text-blue-400 transition-colors">
                   Support Server
                 </a>
               </li>
               <li>
-                <a href="#" className="text-white/60 hover:text-blue-400 transition-colors">
+                <a href="https://github.com/ItsMarwan/UEFN-Helper-Website" className="text-white/60 hover:text-blue-400 transition-colors">
                   GitHub
                 </a>
               </li>
               <li>
-                <a href="#" className="text-white/60 hover:text-blue-400 transition-colors">
+                <a href="/status" className="text-white/60 hover:text-blue-400 transition-colors">
                   Status Page
                 </a>
               </li>
@@ -60,17 +60,17 @@ export function Footer() {
             <h4 className="font-semibold mb-4 text-white">Legal</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#" className="text-white/60 hover:text-blue-400 transition-colors">
+                <a href="/privacy" className="text-white/60 hover:text-blue-400 transition-colors">
                   Privacy
                 </a>
               </li>
               <li>
-                <a href="#" className="text-white/60 hover:text-blue-400 transition-colors">
+                <a href="/terms" className="text-white/60 hover:text-blue-400 transition-colors">
                   Terms of Service
                 </a>
               </li>
               <li>
-                <a href="#" className="text-white/60 hover:text-blue-400 transition-colors">
+                <a href="/contact" className="text-white/60 hover:text-blue-400 transition-colors">
                   Contact
                 </a>
               </li>

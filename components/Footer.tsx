@@ -1,4 +1,11 @@
+'use client';
+
+import Link from 'next/link';
+import { useLegal } from './LegalProvider';
+
 export function Footer() {
+  const { openLegal } = useLegal();
+
   return (
     <footer className="bg-black border-t border-white/10 mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -16,19 +23,19 @@ export function Footer() {
             <h4 className="font-semibold mb-4 text-white">Product</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="/premium" className="text-white/60 hover:text-blue-400 transition-colors">
+                <Link href="/premium" className="text-white/60 hover:text-blue-400 transition-colors">
                   Premium Plans
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/commands" className="text-white/60 hover:text-blue-400 transition-colors">
+                <Link href="/commands" className="text-white/60 hover:text-blue-400 transition-colors">
                   Commands
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/docs" className="text-white/60 hover:text-blue-400 transition-colors">
+                <Link href="/docs" className="text-white/60 hover:text-blue-400 transition-colors">
                   Documentation
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -38,19 +45,19 @@ export function Footer() {
             <h4 className="font-semibold mb-4 text-white">Resources</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="https://discord.gg/" className="text-white/60 hover:text-blue-400 transition-colors">
+                <a href="https://discord.gg/uefnhelper" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-blue-400 transition-colors">
                   Support Server
                 </a>
               </li>
               <li>
-                <a href="https://github.com/ItsMarwan/UEFN-Helper-Website" className="text-white/60 hover:text-blue-400 transition-colors">
+                <a href="https://github.com/ItsMarwan/UEFN-Helper-Website" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-blue-400 transition-colors">
                   GitHub
                 </a>
               </li>
               <li>
-                <a href="/status" className="text-white/60 hover:text-blue-400 transition-colors">
-                  Status Page
-                </a>
+                <Link href="/contact" className="text-white/60 hover:text-blue-400 transition-colors">
+                  Contact Us
+                </Link>
               </li>
             </ul>
           </div>
@@ -60,38 +67,52 @@ export function Footer() {
             <h4 className="font-semibold mb-4 text-white">Legal</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="/privacy" className="text-white/60 hover:text-blue-400 transition-colors">
-                  Privacy
-                </a>
+                <button
+                  onClick={() => openLegal('privacy')}
+                  className="text-white/60 hover:text-blue-400 transition-colors text-left"
+                >
+                  Privacy Policy
+                </button>
               </li>
               <li>
-                <a href="/terms" className="text-white/60 hover:text-blue-400 transition-colors">
+                <button
+                  onClick={() => openLegal('tos')}
+                  className="text-white/60 hover:text-blue-400 transition-colors text-left"
+                >
                   Terms of Service
-                </a>
+                </button>
               </li>
               <li>
-                <a href="/contact" className="text-white/60 hover:text-blue-400 transition-colors">
+                <Link href="/contact" className="text-white/60 hover:text-blue-400 transition-colors">
                   Contact
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-white/10 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-white/60 text-sm mb-4 md:mb-0">
-              © 2024 UEFN Helper. All rights reserved.
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-white/60 text-sm">
+              © {new Date().getFullYear()} UEFN Helper. All rights reserved.
             </p>
-            <div className="flex space-x-4">
-              <a href="https://discord.gg/uefnhelper" className="text-white/60 hover:text-blue-400 transition-colors">
+            <div className="flex items-center gap-4 text-sm">
+              <button
+                onClick={() => openLegal('privacy')}
+                className="text-white/40 hover:text-blue-400 transition-colors"
+              >
+                Privacy
+              </button>
+              <span className="text-white/20">·</span>
+              <button
+                onClick={() => openLegal('tos')}
+                className="text-white/40 hover:text-blue-400 transition-colors"
+              >
+                Terms
+              </button>
+              <span className="text-white/20">·</span>
+              <a href="https://discord.gg/uefnhelper" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-blue-400 transition-colors">
                 Discord
-              </a>
-              <a href="#" className="text-white/60 hover:text-blue-400 transition-colors">
-                GitHub
-              </a>
-              <a href="#" className="text-white/60 hover:text-blue-400 transition-colors">
-                Twitter
               </a>
             </div>
           </div>

@@ -32,7 +32,8 @@ lerna-debug.log*
 .idea/
 *.swp
 *.swo
-*~
+*~\
+.env
 
 # OS
 Thumbs.db

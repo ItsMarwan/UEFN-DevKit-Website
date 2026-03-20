@@ -1,0 +1,355 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
+
+interface LegalModalProps {
+  type: 'privacy' | 'tos';
+  onClose: () => void;
+}
+
+const PRIVACY_CONTENT = (
+  <div className="space-y-8">
+    <div>
+      <h2 className="text-2xl font-bold text-blue-400 mb-3">Privacy Policy</h2>
+      <p className="text-white/50 text-sm">Last updated: March 2025</p>
+    </div>
+
+    <div className="p-4 rounded-xl border border-blue-500/30 bg-blue-500/5">
+      <p className="text-blue-300 font-semibold text-lg mb-1">🔒 The short version</p>
+      <p className="text-white/80">
+        Your data is yours. We encrypt it. We don't read it. We don't sell it. We don't trade it.
+        You can even encrypt it yourself so <strong>we literally cannot read it</strong> even if we wanted to.
+      </p>
+    </div>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">1. What Data We Collect</h3>
+      <p className="text-white/70 mb-3">
+        UEFN Helper only stores data that <strong>you explicitly provide</strong> through bot commands. We do not
+        collect, track, or harvest any data passively. Specifically:
+      </p>
+      <ul className="space-y-2 text-white/70 list-disc list-inside">
+        <li>Customer records you create via <code className="text-cyan-400">/customer add</code></li>
+        <li>Coupon codes you create via <code className="text-cyan-400">/coupon add</code></li>
+        <li>Verse scripts you upload via <code className="text-cyan-400">/verse</code></li>
+        <li>Build logs and tasks you enter via <code className="text-cyan-400">/buildlog</code> and <code className="text-cyan-400">/task</code></li>
+        <li>Seller profile information you fill in via <code className="text-cyan-400">/seller create</code></li>
+        <li>Session data created during service delivery</li>
+        <li>Server configuration settings you apply</li>
+      </ul>
+      <p className="text-white/60 mt-3 text-sm">
+        We do <strong className="text-white">not</strong> collect: your messages, voice activity, browsing history,
+        IP addresses, device information, or any data beyond what you explicitly submit through bot commands.
+      </p>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">2. How Your Data Is Encrypted</h3>
+      <p className="text-white/70 mb-3">
+        All data stored by UEFN Helper is protected using multiple layers of encryption:
+      </p>
+      <div className="space-y-3">
+        <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+          <p className="text-white font-semibold text-sm">🔐 Layer 1 — Transport Encryption</p>
+          <p className="text-white/60 text-sm mt-1">All data in transit is encrypted using TLS 1.3.</p>
+        </div>
+        <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+          <p className="text-white font-semibold text-sm">🔐 Layer 2 — Storage Encryption</p>
+          <p className="text-white/60 text-sm mt-1">All data at rest is encrypted using AES-256, an industry-standard cipher used by banks and governments.</p>
+        </div>
+        <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+          <p className="text-white font-semibold text-sm">🔐 Layer 3 — Field-Level Encryption</p>
+          <p className="text-white/60 text-sm mt-1">Sensitive fields (customer names, reasons, private notes) are encrypted individually before being stored in the database.</p>
+        </div>
+        <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30">
+          <p className="text-blue-300 font-semibold text-sm">🗝️ Layer 4 — Your Own Encryption Key (Optional)</p>
+          <p className="text-white/60 text-sm mt-1">
+            Don't trust us? You don't have to. Premium users can supply their own encryption key.
+            When you do, <strong className="text-white">only you can decrypt your data</strong>. Even we cannot read it.
+            If you lose your key, the data is permanently unreadable — not even we can recover it.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">3. We Will Never Sell Your Data</h3>
+      <p className="text-white/70 mb-3">
+        We will <strong className="text-white">never</strong>:
+      </p>
+      <ul className="space-y-2 text-white/70 list-disc list-inside">
+        <li>Sell your data to any third party</li>
+        <li>Trade your data for any service or product</li>
+        <li>Share your data with advertisers</li>
+        <li>Use your data to train AI models</li>
+        <li>Monetize your data in any form</li>
+        <li>Provide your data to data brokers</li>
+        <li>Access your data for any purpose other than running the bot</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">4. When We May Be Required to Share Data</h3>
+      <p className="text-white/70 mb-3">
+        The only circumstances under which we may disclose data are:
+      </p>
+      <ul className="space-y-2 text-white/70 list-disc list-inside">
+        <li>
+          <strong className="text-white">Legal obligation</strong> — A valid court order, subpoena, or legal process
+          compels us to. In such cases, we will notify you if legally permitted to do so.
+        </li>
+        <li>
+          <strong className="text-white">Your explicit consent</strong> — You ask us to share specific data
+          with a specific party for a specific purpose.
+        </li>
+        <li>
+          <strong className="text-white">Safety emergencies</strong> — To prevent imminent harm to a person
+          in a verified emergency situation.
+        </li>
+      </ul>
+      <p className="text-white/60 mt-3 text-sm">
+        In all other cases, your data stays with us, encrypted, and inaccessible to anyone else.
+      </p>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">5. Data Retention & Deletion</h3>
+      <p className="text-white/70">
+        Your data is retained for as long as you use the bot. You may delete any data at any time using
+        the <code className="text-cyan-400">/files</code> command or by contacting us. Upon server removal or account
+        deletion request, all associated data is permanently purged within 30 days.
+      </p>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">6. Third-Party Services</h3>
+      <p className="text-white/70">
+        UEFN Helper operates on Discord's platform and may optionally integrate with Pastebin for Verse script uploads
+        (only when you explicitly choose to). These third parties have their own privacy policies independent of ours.
+        We do not share your bot data with these services beyond what is necessary for the feature to function.
+      </p>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">7. Contact</h3>
+      <p className="text-white/70">
+        For any privacy-related requests, questions, or data deletion requests, contact us at our{' '}
+        <a href="/contact" className="text-blue-400 hover:text-blue-300 underline">contact page</a>{' '}
+        or join our <a href="https://discord.gg/uefnhelper" className="text-blue-400 hover:text-blue-300 underline">Discord server</a>.
+      </p>
+    </section>
+  </div>
+);
+
+const TOS_CONTENT = (
+  <div className="space-y-8">
+    <div>
+      <h2 className="text-2xl font-bold text-blue-400 mb-3">Terms of Service</h2>
+      <p className="text-white/50 text-sm">Last updated: March 2025 · Effective immediately upon use of the bot.</p>
+    </div>
+
+    <div className="p-4 rounded-xl border border-yellow-500/30 bg-yellow-500/5">
+      <p className="text-yellow-300 font-semibold text-lg mb-1">⚠️ The short version</p>
+      <p className="text-white/80">
+        Use the bot for what it's built for. Don't abuse it, don't try to use it as a storage bucket,
+        and don't do anything illegal with it. Be decent. That's basically it.
+      </p>
+    </div>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">1. Acceptance of Terms</h3>
+      <p className="text-white/70">
+        By adding UEFN Helper to your Discord server or using any of its commands, you agree to these
+        Terms of Service. If you do not agree, please remove the bot from your server and discontinue use.
+        These terms apply to all users, server owners, administrators, and anyone who interacts with the bot.
+      </p>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">2. Permitted Use</h3>
+      <p className="text-white/70 mb-3">UEFN Helper is designed specifically for:</p>
+      <ul className="space-y-2 text-white/70 list-disc list-inside">
+        <li>Managing customers and service delivery within Discord communities</li>
+        <li>Creating and validating coupon codes for your products or services</li>
+        <li>Organizing island development tasks, build logs, and Verse scripts</li>
+        <li>Tracking Fortnite UEFN island analytics</li>
+        <li>Running secure service delivery sessions</li>
+        <li>Managing seller profiles and reputation within the UEFN ecosystem</li>
+        <li>Exporting your own data for personal record-keeping</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">3. Prohibited Use</h3>
+      <p className="text-white/70 mb-3">You may <strong className="text-white">not</strong> use UEFN Helper to:</p>
+      <ul className="space-y-2 text-white/70 list-disc list-inside">
+        <li>Store arbitrary files, data, or content unrelated to the bot's intended purpose</li>
+        <li>
+          Use the bot as a general-purpose cloud storage service — it is a bot, not a database or file host.
+          If you need persistent storage capabilities, upgrade to Premium where storage features are properly supported.
+        </li>
+        <li>Spam commands or intentionally abuse rate limits</li>
+        <li>Attempt to access other servers' data or exploit security vulnerabilities</li>
+        <li>Use the bot in violation of Discord's own Terms of Service</li>
+        <li>Automate commands in ways not intended by the bot's design</li>
+        <li>Impersonate other users, sellers, or parties through the bot's systems</li>
+        <li>Post illegal content, hate speech, or content that violates applicable laws</li>
+        <li>Use the bot for any fraudulent, deceptive, or scam-related activities</li>
+        <li>Reverse-engineer, copy, or attempt to replicate the bot's core functionality</li>
+        <li>Circumvent bans, blocks, or suspensions imposed by us</li>
+        <li>Use the bot in any server that violates Discord Community Guidelines</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">4. Storage & Fair Use</h3>
+      <p className="text-white/70 mb-3">
+        UEFN Helper provides data storage as a functional component of its features, not as a standalone
+        service. Free tier users have usage limits designed for normal bot use.
+      </p>
+      <p className="text-white/70 mb-3">
+        <strong className="text-white">If your intent is to use the bot primarily as a storage solution</strong>,
+        please consider upgrading to Premium. Premium subscribers receive substantially higher storage allocations,
+        priority data retention, and the infrastructure investment required to maintain those features.
+      </p>
+      <p className="text-white/70">
+        We reserve the right to limit, throttle, or remove data stored in bad faith or outside the intended
+        scope of the bot's features.
+      </p>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">5. Account & Server Responsibility</h3>
+      <p className="text-white/70">
+        Server owners are responsible for how UEFN Helper is used within their server. If a server is
+        found to be using the bot in violation of these terms, the entire server may be suspended or banned
+        from the bot. Ensure your moderators and admins understand these terms.
+      </p>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">6. Service Availability</h3>
+      <p className="text-white/70">
+        UEFN Helper is provided on an "as is" and "as available" basis. We do not guarantee 100% uptime.
+        We may perform maintenance, updates, or experience outages. We are not liable for any losses
+        resulting from service unavailability.
+      </p>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">7. Premium Subscriptions</h3>
+      <p className="text-white/70 mb-3">
+        Premium plans are billed as described on our pricing page. Subscriptions auto-renew unless cancelled.
+        Refunds are available within 30 days of purchase if you are unsatisfied. We reserve the right to
+        modify pricing with 30 days notice. Abuse of Premium features may result in termination without refund.
+      </p>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">8. Termination</h3>
+      <p className="text-white/70">
+        We reserve the right to suspend or permanently ban any server or user from UEFN Helper at our
+        discretion, particularly for violations of these terms. Upon termination, your data will be
+        retained for 30 days then permanently deleted unless you request earlier deletion.
+      </p>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">9. Limitation of Liability</h3>
+      <p className="text-white/70">
+        UEFN Helper is not liable for any indirect, incidental, special, or consequential damages arising
+        from your use of the bot, including but not limited to loss of data, lost profits, or service
+        interruptions. Our total liability in any circumstance shall not exceed the amount you paid us in
+        the 30 days preceding the claim.
+      </p>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">10. Changes to Terms</h3>
+      <p className="text-white/70">
+        We may update these terms from time to time. Material changes will be announced in our Discord
+        server and reflected by an updated "Last updated" date at the top of this document. Continued use
+        of the bot after changes constitutes acceptance of the new terms.
+      </p>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">11. Governing Law</h3>
+      <p className="text-white/70">
+        These terms are governed by applicable law. Any disputes shall be resolved through good-faith
+        negotiation first. If unresolved, disputes may be submitted to binding arbitration.
+      </p>
+    </section>
+
+    <section>
+      <h3 className="text-xl font-bold text-white mb-3">12. Contact</h3>
+      <p className="text-white/70">
+        Questions about these terms? Reach us via our{' '}
+        <a href="/contact" className="text-blue-400 hover:text-blue-300 underline">contact page</a>{' '}
+        or our <a href="https://discord.gg/uefnhelper" className="text-blue-400 hover:text-blue-300 underline">Discord server</a>.
+      </p>
+    </section>
+  </div>
+);
+
+export function LegalModal({ type, onClose }: LegalModalProps) {
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+
+      {/* Modal */}
+      <div className="relative w-full max-w-3xl max-h-[85vh] flex flex-col rounded-2xl border border-white/10 bg-[#0a0a0a] shadow-2xl shadow-black/50 animate-scaleIn">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-white/10 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">{type === 'privacy' ? '🔒' : '📄'}</span>
+            <span className="text-white font-bold text-lg">
+              {type === 'privacy' ? 'Privacy Policy' : 'Terms of Service'}
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-all text-xl"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="overflow-y-auto p-6 flex-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-blue-500/50">
+          {type === 'privacy' ? PRIVACY_CONTENT : TOS_CONTENT}
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-white/10 flex-shrink-0 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-blue-500/30 transition-all"
+          >
+            Got it
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

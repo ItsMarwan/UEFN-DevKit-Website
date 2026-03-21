@@ -19,6 +19,6 @@ export default function robots(): MetadataRoute.Robots {
         crawlDelay: 1,
       },
     ],
-    sitemap: 'https://uefnhelper.frii.site/sitemap.xml',
+    sitemap: 'https://uefnhelper.rweb.site/sitemap.xml',
   };
 }

@@ -99,43 +99,43 @@ export default function PremiumPage() {
                 <li className="flex items-start">
                   <span className="text-cyan-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">Unlimited Customers</p>
-                    <p className="text-xs text-white/50">Bulk import & export</p>
+                    <p className="font-semibold text-white">5000 customers</p>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-cyan-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">Island Analytics</p>
-                    <p className="text-xs text-white/50">Live stats & tracking</p>
+                    <p className="font-semibold text-white">300 Max stored coupons</p>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-cyan-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">Session Management</p>
-                    <p className="text-xs text-white/50">Automated channels</p>
+                    <p className="font-semibold text-white">10 Max fortnite trackers</p>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-cyan-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">Developer Tools</p>
-                    <p className="text-xs text-white/50">Verse script support</p>
+                    <p className="font-semibold text-white">Higher Fortnite map pulling rate</p>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-cyan-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">Priority Support</p>
-                    <p className="text-xs text-white/50">24/7 help available</p>
+                    <p className="font-semibold text-white">512KB Verse File upload limit</p>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-cyan-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">All Free Features</p>
-                    <p className="text-xs text-white/50">Plus everything above</p>
+                    <p className="font-semibold text-white">Priority support</p>
+                  </div>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-cyan-400 mr-3 mt-1">✓</span>
+                  <div>
+                    <p className="font-semibold text-white">All features</p>
                   </div>
                 </li>
               </ul>
@@ -172,13 +172,6 @@ export default function PremiumPage() {
                 <li className="flex items-start">
                   <span className="text-purple-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">Dedicated Account Manager</p>
-                    <p className="text-xs text-white/50">Priority support</p>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-purple-400 mr-3 mt-1">✓</span>
-                  <div>
                     <p className="font-semibold text-white">Custom Features</p>
                     <p className="text-xs text-white/50">Tailored solutions</p>
                   </div>
@@ -188,13 +181,6 @@ export default function PremiumPage() {
                   <div>
                     <p className="font-semibold text-white">99.9% Uptime SLA</p>
                     <p className="text-xs text-white/50">Guaranteed reliability</p>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-purple-400 mr-3 mt-1">✓</span>
-                  <div>
-                    <p className="font-semibold text-white">White Label</p>
-                    <p className="text-xs text-white/50">Custom branding</p>
                   </div>
                 </li>
               </ul>
@@ -212,12 +198,12 @@ export default function PremiumPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { title: '∞ Unlimited Customers', desc: 'Manage as many customers as you need without limits' },
-              { title: '📊 Advanced Analytics', desc: 'Real-time statistics and performance tracking' },
+              { title: '👥 5000 Customers', desc: 'Manage as many customers as you need without limits' },
+              { title: '🎟️ 300 Coupons', desc: 'Create and store up to 300 unique coupon codes' },
               { title: '⚡ Priority Support', desc: 'Get help instantly with our priority support team' },
-              { title: '🚀 Developer Tools', desc: 'Verse script uploads and island development support' },
-              { title: '🔒 Secure Sessions', desc: 'Automated session channels with file delivery' },
-              { title: '🌐 Seller Directory', desc: 'Build your reputation with seller profiles' },
+              { title: '📦 512KB Verse File upload', desc: 'Upload larger Verse files for your maps and assets' },
+              { title: '📈 Higher Map Pulling Rate', desc: 'Faster map pulling for Fortnite tracking' },
+              { title: '🏝️ 10 Max Fortnite Trackers', desc: 'Track more Fortnite maps simultaneously with higher limits' },
             ].map((feature, idx) => (
               <div
                 key={idx}
@@ -236,7 +222,7 @@ export default function PremiumPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to Upgrade?</h2>
           <p className="text-lg mb-8 opacity-90">
-            Start with a 7-day free trial. No credit card required.
+            Join thousands of communities already benefiting from Premium features
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
@@ -266,7 +252,11 @@ export default function PremiumPage() {
             {[
               {
                 q: 'Can I try Premium for free?',
-                a: 'Yes! Join our Discord server to get a 7-day free trial of all Premium features with no credit card required.',
+                a: 'Yes! We offer a 30-day free trial when doing giveaways. No credit card required. Experience all Premium features risk-free!',
+              },
+              {
+                q: 'Is there any way i can get premuim for free?',
+                a: 'Yes! We often run giveaways on our Discord server where you can win free Premium subscriptions. Join our community for a chance to win and stay updated on the latest news and offers, We also have a section in the site INSERT HYPERLINK HERE where you can make a post/video about uefn helper to earn free premuim.',
               },
               {
                 q: 'What happens if I downgrade?',
@@ -274,19 +264,15 @@ export default function PremiumPage() {
               },
               {
                 q: 'Do you offer annual billing discounts?',
-                a: 'Yes! Subscribe for a full year and get 20% off (€95.88/year instead of €119.88/year).',
+                a: 'Yes! Subscribe for a full year and get 30% off (€83.916/year instead of €119.88/year).',
               },
               {
                 q: 'What payment methods do you accept?',
-                a: 'We accept all major credit cards, PayPal, and cryptocurrency through our payment processor.',
-              },
-              {
-                q: 'Is there a refund policy?',
-                a: '30-day money-back guarantee if you\'re not satisfied with Premium.',
+                a: 'We accept all major credit cards, PayPal through our payment processor (soon to be patreon).',
               },
               {
                 q: 'How do I contact support?',
-                a: 'Premium members get priority support via our Discord server with response times under 1 hour.',
+                a: 'Premium members get priority support via ticket from our Discord server. while free users can get help in our community channels. We also have a docs section with guides about how to use the bot and its features. If you have any questions or need assistance, feel free to reach out to our support team!',
               },
             ].map((faq, idx) => (
               <details

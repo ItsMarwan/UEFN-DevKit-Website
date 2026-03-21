@@ -43,11 +43,10 @@ export default function Home() {
             {/* Left – copy */}
             <div className="animate-slideInLeft">
               <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent animate-fadeIn">
-                Take Your Server to the Next Level
+                UEFN Discord Bot for Island Builders
               </h1>
               <p className="text-xl text-white/70 mb-8">
-                Experience the most powerful Discord bot for UEFN island builders with advanced
-                moderation, customer management, and development tools.
+                Streamline your Fortnite island development with powerful tools for customer management, Session handling, coupon administration, island analytics, and more. all within Discord.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <a
@@ -120,9 +119,9 @@ export default function Home() {
           </p>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: 'Free', price: '€0', description: 'Perfect for small communities', features: ['Basic customer management', 'Coupon system', 'Basic commands', 'Community support', '10 customers max'] },
-              { name: 'Premium', price: '€9.99', period: '/month', description: 'For growing communities', highlight: true, features: ['Unlimited customers', 'Advanced analytics', 'Session system', 'Verse script uploads', 'Priority support', 'All Free features'] },
-              { name: 'Enterprise', price: 'Custom', description: 'For large-scale operations', features: ['Unlimited everything', 'Dedicated support', 'Custom integrations', 'API access', 'SLA guarantee'] },
+              { name: 'Free', price: 'FREE', description: 'Perfect for small communities', features: ['All commands*', '256KB Verse File upload limit', '50 Max stored coupons', '1 Max fortnite trackers', 'Community support', '1000 customers max'] },
+              { name: 'Premium', price: '€9.99', period: '/month', description: 'For growing communities', highlight: true, features: ['5000 customers', '300 Max stored coupons', '10 Max fortnite trackers', 'Higher Fortnite map pulling rate', '512KB Verse File upload limit', 'Priority support', 'All features'] },
+              { name: 'Enterprise', price: 'Custom', description: 'For large-scale operations', features: ['Unlimited everything', '30 Max fortnite trackers', 'Highest Fortnite map pulling rate', 'Dedicated support', 'Custom integrations', 'API access', 'SLA guarantee'] },
             ].map((tier, idx) => (
               <div key={idx} className={`rounded-xl transition-all feature-card ${tier.highlight ? 'border-2 border-blue-500 scale-105 shadow-xl shadow-blue-500/20 bg-black/50' : 'border border-white/10 bg-black/30'}`}>
                 <div className="p-8">

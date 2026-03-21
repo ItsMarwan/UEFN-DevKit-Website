@@ -26,7 +26,7 @@ const PRIVACY_CONTENT = (
     <section>
       <h3 className="text-xl font-bold text-white mb-3">1. What Data We Collect</h3>
       <p className="text-white/70 mb-3">
-        UEFN Helper only stores data that <strong>you explicitly provide</strong> through bot commands.
+        UEFN DevKit only stores data that <strong>you explicitly provide</strong> through bot commands.
         We do not passively collect, track, or harvest any data. The following fields are what we store
         (and what gets encrypted — see Section 2):
       </p>
@@ -137,7 +137,7 @@ const PRIVACY_CONTENT = (
     <section>
       <h3 className="text-xl font-bold text-white mb-3">6. Third-Party Services</h3>
       <p className="text-white/70">
-        UEFN Helper runs on Discord&apos;s platform and stores data in Supabase (our database provider).
+        UEFN DevKit runs on Discord&apos;s platform and stores data in Supabase (our database provider).
         Verse scripts may optionally be sent to Pastebin — only when you explicitly choose to during the{' '}
         <code className="text-cyan-400">/verse</code> command. Each of these services has its own privacy policy.
         We share only the minimum data necessary for each feature to function.
@@ -173,7 +173,7 @@ const TOS_CONTENT = (
     <section>
       <h3 className="text-xl font-bold text-white mb-3">1. Acceptance of Terms</h3>
       <p className="text-white/70">
-        By adding UEFN Helper to your Discord server or using any of its commands, you agree to these
+        By adding UEFN DevKit to your Discord server or using any of its commands, you agree to these
         Terms of Service. If you do not agree, please remove the bot from your server and discontinue use.
         These terms apply to all users, server owners, administrators, and anyone who interacts with the bot.
       </p>
@@ -181,7 +181,7 @@ const TOS_CONTENT = (
 
     <section>
       <h3 className="text-xl font-bold text-white mb-3">2. Permitted Use</h3>
-      <p className="text-white/70 mb-3">UEFN Helper is designed specifically for:</p>
+      <p className="text-white/70 mb-3">UEFN DevKit is designed specifically for:</p>
       <ul className="space-y-2 text-white/70 list-disc list-inside">
         <li>Managing customers and service delivery within Discord communities</li>
         <li>Creating and validating coupon codes for your products or services</li>
@@ -199,7 +199,7 @@ const TOS_CONTENT = (
 
     <section>
       <h3 className="text-xl font-bold text-white mb-3">3. Prohibited Use</h3>
-      <p className="text-white/70 mb-3">You may <strong className="text-white">not</strong> use UEFN Helper to:</p>
+      <p className="text-white/70 mb-3">You may <strong className="text-white">not</strong> use UEFN DevKit to:</p>
       <ul className="space-y-2 text-white/70 list-disc list-inside">
         <li>Store arbitrary files, data, or content unrelated to the bot&apos;s intended purpose</li>
         <li>
@@ -222,7 +222,7 @@ const TOS_CONTENT = (
     <section>
       <h3 className="text-xl font-bold text-white mb-3">4. Storage &amp; Fair Use</h3>
       <p className="text-white/70 mb-3">
-        UEFN Helper provides data storage as a functional component of its features, not as a standalone
+        UEFN DevKit provides data storage as a functional component of its features, not as a standalone
         service. Free tier users have usage limits designed for normal bot use.
       </p>
       <p className="text-white/70 mb-3">
@@ -239,7 +239,7 @@ const TOS_CONTENT = (
     <section>
       <h3 className="text-xl font-bold text-white mb-3">5. Account &amp; Server Responsibility</h3>
       <p className="text-white/70">
-        Server owners are responsible for how UEFN Helper is used within their server. If a server is
+        Server owners are responsible for how UEFN DevKit is used within their server. If a server is
         found to be using the bot in violation of these terms, the entire server may be suspended or banned
         from the bot. Ensure your moderators and admins understand these terms.
       </p>
@@ -248,7 +248,7 @@ const TOS_CONTENT = (
     <section>
       <h3 className="text-xl font-bold text-white mb-3">6. Service Availability</h3>
       <p className="text-white/70">
-        UEFN Helper is provided on an &quot;as is&quot; and &quot;as available&quot; basis. We do not guarantee 100% uptime.
+        UEFN DevKit is provided on an &quot;as is&quot; and &quot;as available&quot; basis. We do not guarantee 100% uptime.
         We may perform maintenance, updates, or experience outages. We are not liable for any losses
         resulting from service unavailability.
       </p>
@@ -266,7 +266,7 @@ const TOS_CONTENT = (
     <section>
       <h3 className="text-xl font-bold text-white mb-3">8. Termination</h3>
       <p className="text-white/70">
-        We reserve the right to suspend or permanently ban any server or user from UEFN Helper at our
+        We reserve the right to suspend or permanently ban any server or user from UEFN DevKit at our
         discretion, particularly for violations of these terms. Upon termination, your data will be
         retained for 30 days then permanently deleted unless you request earlier deletion.
       </p>
@@ -275,7 +275,7 @@ const TOS_CONTENT = (
     <section>
       <h3 className="text-xl font-bold text-white mb-3">9. Limitation of Liability</h3>
       <p className="text-white/70">
-        UEFN Helper is not liable for any indirect, incidental, special, or consequential damages arising
+        UEFN DevKit is not liable for any indirect, incidental, special, or consequential damages arising
         from your use of the bot, including but not limited to loss of data, lost profits, or service
         interruptions. Our total liability in any circumstance shall not exceed the amount you paid us in
         the 30 days preceding the claim.

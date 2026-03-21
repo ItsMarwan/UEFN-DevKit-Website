@@ -46,7 +46,7 @@ export function Navigation() {
               <div className="relative w-8 h-8 flex-shrink-0">
                 <Image
                   src="/icon.png"
-                  alt="UEFN Helper icon"
+                  alt="UEFN DevKit icon"
                   width={32}
                   height={32}
                   className="rounded-lg"
@@ -55,7 +55,7 @@ export function Navigation() {
                 />
               </div>
               <span className="font-bold text-white group-hover:text-blue-400 transition-colors">
-                UEFN Helper
+                UEFN DevKit
               </span>
             </Link>
 

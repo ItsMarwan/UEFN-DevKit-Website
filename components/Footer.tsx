@@ -12,7 +12,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div>
-            <h3 className="font-bold text-lg mb-4 text-white">UEFN Helper</h3>
+            <h3 className="font-bold text-lg mb-4 text-white">UEFN DevKit</h3>
             <p className="text-white/60 text-sm">
               The most powerful Discord bot for UEFN island builders and communities.
             </p>
@@ -94,7 +94,7 @@ export function Footer() {
         <div className="border-t border-white/10 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-white/60 text-sm">
-              © {new Date().getFullYear()} UEFN Helper. All rights reserved.
+              © {new Date().getFullYear()} UEFN DevKit. All rights reserved.
             </p>
             <div className="flex items-center gap-4 text-sm">
               <button

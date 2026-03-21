@@ -70,7 +70,7 @@ export default function Home() {
               <div className="relative z-10 animate-float">
                 <Image
                   src="/images/logo.png"
-                  alt="UEFN Helper Bot Logo"
+                  alt="UEFN DevKit Bot Logo"
                   width={300}
                   height={300}
                   className="rounded-2xl"
@@ -153,7 +153,7 @@ export default function Home() {
       <section className="py-20 bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to Get Started?</h2>
-          <p className="text-xl mb-8 opacity-90">Join thousands of communities already using UEFN Helper</p>
+          <p className="text-xl mb-8 opacity-90">Join thousands of communities already using UEFN DevKit</p>
           <a href="/discord" className="inline-block px-8 py-4 bg-white text-blue-600 font-bold rounded-lg hover:shadow-2xl transition-all transform hover:scale-105">
             Join Discord Now
           </a>

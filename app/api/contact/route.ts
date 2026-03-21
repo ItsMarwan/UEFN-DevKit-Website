@@ -55,7 +55,7 @@ async function sendEmail({
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'UEFN Helper <onboarding@resend.dev>',
+        from: 'UEFN DevKit <onboarding@resend.dev>',
         to: [toEmail],
         reply_to: email,
         subject: `[Contact] ${subject} — from ${name}`,

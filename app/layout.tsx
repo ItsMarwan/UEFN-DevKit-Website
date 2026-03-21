@@ -9,21 +9,21 @@ const BASE_URL = 'https://uefnhelper.frii.site';
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: 'UEFN Helper – #1 Discord Bot for Fortnite Island Builders',
-    template: '%s | UEFN Helper',
+    default: 'UEFN DevKit – #1 Discord Bot for Fortnite Island Builders',
+    template: '%s | UEFN DevKit',
   },
   description:
-    'UEFN Helper is the most powerful Discord bot for Fortnite UEFN island builders. Manage customers, sessions, Verse scripts, island analytics, seller profiles, coupons & more. Free tier available.',
+    'UEFN DevKit is the most powerful Discord bot for Fortnite UEFN island builders. Manage customers, sessions, Verse scripts, island analytics, seller profiles, coupons & more. Free tier available.',
   keywords: [
-    'UEFN Helper', 'UEFN Discord bot', 'Fortnite island bot', 'UEFN bot',
+    'UEFN DevKit', 'UEFN Discord bot', 'Fortnite island bot', 'UEFN bot',
     'Discord bot for UEFN', 'Fortnite creative Discord bot', 'island analytics bot',
     'UEFN customer management', 'UEFN session system', 'Verse script bot',
     'Fortnite island builder tools', 'UEFN seller profiles', 'Discord coupon system',
     'UEFN moderation bot', 'Fortnite UEFN', 'island tracker Discord', 'UEFN premium bot',
   ],
-  authors: [{ name: 'UEFN Helper', url: BASE_URL }],
-  creator: 'UEFN Helper',
-  publisher: 'UEFN Helper',
+  authors: [{ name: 'UEFN DevKit', url: BASE_URL }],
+  creator: 'UEFN DevKit',
+  publisher: 'UEFN DevKit',
   category: 'Technology',
   classification: 'Discord Bot',
   icons: {
@@ -36,8 +36,8 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: BASE_URL,
-    siteName: 'UEFN Helper',
-    title: 'UEFN Helper – #1 Discord Bot for Fortnite Island Builders',
+    siteName: 'UEFN DevKit',
+    title: 'UEFN DevKit – #1 Discord Bot for Fortnite Island Builders',
     description: 'Customer management, session channels, Verse script uploads, live island analytics, seller directory & more.',
     images: [
       {
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
         secureUrl: `${BASE_URL}/images/banner.png`,
         width: 1200,
         height: 630,
-        alt: 'UEFN Helper – Discord Bot for Fortnite Island Builders',
+        alt: 'UEFN DevKit – Discord Bot for Fortnite Island Builders',
         type: 'image/png',
       },
     ],
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@uefnhelper',
     creator: '@uefnhelper',
-    title: 'UEFN Helper – #1 Discord Bot for Fortnite Island Builders',
+    title: 'UEFN DevKit – #1 Discord Bot for Fortnite Island Builders',
     description: 'Customer management, session channels, Verse scripts, island analytics & more.',
     images: [`${BASE_URL}/images/banner.png`],
   },
@@ -79,8 +79,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="UEFN Helper" />
-        <meta name="application-name" content="UEFN Helper" />
+        <meta name="apple-mobile-web-app-title" content="UEFN DevKit" />
+        <meta name="application-name" content="UEFN DevKit" />
         <meta name="msapplication-TileColor" content="#2399df" />
         <meta name="msapplication-TileImage" content="/icon.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -97,14 +97,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   '@type': 'WebSite',
                   '@id': `${BASE_URL}/#website`,
                   url: BASE_URL,
-                  name: 'UEFN Helper',
+                  name: 'UEFN DevKit',
                   description: 'The most powerful Discord bot for UEFN Fortnite island builders.',
                   publisher: { '@id': `${BASE_URL}/#organization` },
                 },
                 {
                   '@type': 'Organization',
                   '@id': `${BASE_URL}/#organization`,
-                  name: 'UEFN Helper',
+                  name: 'UEFN DevKit',
                   url: BASE_URL,
                   logo: { '@type': 'ImageObject', url: `${BASE_URL}/images/logo.png`, width: 512, height: 512 },
                   image: { '@type': 'ImageObject', url: `${BASE_URL}/images/banner.png`, width: 1200, height: 630 },
@@ -112,7 +112,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 },
                 {
                   '@type': 'SoftwareApplication',
-                  name: 'UEFN Helper',
+                  name: 'UEFN DevKit',
                   applicationCategory: 'BusinessApplication',
                   operatingSystem: 'Discord',
                   url: BASE_URL,

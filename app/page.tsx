@@ -116,13 +116,13 @@ export default function Home() {
           </h2>
           <div className="space-y-6 text-white/80 text-lg leading-relaxed">
             <p>
-              UEFN DevKit is the ultimate solution for Fortnite island builders and community managers. Whether you're running a small creative community or managing a large-scale operation, UEFN DevKit provides the tools you need to streamline workflow, engage customers, and scale your services efficiently. Our Discord bot integrates seamlessly into your existing Discord server, enabling powerful automation without complex setup.
+              UEFN DevKit is the ultimate solution for Fortnite island builders and community managers. Whether you&apos;re running a small creative community or managing a large-scale operation, UEFN DevKit provides the tools you need to streamline workflow, engage customers, and scale your services efficiently. Our Discord bot integrates seamlessly into your existing Discord server, enabling powerful automation without complex setup.
             </p>
             <p>
               The customer management system allows you to organize and track community members with ease. Bulk import features, role management, and customer profiles keep your community organized and accessible. The session system creates dedicated channels for service delivery, ensuring privacy and professionalism when working with clients.
             </p>
             <p>
-              For creative developers, UEFN DevKit offers Verse script uploads and version tracking directly in Discord. Build logs help teams collaborate on development, while island analytics provide real-time insights into your Fortnite creation's performance and player engagement metrics.
+              For creative developers, UEFN DevKit offers Verse script uploads and version tracking directly in Discord. Build logs help teams collaborate on development, while island analytics provide real-time insights into your Fortnite creation&apos;s performance and player engagement metrics.
             </p>
             <p>
               Our coupon system is perfect for service providers and content creators. Create unlimited coupon codes with custom expiry dates and usage limits, then track redemptions automatically. The seller profile directory helps service providers build credibility and reputation within the Fortnite creative community.

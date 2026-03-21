@@ -68,64 +68,19 @@ The site is fully static-generation-ready, mobile responsive, and dark-mode only
 - **Styling** — [Tailwind CSS 3](https://tailwindcss.com/)
 - **Email** — [Resend](https://resend.com/)
 - **Captcha** — [hCaptcha](https://www.hcaptcha.com/)
-- **Deployment** — [Vercel](https://vercel.com/) (recommended)
+- **Deployment** — [Vercel](https://vercel.com/)
 
 ---
 
-## 🚀 Getting Started
+## 🌐 Live Site
 
-### Prerequisites
+The UEFN Helper website is live at **[UEFNDevKit.rweb.site](https://uefndevkit.rweb.site)**
 
-- **Node.js** `>=18.17.0`
-- **npm** `>=9` (or yarn / pnpm)
-
-### Installation
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/ItsMarwan/UEFN-Helper-Website.git
-cd UEFN-Helper-Website
-
-# 2. Install dependencies
-npm install
-```
-
-### Environment Variables
-
-Copy the example file and fill in your values:
-
-```bash
-cp .env.local.example .env.local
-```
-
-| Variable | Required | Description |
-|---|---|---|
-| `NEXT_PUBLIC_HCAPTCHA_SITE_KEY` | ✅ | Your hCaptcha public site key |
-| `HCAPTCHA_SECRET_KEY` | ✅ | Your hCaptcha secret key (server-side only) |
-| `RESEND_API_KEY` | ✅ | Resend API key for sending contact emails |
-| `CONTACT_TO_EMAIL` | ✅ | Inbox where contact form submissions are delivered |
-
-> **Note on Resend:** Without a verified domain, use `onboarding@resend.dev` as the sender — it works immediately on any Resend account. To use your own domain, verify it at [resend.com/domains](https://resend.com/domains) and update the `from` field in `app/api/contact/route.ts`.
-
-> **Note on hCaptcha:** For local development, the test site key `10000000-ffff-ffff-ffff-000000000001` works without an account.
-
-### Running Locally
-
-```bash
-# Development server with hot reload
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-```bash
-# Production build
-npm run build
-npm start
-
-# Lint
-npm run lint
-```
+Features:
+- Full command documentation with searchable categories
+- Pricing and feature comparison
+- Contact form with hCaptcha protection
+- Open source and self-hostable
 
 ---
 
@@ -201,28 +156,40 @@ npm run lint
 
 ## 🤝 Contributing
 
-Contributions are very welcome! This is an open-source project and PRs are appreciated.
+This is an open-source project! We welcome contributions. Whether it's fixing bugs, adding features, or improving documentation.
 
-### How to contribute
+### Self-Hosting
+
+To run this project locally or self-host it:
+
+1. **Prerequisites:** Node.js `>=18.17.0` and npm `>=9`
+2. **Clone:** Fork and clone the repository
+3. **Install:** `npm install`
+4. **Configure:** Set up your environment variables (see [.env.example](.env.example)):
+   - `NEXT_PUBLIC_HCAPTCHA_SITE_KEY` — hCaptcha public key
+   - `HCAPTCHA_SECRET_KEY` — hCaptcha secret key  
+   - `RESEND_API_KEY` — Resend API key for contact form emails
+   - `CONTACT_TO_EMAIL` — Recipient email for contact submissions
+
+5. **Run:**
+   ```bash
+   npm run dev        # Development (http://localhost:3000)
+   npm run build      # Production build
+   npm start          # Production server
+   npm run lint       # Check code quality
+   ```
+
+### How to Contribute
 
 1. **Fork** the repository
-2. **Create** a feature branch
-   ```bash
-   git checkout -b feat/your-feature-name
-   ```
-3. **Commit** your changes
-   ```bash
-   git commit -m "feat: add your feature"
-   ```
-4. **Push** to your fork
-   ```bash
-   git push origin feat/your-feature-name
-   ```
-5. **Open a Pull Request** on GitHub
+2. **Create** a feature branch: `git checkout -b feat/your-feature`
+3. **Commit:** `git commit -m "feat: description"`
+4. **Push:** `git push origin feat/your-feature`
+5. **Open a PR** on GitHub
 
-### Adding a command
+### Adding or Updating Commands
 
-All commands live in `lib/commands.ts`. To add one:
+All commands are defined in [lib/commands.ts](lib/commands.ts). Add a new command object:
 
 ```ts
 'my-command': {
@@ -242,16 +209,27 @@ The command will automatically appear on `/commands`, `/docs`, and get its own p
 
 ### Guidelines
 
-- Follow the existing code style (TypeScript, Tailwind utilities)
+- Follow existing code style (TypeScript, Tailwind utilities)
 - Keep components small and reusable
 - Test on mobile before submitting
 - One feature / fix per PR
 
 ---
 
-## 📝 License
+## ⚠️ Security
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+This is an open-source project. If you discover a security vulnerability, **please report it privately** rather than opening a public issue.
+
+See [SECURITY.md](SECURITY.md) for:
+- Known vulnerabilities and their fixes
+- Security best practices for self-hosting
+- Recommendations for production deployment
+
+---
+
+## 📄 License
+
+This project is licensed under the **VCL License** — see the [LICENSE](LICENSE) file for details.
 
 You are free to fork, modify, and use this project for your own Discord bot website. Attribution is appreciated but not required.
 
@@ -265,8 +243,6 @@ Made with ❤️ by [ItsMarwan](https://github.com/ItsMarwan)
 
 <br />
 
-[![Discord](https://img.shields.io/discord/000000000000000000?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=5865F2)](https://discord.gg/)
-**[STILL IN PROGRESS. BOTH THE BOT AND SERVER]**
-*look through the code. i added notes for you to read*
+[![Discord](https://img.shields.io/discord/1483265235346391091?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=5865F2)](https://discord.gg/wfPfEw6b6w)
 
 </div>

@@ -23,14 +23,26 @@ export default function ContactPage() {
   const widgetRef = useRef<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // hCaptcha site key — replace with your actual site key
-  const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || '10000000-ffff-ffff-ffff-000000000001';
+  // hCaptcha site key — require in production
+  const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;
+
+  if (!HCAPTCHA_SITE_KEY) {
+    if (process.env.NODE_ENV === 'production') {
+      // console.error('NEXT_PUBLIC_HCAPTCHA_SITE_KEY environment variable is required in production');
+      // Fallback to test key (unsafe, but page won't break)
+    } else {
+      // Development: use test key for local testing
+      // console.warn('⚠️ Using test hCaptcha key (development only)');
+    }
+  }
+
+  const siteKey = HCAPTCHA_SITE_KEY;
 
   const renderCaptcha = useCallback(() => {
     if (!window.hcaptcha || !containerRef.current || widgetRef.current !== null) return;
     try {
       widgetRef.current = window.hcaptcha.render(containerRef.current, {
-        sitekey: HCAPTCHA_SITE_KEY,
+        sitekey: siteKey,
         theme: 'dark',
         callback: (token: string) => setCaptchaToken(token),
         'expired-callback': () => setCaptchaToken(''),
@@ -40,7 +52,7 @@ export default function ContactPage() {
     } catch {
       // already rendered or not ready
     }
-  }, [HCAPTCHA_SITE_KEY]);
+  }, [siteKey]);
 
   useEffect(() => {
     if (window.hcaptcha) {

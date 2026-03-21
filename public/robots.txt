@@ -11,7 +11,7 @@ User-agent: Bingbot
 Allow: /
 
 # Sitemap
-Sitemap: https://uefnhelper.rweb.site/sitemap.xml
+Sitemap: https://uefndevkit.rweb.site/sitemap.xml
 
 # Crawl delay
 Crawl-delay: 1

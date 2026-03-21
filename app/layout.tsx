@@ -4,7 +4,7 @@ import { Footer } from '@/components/Footer';
 import { LegalProvider } from '@/components/LegalProvider';
 import './globals.css';
 
-const BASE_URL = 'https://uefnhelper.frii.site';
+const BASE_URL = 'https://uefndevkit.frii.site';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
@@ -52,8 +52,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    site: '@uefnhelper',
-    creator: '@uefnhelper',
+    site: '@uefndevkit',
+    creator: '@uefndevkit',
     title: 'UEFN DevKit – #1 Discord Bot for Fortnite Island Builders',
     description: 'Customer management, session channels, Verse scripts, island analytics & more.',
     images: [`${BASE_URL}/images/banner.png`],

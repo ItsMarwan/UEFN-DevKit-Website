@@ -53,13 +53,13 @@ export default function Home() {
                   href="/invite"
                   className="inline-block px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-blue-500/50 transition-all transform hover:scale-105"
                 >
-                  Invite Me
+                  Invite Bot to Discord
                 </a>
                 <Link
                   href="/commands"
                   className="inline-block px-8 py-4 border-2 border-blue-500 text-blue-400 font-bold rounded-lg hover:bg-blue-500 hover:text-white transition-all"
                 >
-                  View Commands
+                  View All Commands
                 </Link>
               </div>
             </div>
@@ -108,6 +108,32 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Why UEFN DevKit Section */}
+      <section className="py-20 bg-black/50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-bold mb-8 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            Why Choose UEFN DevKit?
+          </h2>
+          <div className="space-y-6 text-white/80 text-lg leading-relaxed">
+            <p>
+              UEFN DevKit is the ultimate solution for Fortnite island builders and community managers. Whether you're running a small creative community or managing a large-scale operation, UEFN DevKit provides the tools you need to streamline workflow, engage customers, and scale your services efficiently. Our Discord bot integrates seamlessly into your existing Discord server, enabling powerful automation without complex setup.
+            </p>
+            <p>
+              The customer management system allows you to organize and track community members with ease. Bulk import features, role management, and customer profiles keep your community organized and accessible. The session system creates dedicated channels for service delivery, ensuring privacy and professionalism when working with clients.
+            </p>
+            <p>
+              For creative developers, UEFN DevKit offers Verse script uploads and version tracking directly in Discord. Build logs help teams collaborate on development, while island analytics provide real-time insights into your Fortnite creation's performance and player engagement metrics.
+            </p>
+            <p>
+              Our coupon system is perfect for service providers and content creators. Create unlimited coupon codes with custom expiry dates and usage limits, then track redemptions automatically. The seller profile directory helps service providers build credibility and reputation within the Fortnite creative community.
+            </p>
+            <p>
+              Available in both free and premium tiers, UEFN DevKit scales with your needs. Start free with core features, or upgrade to premium for advanced capabilities including higher file upload limits, additional tracker slots, and priority support.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section className="py-20 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -145,6 +171,33 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Use Cases Section */}
+      <section className="py-20 bg-black">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-bold mb-12 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            Perfect For
+          </h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="border-l-4 border-blue-500 pl-6">
+              <h3 className="text-2xl font-semibold mb-3 text-white">Community Managers</h3>
+              <p className="text-white/70">Organize members, track engagement, manage services, and build community reputation through seller profiles and ratings.</p>
+            </div>
+            <div className="border-l-4 border-blue-500 pl-6">
+              <h3 className="text-2xl font-semibold mb-3 text-white">Creative Developers</h3>
+              <p className="text-white/70">Upload Verse scripts, maintain build logs, track island analytics, and collaborate with team members directly in Discord.</p>
+            </div>
+            <div className="border-l-4 border-blue-500 pl-6">
+              <h3 className="text-2xl font-semibold mb-3 text-white">Service Providers</h3>
+              <p className="text-white/70">Manage client sessions, issue and track coupons, maintain professional seller profiles, and automate service delivery.</p>
+            </div>
+            <div className="border-l-4 border-blue-500 pl-6">
+              <h3 className="text-2xl font-semibold mb-3 text-white">Island Analytics</h3>
+              <p className="text-white/70">Monitor Fortnite island performance metrics, player engagement, and live statistics to optimize your creations.</p>
+            </div>
           </div>
         </div>
       </section>

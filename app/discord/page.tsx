@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-const INVITE_URL = '/'; // will keep it like this so i dont leak the bot early. still testing and making sure its ready for prod. also need other creators notes and stuff.
+const INVITE_URL = 'https://discord.gg/wfPfEw6b6w';
 
 export default function InvitePage() {
   useEffect(() => {

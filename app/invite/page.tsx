@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-const INVITE_URL = 'https://discord.com/oauth2/authorize?client_id=1482902329148838059&permissions=268823617&integration_type=0&scope=bot';
+const INVITE_URL = 'https://discord.com/oauth2/authorize?client_id=1482902329148838059&permissions=268823649&integration_type=0&scope=bot';
 export default function InvitePage() {
   useEffect(() => {
     window.location.replace(INVITE_URL);

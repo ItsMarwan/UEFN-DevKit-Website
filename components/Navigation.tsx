@@ -11,6 +11,7 @@ export function Navigation() {
     { href: '/', label: 'Home' },
     { href: '/commands', label: 'Commands' },
     { href: '/docs', label: 'Docs' },
+    { href: '/api/docs', label: 'API' },
     { href: '/premium', label: 'Premium' },
   ];
 
@@ -18,21 +19,21 @@ export function Navigation() {
     <>
       <style>{`
         @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-8px); }
+          from { opacity: 0; transform: translateY(-12px); }
           to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes slideUp {
           from { opacity: 1; transform: translateY(0); }
-          to   { opacity: 0; transform: translateY(-8px); }
+          to   { opacity: 0; transform: translateY(-12px); }
         }
         .mobile-menu-enter {
-          animation: slideDown 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: slideDown 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
         .mobile-menu-exit {
-          animation: slideUp 0.18s ease-in forwards;
+          animation: slideUp 0.25s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
         }
         .hamburger-bar {
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
           transform-origin: center;
         }
       `}</style>

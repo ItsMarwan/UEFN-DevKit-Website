@@ -184,7 +184,7 @@ export default function DashboardPage() {
               <div className="text-6xl mb-4">🏝️</div>
               <h2 className="text-2xl font-bold text-white mb-2">No servers found</h2>
               <p className="text-white/60 mb-6">
-                UEFN DevKit isn't in any of your servers yet.
+                UEFN DevKit isn&apos;t in any of your servers yet.
               </p>
               <a
                 href="/invite"

@@ -25,6 +25,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Get Discord server ID header
+    const serverIdHeader = req.headers.get("X-Discord-Server-ID");
+    if (!serverIdHeader) {
+      return NextResponse.json(
+        {
+          status: "denied",
+          message: "Missing X-Discord-Server-ID header",
+          timestamp: new Date().toISOString(),
+        },
+        { status: 401 }
+      );
+    }
+
     // Get request body
     const body = await req.json();
 
@@ -34,6 +47,7 @@ export async function POST(req: NextRequest) {
       headers: {
         "Content-Type": "application/json",
         Authorization: authHeader,
+        "X-Discord-Server-ID": serverIdHeader,
         "X-Forwarded-For": req.ip || "unknown",
         "X-Forwarded-Proto": "http",
       },

@@ -38,6 +38,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Get Origin header (for domain whitelisting)
+    const originHeader = req.headers.get("Origin");
+
     // Get request body
     const body = await req.json();
 
@@ -48,6 +51,7 @@ export async function POST(req: NextRequest) {
         "Content-Type": "application/json",
         Authorization: authHeader,
         "X-Discord-Server-ID": serverIdHeader,
+        Origin: originHeader,
         "X-Forwarded-For": req.ip || "unknown",
         "X-Forwarded-Proto": "http",
       },

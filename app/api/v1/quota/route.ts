@@ -38,6 +38,9 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Get Origin header (for domain whitelisting)
+    const originHeader = req.headers.get("Origin");
+
     // Forward to Flask backend with auth headers
     const response = await fetch(`${FLASK_API_URL}/api/v1/quota`, {
       method: "GET",
@@ -45,6 +48,7 @@ export async function GET(req: NextRequest) {
         "Content-Type": "application/json",
         Authorization: authHeader,
         "X-Discord-Server-ID": serverIdHeader,
+        Origin: originHeader,
         "X-Forwarded-For": req.ip || "unknown",
         "X-Forwarded-Proto": "http",
       },

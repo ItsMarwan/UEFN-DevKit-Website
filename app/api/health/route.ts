@@ -7,6 +7,8 @@
 
 import { NextResponse } from "next/server";
 
+export const dynamic = 'force-dynamic';
+
 const FLASK_URL = process.env.FLASK_API_URL;
 
 export async function GET() {
@@ -14,7 +16,6 @@ export async function GET() {
     const response = await fetch(`${FLASK_URL}/health`, {
       method: "GET",
       cache: "no-store",
-      next: { revalidate: 0 },
     });
 
     const data = await response.json();

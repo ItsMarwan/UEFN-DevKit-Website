@@ -13,6 +13,7 @@ export function Navigation() {
     { href: '/docs', label: 'Docs' },
     { href: '/api/docs', label: 'API' },
     { href: '/premium', label: 'Premium' },
+    { href: '/dashboard', label: 'Dashboard' },
   ];
 
   return (

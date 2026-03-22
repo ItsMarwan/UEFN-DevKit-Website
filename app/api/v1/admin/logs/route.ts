@@ -10,6 +10,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   // Admin routes disabled for now
   return NextResponse.json(

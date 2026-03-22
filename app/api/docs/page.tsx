@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 function Toast({ message, show }: { message: string; show: boolean }) {
@@ -43,7 +43,7 @@ function CopyableCode({ code }: { code: string }) {
   );
 }
 
-export default function APIDocsPage() {
+function DocsContent() {
   const [selectedEndpoint, setSelectedEndpoint] = useState<string | null>('customers');
   const searchParams = useSearchParams();
   const highlight = searchParams.get('highlight');
@@ -332,5 +332,13 @@ Origin: https://your-domain.com`}
         </div>
       </section>
     </div>
+  );
+}
+
+export default function APIDocsPage() {
+  return (
+    <Suspense fallback={<div className="text-white p-8">Loading...</div>}>
+      <DocsContent />
+    </Suspense>
   );
 }

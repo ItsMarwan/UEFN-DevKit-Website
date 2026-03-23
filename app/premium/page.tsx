@@ -3,7 +3,7 @@
 import Link from 'next/link';
 
 // about the premuim thingy, i made premuim only for server hosting and storage. they cost money to maintain and keep. i wont make a command premuim but limit its useage but
-// ill keep it usable by normal ppl. if you have a big ass server then buy premuim. you make bank. trust me i know ;)
+// ill keep it usable by normal ppl. if you have a big ass server then buy premuim. ;)
 
 export default function PremiumPage() {
   return (
@@ -49,7 +49,7 @@ export default function PremiumPage() {
                   <span className="text-blue-400 mr-3 mt-1">✓</span>
                   <div>
                     <p className="font-semibold text-white">Customer Management</p>
-                    <p className="text-xs text-white/50">Up to 10 customers</p>
+                    <p className="text-xs text-white/50">Up to 1000 customers</p>
                   </div>
                 </li>
                 <li className="flex items-start">

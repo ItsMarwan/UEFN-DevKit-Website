@@ -123,7 +123,7 @@ function DocsContent() {
       title: 'Members',
       method: 'GET',
       endpoint: '/api/v1/members',
-      description: 'Retrieve members filtered by role',
+      description: 'congregate members filtered by role',
       parameters: [
         { name: 'limit', type: 'number', default: '100', description: 'Results per page (max 1000)' },
         { name: 'offset', type: 'number', default: '0', description: 'Pagination offset' },
@@ -137,10 +137,69 @@ function DocsContent() {
       title: 'Guild Settings',
       method: 'GET',
       endpoint: '/api/v1/guild-settings',
-      description: 'Retrieve Discord server configuration',
+      description: 'Retrieve current Discord server configuration (read-only)',
       parameters: [],
       example: '/api/v1/guild-settings',
       curl: 'curl -H "Authorization: Bearer YOUR_TOKEN" -H "X-Discord-Server-ID: YOUR_SERVER_ID" https://uefndevkit.rweb.site/api/v1/guild-settings',
+    },
+    {
+      id: 'server-config-update',
+      title: 'Server Config (Update)',
+      method: 'PATCH',
+      endpoint: '/api/v1/config',
+      description: 'Partially update editable server configuration fields. Immutable fields (guild_id, server_tier, id, timestamps) are always blocked.',
+      parameters: [
+        { name: 'log_channel_id', type: 'string | null', description: 'Discord channel snowflake ID for bot logs' },
+        { name: 'default_customer_role_id', type: 'string | null', description: 'Discord role snowflake ID assigned to new customers' },
+        { name: 'encryption_enabled', type: 'boolean', description: 'Enable/disable at-rest field encryption' },
+        { name: 'key_stored_on_server', type: 'boolean', description: 'Whether the encryption key is stored server-side' },
+        { name: 'server_encryption_key', type: 'string | null', description: 'New encryption passphrase (omit to keep current)' },
+        { name: 'admin_allowed_roles', type: 'string[]', description: 'Array of Discord role snowflake IDs that can use admin commands' },
+      ],
+      example: `PATCH /api/v1/config
+Content-Type: application/json
+
+{
+  "endpoint": "guild_settings_update",
+  "method": "POST",
+  "parameters": {
+    "fields": {
+      "log_channel_id": "1234567890123456789",
+      "encryption_enabled": true,
+      "admin_allowed_roles": ["9876543210987654321"]
+    }
+  }
+}`,
+      curl: `curl -X PATCH \\
+  -H "Authorization: Bearer YOUR_TOKEN" \\
+  -H "X-Discord-Server-ID: YOUR_SERVER_ID" \\
+  -H "Content-Type: application/json" \\
+  -d '{"endpoint":"guild_settings_update","method":"POST","parameters":{"fields":{"encryption_enabled":true}}}' \\
+  https://uefndevkit.rweb.site/api/v1/config`,
+    },
+    {
+      id: 'redeem',
+      title: 'Redeem Code',
+      method: 'POST',
+      endpoint: '/api/v1/redeem',
+      description: 'Redeem a code to activate premium or unlock features for a guild.',
+      parameters: [
+        { name: 'code', type: 'string', description: 'Alphanumeric code (letters, digits, hyphens, underscores only)' },
+      ],
+      example: `POST /api/v1/redeem
+Content-Type: application/json
+
+{
+  "endpoint": "redeem_code",
+  "method": "POST",
+  "parameters": { "code": "PREMIUM-ABC123" }
+}`,
+      curl: `curl -X POST \\
+  -H "Authorization: Bearer YOUR_TOKEN" \\
+  -H "X-Discord-Server-ID: YOUR_SERVER_ID" \\
+  -H "Content-Type: application/json" \\
+  -d '{"endpoint":"redeem_code","method":"POST","parameters":{"code":"PREMIUM-ABC123"}}' \\
+  https://uefndevkit.rweb.site/api/v1/redeem`,
     },
     {
       id: 'statistics',
@@ -155,6 +214,15 @@ function DocsContent() {
   ];
 
   const selectedEndpointData = endpoints.find((e) => e.id === selectedEndpoint);
+
+  const methodColor = (method: string) => {
+    switch (method) {
+      case 'GET':   return 'from-blue-500 to-cyan-500 shadow-blue-500/20';
+      case 'POST':  return 'from-green-500 to-emerald-500 shadow-green-500/20';
+      case 'PATCH': return 'from-yellow-500 to-orange-500 shadow-yellow-500/20';
+      default:      return 'from-blue-500 to-cyan-500 shadow-blue-500/20';
+    }
+  };
 
   return (
     <div className="bg-black text-white min-h-screen pt-16">
@@ -209,6 +277,14 @@ Origin: https://your-domain.com`}
             <p className="text-white/70 text-base">
               The token uses <strong className="text-white">HMAC-SHA256</strong> signing. Rate limit: <strong className="text-white">10 requests/sec</strong> | Monthly quota: <strong className="text-white">5,000 requests</strong>
             </p>
+            <div className="mt-4 p-4 rounded-xl border border-yellow-500/20 bg-yellow-500/5">
+              <p className="text-yellow-300 text-sm font-semibold mb-1">⚠️ Field Validation (PATCH / POST endpoints)</p>
+              <p className="text-white/60 text-sm">
+                All write endpoints enforce strict type checking. Booleans must be JSON booleans, timestamps cannot be overwritten,
+                snowflake IDs must be numeric strings of 17–20 digits, and arrays must contain only valid snowflake strings.
+                Attempts to write immutable fields (<code className="text-cyan-400">guild_id</code>, <code className="text-cyan-400">server_tier</code>, <code className="text-cyan-400">id</code>, timestamps) are rejected with HTTP 422.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -231,7 +307,11 @@ Origin: https://your-domain.com`}
                         : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
                     }`}
                   >
-                    <span className="text-xs font-mono text-blue-300 block font-semibold">{endpoint.method}</span>
+                    <span className={`text-xs font-mono font-bold block mb-0.5 ${
+                      endpoint.method === 'PATCH' ? 'text-yellow-300'
+                      : endpoint.method === 'POST' ? 'text-green-300'
+                      : selectedEndpoint === endpoint.id ? 'text-blue-200' : 'text-blue-300'
+                    }`}>{endpoint.method}</span>
                     <span className="text-sm font-semibold">{endpoint.title}</span>
                   </button>
                 ))}
@@ -245,7 +325,7 @@ Origin: https://your-domain.com`}
                   {/* Header */}
                   <div>
                     <div className="flex items-center gap-3 mb-3">
-                      <span className="bg-gradient-to-r from-blue-500 to-cyan-500 px-3 py-1 rounded font-bold text-sm shadow-lg shadow-blue-500/20">
+                      <span className={`bg-gradient-to-r ${methodColor(selectedEndpointData.method)} px-3 py-1 rounded font-bold text-sm shadow-lg`}>
                         {selectedEndpointData.method}
                       </span>
                       <code className="text-white font-mono font-semibold text-base">{selectedEndpointData.endpoint}</code>
@@ -263,7 +343,7 @@ Origin: https://your-domain.com`}
                             <div className="flex items-baseline gap-2 mb-2">
                               <code className="font-mono text-blue-300 font-semibold">{param.name}</code>
                               <span className="text-white/50 text-sm font-medium">({param.type})</span>
-                              {param.default && <span className="text-white/50 text-sm font-medium">= {param.default}</span>}
+                              {'default' in param && <span className="text-white/50 text-sm font-medium">= {(param as { default: string }).default}</span>}
                             </div>
                             <p className="text-white/70 text-sm leading-relaxed">{param.description}</p>
                           </div>
@@ -292,8 +372,16 @@ Origin: https://your-domain.com`}
                   <div>
                     <h4 className="text-xl font-bold mb-3 text-white">Response Format</h4>
                     <div className="bg-black/50 rounded-lg p-4 border border-white/10 overflow-x-auto">
-                      <CopyableCode
-                        code={`{
+                      {selectedEndpointData.method === 'PATCH' || selectedEndpointData.id === 'redeem' ? (
+                        <CopyableCode
+                          code={`{
+  "success": true,
+  "updated_fields": ["log_channel_id", "encryption_enabled"]
+}`}
+                        />
+                      ) : (
+                        <CopyableCode
+                          code={`{
   "success": true,
   "endpoint": "${selectedEndpointData.id}",
   "count": 25,
@@ -302,7 +390,8 @@ Origin: https://your-domain.com`}
     { /* object data */ }
   ]
 }`}
-                      />
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -320,6 +409,7 @@ Origin: https://your-domain.com`}
             {[
               { code: '401', message: 'Missing or invalid authentication headers' },
               { code: '403', message: 'Origin domain not whitelisted or token verification failed' },
+              { code: '422', message: 'Field validation failed — wrong type, immutable field, or invalid value' },
               { code: '429', message: 'Rate limit exceeded (10 requests/sec)' },
               { code: '500', message: 'Server error' },
             ].map((error) => (

@@ -49,7 +49,7 @@ export default function PremiumPage() {
                   <span className="text-blue-400 mr-3 mt-1">✓</span>
                   <div>
                     <p className="font-semibold text-white">Customer Management</p>
-                    <p className="text-xs text-white/50">Up to 10 customers</p>
+                    <p className="text-xs text-white/50">Up to 1000 customers</p>
                   </div>
                 </li>
                 <li className="flex items-start">

@@ -1,4 +1,6 @@
 // app/api/dashboard/data/route.ts
+// Fetches endpoint data for the dashboard tabs. Session-cookie authenticated only.
+// GitHub readers cannot call this — no valid session = 401.
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
@@ -7,7 +9,6 @@ export const dynamic = 'force-dynamic';
 const FLASK_API_URL = process.env.FLASK_API_URL;
 const ENTERPRISE_API_TOKEN = process.env.ENTERPRISE_API_TOKEN;
 const ENTERPRISE_ORIGIN = process.env.ENTERPRISE_API_ORIGIN ?? process.env.NEXT_PUBLIC_APP_URL ?? '';
-const DISCORD_API = 'https://discord.com/api/v10';
 
 function generateAuthHeader(secret: string, bodyStr: string): string {
   const timestamp = Math.floor(Date.now() / 1000).toString();
@@ -24,10 +25,10 @@ async function flaskFetch(endpoint: string, guildId: string, parameters: Record<
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': generateAuthHeader(ENTERPRISE_API_TOKEN, bodyStr),
+        Authorization: generateAuthHeader(ENTERPRISE_API_TOKEN, bodyStr),
         'X-Discord-Server-ID': guildId,
-        'Origin': ENTERPRISE_ORIGIN,
         'X-Dashboard-Bypass-Token': ENTERPRISE_API_TOKEN,
+        Origin: ENTERPRISE_ORIGIN,
       },
       body: bodyStr,
       cache: 'no-store',
@@ -42,9 +43,11 @@ async function flaskFetch(endpoint: string, guildId: string, parameters: Record<
 }
 
 const ALLOWED_ENDPOINTS = ['customers', 'coupons', 'verse_scripts', 'members', 'trackers', 'guild_settings'];
+const DISCORD_API = 'https://discord.com/api/v10';
 
 export async function GET(req: NextRequest) {
   try {
+    // Auth: httpOnly session cookie — cannot be faked from browser JS or GitHub readers
     const raw = req.cookies.get('dashboard_session')?.value;
     if (!raw) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     let session: { access_token: string; expires_at: number };
@@ -53,16 +56,16 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Session expired' }, { status: 401 });
 
     const { searchParams } = new URL(req.url);
-    const guildId  = searchParams.get('guildId');
+    const guildId = searchParams.get('guildId');
     const endpoint = searchParams.get('endpoint');
-    const limit    = Math.min(parseInt(searchParams.get('limit') ?? '100'), 500);
-    const offset   = parseInt(searchParams.get('offset') ?? '0');
+    const limit = Math.min(parseInt(searchParams.get('limit') ?? '100'), 500);
+    const offset = parseInt(searchParams.get('offset') ?? '0');
 
     if (!guildId) return NextResponse.json({ error: 'Missing guildId' }, { status: 400 });
     if (!endpoint || !ALLOWED_ENDPOINTS.includes(endpoint))
       return NextResponse.json({ error: 'Invalid endpoint' }, { status: 400 });
 
-    // Verify guild permission via Discord
+    // Verify guild permission via Discord — can't be spoofed, uses their real token
     const guildsRes = await fetch(`${DISCORD_API}/users/@me/guilds?limit=200`, {
       headers: { Authorization: `Bearer ${session.access_token}` },
       cache: 'no-store',
@@ -77,12 +80,13 @@ export async function GET(req: NextRequest) {
     if (!guild.owner && (perms & 0x8) === 0 && (perms & 0x20) === 0)
       return NextResponse.json({ error: 'No manage permission' }, { status: 403 });
 
+    // Build parameters per endpoint
     const params: Record<string, unknown> = { limit, offset };
-    if (endpoint === 'customers')     params.filter      = searchParams.get('filter') ?? 'all';
-    if (endpoint === 'coupons')       params.active_only = searchParams.get('active_only') === 'true';
-    if (endpoint === 'verse_scripts') params.search      = searchParams.get('search') ?? '';
-    if (endpoint === 'trackers')      params.type        = searchParams.get('type') ?? '';
-    if (endpoint === 'members')       params.role        = searchParams.get('role') ?? '';
+    if (endpoint === 'customers') params.filter = searchParams.get('filter') ?? 'all';
+    if (endpoint === 'coupons') params.active_only = searchParams.get('active_only') === 'true';
+    if (endpoint === 'verse_scripts') params.search = searchParams.get('search') ?? '';
+    if (endpoint === 'trackers') params.type = searchParams.get('type') ?? '';
+    if (endpoint === 'members') params.role = searchParams.get('role') ?? '';
 
     const result = await flaskFetch(endpoint, guildId, params);
     return NextResponse.json(result);

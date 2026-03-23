@@ -10,10 +10,15 @@ const ENTERPRISE_ORIGIN = process.env.ENTERPRISE_API_ORIGIN ?? process.env.NEXT_
 
 function generateAuthHeader(secret: string, bodyStr: string): string {
   const timestamp = Math.floor(Date.now() / 1000).toString();
-  const signature = crypto.createHmac('sha256', secret).update(`${timestamp}.${bodyStr}`).digest('hex');
+  const message = `${timestamp}.${bodyStr}`;
+  const signature = crypto
+    .createHmac('sha256', secret)
+    .update(message)
+    .digest('hex');
   return `Bearer ${timestamp}.${signature}`;
 }
 
+// Try an endpoint — returns { count, supported } so we know if it worked
 async function tryFetchCount(
   endpoint: string,
   guildId: string,
@@ -23,16 +28,17 @@ async function tryFetchCount(
 
   const body = { endpoint, method: 'GET', parameters: { limit: 1, offset: 0, ...parameters } };
   const bodyStr = JSON.stringify(body);
+  const auth = generateAuthHeader(ENTERPRISE_API_TOKEN, bodyStr);
 
   try {
     const res = await fetch(`${FLASK_API_URL}/api/v1/fetch`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': generateAuthHeader(ENTERPRISE_API_TOKEN, bodyStr),
+        Authorization: auth,
         'X-Discord-Server-ID': guildId,
-        'Origin': ENTERPRISE_ORIGIN,
         'X-Dashboard-Bypass-Token': ENTERPRISE_API_TOKEN,
+        Origin: ENTERPRISE_ORIGIN,
       },
       body: bodyStr,
       cache: 'no-store',
@@ -41,6 +47,7 @@ async function tryFetchCount(
     const json = await res.json();
 
     if (!res.ok) {
+      // Log clearly so you know which endpoints your Flask version supports
       console.warn(`[stats] ${endpoint} unsupported (${res.status}): ${json?.error ?? ''}`);
       return { count: 0, ok: false };
     }
@@ -70,21 +77,38 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Session expired' }, { status: 401 });
     }
 
+    // Run all in parallel — each call is safe and returns 0 if the endpoint
+    // isn't implemented in this version of the Flask server yet.
     const [customers, coupons, verseScripts, members, trackers] = await Promise.all([
-      tryFetchCount('customers',     guildId, { filter: 'all' }),
-      tryFetchCount('coupons',       guildId, { active_only: false }),
+      tryFetchCount('customers', guildId, { filter: 'all' }),
+      tryFetchCount('coupons', guildId, { active_only: false }),
       tryFetchCount('verse_scripts', guildId, { search: '' }),
-      tryFetchCount('members',       guildId, { role: '' }),
-      tryFetchCount('trackers',      guildId, { type: '' }),
+      tryFetchCount('members', guildId, { role: '' }),
+      tryFetchCount('trackers', guildId, { type: '' }),
     ]);
 
-    return NextResponse.json({
-      customers:     customers.count,
-      coupons:       coupons.count,
+    const result = {
+      customers: customers.count,
+      coupons: coupons.count,
       verse_scripts: verseScripts.count,
-      members:       members.count,
-      trackers:      trackers.count,
-    });
+      members: members.count,
+      trackers: trackers.count,
+    };
+
+    // Log which endpoints are unavailable — tells you what to implement in Flask
+    const unsupported = [
+      !customers.ok && 'customers',
+      !coupons.ok && 'coupons',
+      !verseScripts.ok && 'verse_scripts',
+      !members.ok && 'members',
+      !trackers.ok && 'trackers',
+    ].filter(Boolean);
+
+    if (unsupported.length > 0) {
+      console.info(`[stats] Endpoints not yet in Flask (showing 0): ${unsupported.join(', ')}`);
+    }
+
+    return NextResponse.json(result);
   } catch (err) {
     console.error('[stats] Unexpected error:', err);
     return NextResponse.json({ customers: 0, coupons: 0, verse_scripts: 0, members: 0, trackers: 0 });

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 
 // about the premuim thingy, i made premuim only for server hosting and storage. they cost money to maintain and keep. i wont make a command premuim but limit its useage but
-// ill keep it usable by normal ppl. if you have a big ass server then buy premuim. you make bank. trust me i know ;)
+// ill keep it usable by normal ppl. if you have a big ass server then buy premuim. ;)
 
 export default function PremiumPage() {
   return (

@@ -145,8 +145,8 @@ export default function Home() {
           </p>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: 'Free', price: 'FREE', description: 'Perfect for small communities', features: ['All commands*', '256KB Verse File upload limit', '50 Max stored coupons', '1 Max fortnite trackers', 'Community support', '1000 customers max'] },
-              { name: 'Premium', price: '€9.99', period: '/month', description: 'For growing communities', highlight: true, features: ['5000 customers', '300 Max stored coupons', '10 Max fortnite trackers', 'Higher Fortnite map pulling rate', '512KB Verse File upload limit', 'Priority support', 'All features'] },
+              { name: 'Free', price: 'FREE', description: 'Perfect for small communities', features: ['99% of total commands', '256KB Verse File upload limit', '50 Max stored coupons', '1 Max fortnite trackers', 'Community support', '1000 customers max'] },
+              { name: 'Premium', price: '€14.99', period: '/month', description: 'For growing communities', highlight: true, features: ['5000 customers', '300 Max stored coupons', '10 Max fortnite trackers', 'Higher Fortnite map pulling rate', '512KB Verse File upload limit', 'Priority support', 'All features'] },
               { name: 'Enterprise', price: 'Custom', description: 'For large-scale operations', features: ['Unlimited everything', '30 Max fortnite trackers', 'Highest Fortnite map pulling rate', 'Dedicated support', 'Custom integrations', 'API access', 'SLA guarantee'] },
             ].map((tier, idx) => (
               <div key={idx} className={`rounded-xl transition-all feature-card ${tier.highlight ? 'border-2 border-blue-500 scale-105 shadow-xl shadow-blue-500/20 bg-black/50' : 'border border-white/10 bg-black/30'}`}>

@@ -4,6 +4,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useToast } from '@/components/ToastProvider';
+import { extractErrorMessage } from '@/lib/api-error';
 
 interface Guild {
   id: string;
@@ -25,6 +27,7 @@ type LoadState = 'loading' | 'ready' | 'error';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [guilds, setGuilds] = useState<Guild[]>([]);
   const [loadState, setLoadState] = useState<LoadState>('loading');
@@ -40,21 +43,35 @@ export default function DashboardPage() {
       try {
         const res = await fetch('/api/dashboard/session');
         if (!res.ok) {
+          const errorMsg = await extractErrorMessage(res);
+          setErrorMsg(errorMsg);
+          setLoadState('error');
+          showToast('error', 'Session Failed', errorMsg);
           router.replace('/api/dashboard/login');
           return;
         }
         const data = await res.json();
+        
+        if (!data) {
+          setErrorMsg('No session data received from server');
+          setLoadState('error');
+          showToast('error', 'Session Error', 'Failed to retrieve your session data. Please try logging in again.');
+          return;
+        }
+
         setUser(data.user);
         setGuilds(data.guilds || []);
         setLoadState('ready');
-      } catch {
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         setErrorMsg('Failed to load session.');
         setLoadState('error');
+        showToast('error', 'Connection Error', `Could not connect to the server: ${errorMessage}`);
       }
     };
 
     fetchSession();
-  }, [router]);
+  }, [router, showToast]);
 
   const getAvatarUrl = (u: User) =>
     u.avatar

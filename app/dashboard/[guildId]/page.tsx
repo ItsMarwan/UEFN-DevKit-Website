@@ -4,6 +4,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useToast } from '@/components/ToastProvider';
+import { extractErrorMessage } from '@/lib/api-error';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -204,6 +206,7 @@ function EditorSoon() {
 
 
 function ServerConfigTab({ guildId }: { guildId: string }) {
+  const { showToast } = useToast();
   const [config, setConfig] = useState<GuildConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -226,7 +229,12 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
     setLoading(true);
     try {
       const res = await fetch(`/api/dashboard/server-config?guildId=${guildId}`);
-      if (!res.ok) { setLoading(false); return; }
+      if (!res.ok) { 
+        const errorMsg = await extractErrorMessage(res);
+        showToast('error', 'Failed to Load Config', errorMsg);
+        setLoading(false); 
+        return; 
+      }
       const json = await res.json();
       // data may be nested under .data.data or .data
       const raw: GuildConfig = json?.data?.data?.[0] ?? json?.data?.[0] ?? json?.data ?? json;
@@ -243,9 +251,12 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
         ? raw.admin_allowed_roles
         : (() => { try { return JSON.parse(raw.admin_allowed_roles as unknown as string) ?? []; } catch { return []; } })();
       setAdminRoles(roles.join(', '));
-    } catch { /* silent */ }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      showToast('error', 'Connection Error', errorMsg);
+    }
     setLoading(false);
-  }, [guildId]);
+  }, [guildId, showToast]);
 
   useEffect(() => { fetchConfig(); }, [fetchConfig]);
 
@@ -281,14 +292,20 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
       });
       const json = await res.json();
       if (!res.ok) {
-        setSaveMsg({ type: 'error', text: json.error ?? 'Save failed' });
+        const errorMsg = json.error ?? 'Save failed';
+        setSaveMsg({ type: 'error', text: errorMsg });
+        showToast('error', 'Save Failed', errorMsg);
       } else {
-        setSaveMsg({ type: 'success', text: 'Settings saved successfully!' });
+        const successMsg = 'Settings saved successfully!';
+        setSaveMsg({ type: 'success', text: successMsg });
+        showToast('success', 'Settings Saved', successMsg);
         setEncKey('');
         fetchConfig();
       }
     } catch (e) {
-      setSaveMsg({ type: 'error', text: String(e) });
+      const errorMsg = String(e);
+      setSaveMsg({ type: 'error', text: errorMsg });
+      showToast('error', 'Error', errorMsg);
     }
     setSaving(false);
   };
@@ -305,14 +322,20 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
       });
       const json = await res.json();
       if (!res.ok) {
-        setRedeemMsg({ type: 'error', text: json.error ?? 'Redemption failed' });
+        const errorMsg = json.error ?? 'Redemption failed';
+        setRedeemMsg({ type: 'error', text: errorMsg });
+        showToast('error', 'Redemption Failed', errorMsg);
       } else {
-        setRedeemMsg({ type: 'success', text: json.message ?? 'Code redeemed!' });
+        const successMsg = json.message ?? 'Code redeemed!';
+        setRedeemMsg({ type: 'success', text: successMsg });
+        showToast('success', 'Code Redeemed', successMsg);
         setRedeemCode('');
         fetchConfig(); // refresh tier display
       }
     } catch (e) {
-      setRedeemMsg({ type: 'error', text: String(e) });
+      const errorMsg = String(e);
+      setRedeemMsg({ type: 'error', text: errorMsg });
+      showToast('error', 'Error', errorMsg);
     }
     setRedeemLoading(false);
   };
@@ -550,6 +573,7 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
 export default function GuildDashboardPage() {
   const router = useRouter();
   const params = useParams();
+  const { showToast } = useToast();
   const guildId = params?.guildId as string;
 
   const [user, setUser] = useState<User | null>(null);
@@ -574,12 +598,13 @@ export default function GuildDashboardPage() {
         if (accessRes.status === 401) { router.replace('/api/dashboard/login'); return; }
         if (!accessRes.ok) {
           const err = await accessRes.json();
-          setErrorMsg(
+          const errorText =
             err.reason === 'no_permission' ? `You don't have Manage Server permission in this server.`
             : err.reason === 'not_in_guild' ? `You're not a member of this server.`
             : err.reason === 'bot_not_in_guild' ? `Bot is not in this server. Please invite the bot first.`
-            : 'Access denied.',
-          );
+            : err.error || 'Access denied.';
+          setErrorMsg(errorText);
+          showToast('error', 'Access Denied', errorText);
           setLoadState('forbidden'); return;
         }
         const accessData = await accessRes.json();
@@ -587,21 +612,32 @@ export default function GuildDashboardPage() {
         setLoadState('loading');
 
         const sessionRes = await fetch('/api/dashboard/session');
-        if (!sessionRes.ok) { router.replace('/api/dashboard/login'); return; }
+        if (!sessionRes.ok) { 
+          const sessionErr = await extractErrorMessage(sessionRes);
+          showToast('error', 'Session Error', sessionErr);
+          router.replace('/api/dashboard/login'); 
+          return; 
+        }
         const sessionData = await sessionRes.json();
         setUser(sessionData.user);
 
         const statsRes = await fetch(`/api/dashboard/stats?guildId=${guildId}`);
         if (statsRes.ok) setStats(await statsRes.json());
+        else {
+          const statsErr = await extractErrorMessage(statsRes);
+          showToast('warning', 'Stats Failed', statsErr);
+        }
 
         setLoadState('ready');
-      } catch {
-        setErrorMsg('Failed to load server dashboard.');
+      } catch (error) {
+        const errorText = error instanceof Error ? error.message : 'Failed to load server dashboard.';
+        setErrorMsg(errorText);
         setLoadState('error');
+        showToast('error', 'Dashboard Error', errorText);
       }
     };
     load();
-  }, [guildId, router]);
+  }, [guildId, router, showToast]);
 
   const fetchTabData = useCallback(async (tab: TabId) => {
     if (tab === 'overview' || tab === 'editor' || tab === 'config') return;
@@ -614,14 +650,18 @@ export default function GuildDashboardPage() {
         const rows = json?.data?.data ?? json?.data ?? [];
         setTabData(p => ({ ...p, [tab]: Array.isArray(rows) ? rows : [] }));
       } else {
+        const errorMsg = await extractErrorMessage(res);
+        showToast('error', 'Failed to Load Data', errorMsg);
         setTabData(p => ({ ...p, [tab]: [] }));
       }
-    } catch {
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      showToast('error', 'Connection Error', errorMsg);
       setTabData(p => ({ ...p, [tab]: [] }));
     } finally {
       setTabLoading(p => ({ ...p, [tab]: false }));
     }
-  }, [guildId, tabData]);
+  }, [guildId, tabData, showToast]);
 
   useEffect(() => {
     if (loadState === 'ready') fetchTabData(activeTab);

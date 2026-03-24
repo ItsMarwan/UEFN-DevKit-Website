@@ -37,6 +37,11 @@ export function Footer() {
                   Documentation
                 </Link>
               </li>
+              <li>
+                <Link href="/dashboard" className="text-white/60 hover:text-blue-400 transition-colors">
+                  Dashboard
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -55,8 +60,8 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <Link href="/contact" className="text-white/60 hover:text-blue-400 transition-colors">
-                  Contact Us
+                <Link href="/api/docs" className="text-white/60 hover:text-blue-400 transition-colors">
+                  API Endpoint
                 </Link>
               </li>
             </ul>

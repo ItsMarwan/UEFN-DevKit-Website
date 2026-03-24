@@ -10,7 +10,6 @@ export function Navigation() {
   const links = [
     { href: '/', label: 'Home' },
     { href: '/commands', label: 'Commands' },
-    { href: '/docs', label: 'Docs' },
     { href: '/api/docs', label: 'API' },
     { href: '/premium', label: 'Premium' },
     { href: '/dashboard', label: 'Dashboard' },

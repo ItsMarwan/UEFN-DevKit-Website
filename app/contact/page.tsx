@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useToast } from '@/components/ToastProvider';
+import { extractErrorMessage } from '@/lib/api-error';
 
 declare global {
   interface Window {
@@ -12,6 +14,7 @@ declare global {
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
 export default function ContactPage() {
+  const { showToast } = useToast();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
@@ -79,11 +82,13 @@ export default function ContactPage() {
 
     if (!captchaToken) {
       setErrorMsg('Please complete the captcha challenge.');
+      showToast('error', 'Captcha Required', 'Please complete the captcha challenge.');
       return;
     }
 
     if (!name.trim() || !email.trim() || !subject.trim() || !message.trim()) {
       setErrorMsg('Please fill in all fields.');
+      showToast('error', 'Missing Fields', 'Please fill in all fields.');
       return;
     }
 
@@ -99,7 +104,8 @@ export default function ContactPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Something went wrong.');
+        const errorMsg = data.error || await extractErrorMessage(res) || 'Something went wrong.';
+        throw new Error(errorMsg);
       }
 
       setStatus('success');
@@ -108,9 +114,12 @@ export default function ContactPage() {
       if (window.hcaptcha && widgetRef.current !== null) {
         window.hcaptcha.reset(widgetRef.current);
       }
+      showToast('success', 'Message Sent!', 'Thanks for reaching out. We\'ll get back to you soon.');
     } catch (err: any) {
       setStatus('error');
-      setErrorMsg(err.message || 'Failed to send. Please try again.');
+      const error = err.message || 'Failed to send. Please try again.';
+      setErrorMsg(error);
+      showToast('error', 'Send Failed', error);
     }
   };
 

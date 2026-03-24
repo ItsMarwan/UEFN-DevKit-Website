@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Navigation } from '@/components/Navigation';
 import { Footer } from '@/components/Footer';
 import { LegalProvider } from '@/components/LegalProvider';
+import { ToastProvider } from '@/components/ToastProvider';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import './globals.css';
 
@@ -143,11 +144,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="bg-black text-white overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-blue-500">
         <GoogleAnalytics />
-        <LegalProvider>
-          <Navigation />
-          <main>{children}</main>
-          <Footer />
-        </LegalProvider>
+        <ToastProvider>
+          <LegalProvider>
+            <Navigation />
+            <main>{children}</main>
+            <Footer />
+          </LegalProvider>
+        </ToastProvider>
       </body>
     </html>
   );

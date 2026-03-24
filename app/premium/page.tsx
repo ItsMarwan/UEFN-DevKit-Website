@@ -87,7 +87,7 @@ export default function PremiumPage() {
               <h2 className="text-3xl font-bold mb-2 text-blue-400">Premium</h2>
               <p className="text-white/60 text-sm mb-6">For growing communities</p>
               <div className="mb-8">
-                <span className="text-5xl font-bold text-white">€14.99</span>
+                <span className="text-5xl font-bold text-white">€9.99</span>
                 <span className="text-white/60 ml-2">/month</span>
               </div>
 

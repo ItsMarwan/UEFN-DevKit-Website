@@ -10,9 +10,10 @@ interface Params {
   id: string;
 }
 
-export async function GET(req: NextRequest, { params }: { params: Params }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<Params> }) {
   try {
-    const guildId = params?.id;
+    const { id } = await params;
+    const guildId = id;
     if (!guildId) {
       return NextResponse.json({ error: 'Guild ID required' }, { status: 400 });
     }

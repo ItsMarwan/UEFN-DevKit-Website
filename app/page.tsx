@@ -46,7 +46,7 @@ export default function Home() {
                 UEFN Discord Bot for Island Builders
               </h1>
               <p className="text-xl text-white/70 mb-8">
-                Streamline your Fortnite island development with powerful tools for customer management, Session handling, coupon administration, island analytics, and more. all within Discord.
+                Streamline your Fortnite island development with powerful tools for customer management, session handling, island analytics, and more. All within Discord.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <a
@@ -92,11 +92,11 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               { icon: '👥', title: 'Customer Management', description: 'Track customers, manage roles, and bulk import members with ease.' },
-              { icon: '🎟️', title: 'Coupon System', description: 'Create, manage, and track coupon codes with expiry and usage limits.' },
-              { icon: '📦', title: 'Development Tools', description: 'Build logs, task management, and Verse script uploads for island devs.' },
+              { icon: '📦', title: 'Development Tools', description: 'Verse script uploads and management for island developers.' },
               { icon: '🏝️', title: 'Island Analytics', description: 'Live Fortnite island stats, tracking, and performance monitoring.' },
               { icon: '🤝', title: 'Session System', description: 'Automated session channels for secure service delivery.' },
               { icon: '🏪', title: 'Seller Profiles', description: 'Public directory, ratings, and professional seller management.' },
+              { icon: '🎮', title: 'Fortnite Integration', description: 'Tracker support, map code validation, and UEFN utilities.' },
             ].map((feature, idx) => (
               <div key={idx} className="feature-card p-8 rounded-xl border border-white/10 bg-black/50 hover:border-blue-500/50 transition-all hover:shadow-lg hover:shadow-blue-500/10 animate-scaleIn">
                 <div className="text-4xl mb-4">{feature.icon}</div>
@@ -122,10 +122,10 @@ export default function Home() {
               The customer management system allows you to organize and track community members with ease. Bulk import features, role management, and customer profiles keep your community organized and accessible. The session system creates dedicated channels for service delivery, ensuring privacy and professionalism when working with clients.
             </p>
             <p>
-              For creative developers, UEFN DevKit offers Verse script uploads and version tracking directly in Discord. Build logs help teams collaborate on development, while island analytics provide real-time insights into your Fortnite creation&apos;s performance and player engagement metrics.
+              For creative developers, UEFN DevKit offers Verse script uploads and version tracking directly in Discord. Island analytics provide real-time insights into your Fortnite creation's performance and player engagement metrics.
             </p>
             <p>
-              Our coupon system is perfect for service providers and content creators. Create unlimited coupon codes with custom expiry dates and usage limits, then track redemptions automatically. The seller profile directory helps service providers build credibility and reputation within the Fortnite creative community.
+              The seller profile directory helps service providers build credibility and reputation within the Fortnite creative community. Track your professional reputation and manage your services efficiently.
             </p>
             <p>
               Available in both free and premium tiers, UEFN DevKit scales with your needs. Start free with core features, or upgrade to premium for advanced capabilities including higher file upload limits, additional tracker slots, and priority support.
@@ -145,8 +145,8 @@ export default function Home() {
           </p>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: 'Free', price: 'FREE', description: 'Perfect for small communities', features: ['99% of total commands', '256KB Verse File upload limit', '50 Max stored coupons', '1 Max fortnite trackers', 'Community support', '1000 customers max'] },
-              { name: 'Premium', price: '€9.99', period: '/month', description: 'For growing communities', highlight: true, features: ['5000 customers', '300 Max stored coupons', '10 Max fortnite trackers', 'Higher Fortnite map pulling rate', '512KB Verse File upload limit', 'Priority support', 'All features'] },
+              { name: 'Free', price: 'FREE', description: 'Perfect for small communities', features: ['99% of total commands', '256KB Verse File upload limit', '1 Max fortnite tracker', 'Community support', '1000 customers max'] },
+              { name: 'Premium', price: '€9.99', period: '/month', description: 'For growing communities', highlight: true, features: ['5000 customers', '10 Max fortnite trackers', 'Higher Fortnite map pulling rate', '512KB Verse File upload limit', 'Priority support', 'All features'] },
               { name: 'Enterprise', price: 'Custom', description: 'For large-scale operations', features: ['Unlimited everything', '30 Max fortnite trackers', 'Highest Fortnite map pulling rate', 'Dedicated support', 'Custom integrations', 'API access', 'SLA guarantee'] },
             ].map((tier, idx) => (
               <div key={idx} className={`rounded-xl transition-all feature-card ${tier.highlight ? 'border-2 border-blue-500 scale-105 shadow-xl shadow-blue-500/20 bg-black/50' : 'border border-white/10 bg-black/30'}`}>
@@ -188,11 +188,11 @@ export default function Home() {
             </div>
             <div className="border-l-4 border-blue-500 pl-6">
               <h3 className="text-2xl font-semibold mb-3 text-white">Creative Developers</h3>
-              <p className="text-white/70">Upload Verse scripts, maintain build logs, track island analytics, and collaborate with team members directly in Discord.</p>
+              <p className="text-white/70">Upload Verse scripts, track island analytics, and collaborate with team members directly in Discord.</p>
             </div>
             <div className="border-l-4 border-blue-500 pl-6">
               <h3 className="text-2xl font-semibold mb-3 text-white">Service Providers</h3>
-              <p className="text-white/70">Manage client sessions, issue and track coupons, maintain professional seller profiles, and automate service delivery.</p>
+              <p className="text-white/70">Manage client sessions, maintain professional seller profiles, and automate service delivery securely.</p>
             </div>
             <div className="border-l-4 border-blue-500 pl-6">
               <h3 className="text-2xl font-semibold mb-3 text-white">Island Analytics</h3>

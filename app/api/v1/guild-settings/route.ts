@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { getClientIp } from "@/lib/get-client-ip";
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
         "X-Discord-Server-ID": serverIdHeader,
         "X-Dashboard-Bypass-Token": DASHBOARD_TOKEN || "",
         Origin: originHeader || "",
-        "X-Forwarded-For": req.ip || "unknown",
+        "X-Forwarded-For": getClientIp(req),
         "X-Forwarded-Proto": "https",
       },
       body: JSON.stringify({

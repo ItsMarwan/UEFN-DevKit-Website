@@ -61,7 +61,7 @@ export const pageMetadata = {
   },
   dashboard: {
     title: 'Dashboard – UEFN DevKit',
-    description: 'Manage your server settings, customers, coupons, and analytics in real-time.',
+    description: 'Manage your server settings, customers, sessions, and analytics in real-time.',
     path: '/dashboard',
   },
   docs: {

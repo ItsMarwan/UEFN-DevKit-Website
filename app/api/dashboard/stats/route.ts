@@ -79,29 +79,52 @@ export async function GET(req: NextRequest) {
 
     // Run all in parallel — each call is safe and returns 0 if the endpoint
     // isn't implemented in this version of the Flask server yet.
-    const [customers, coupons, verseScripts, members, trackers] = await Promise.all([
+    
+    // Get the base URL from the request
+    const protocol = req.headers.get('x-forwarded-proto') ?? 'http';
+    const host = req.headers.get('host') ?? 'localhost:3000';
+    const baseUrl = `${protocol}://${host}`;
+    
+    const [customers, verseScripts, members, trackers, commandLogs] = await Promise.all([
       tryFetchCount('customers', guildId, { filter: 'all' }),
-      tryFetchCount('coupons', guildId, { active_only: false }),
       tryFetchCount('verse_scripts', guildId, { search: '' }),
       tryFetchCount('members', guildId, { role: '' }),
       tryFetchCount('trackers', guildId, { type: '' }),
+      (async () => {
+        // Fetch command logs count from the command-logs API
+        try {
+          const res = await fetch(`${baseUrl}/api/dashboard/command-logs?guild_id=${guildId}&limit=1&offset=0`, {
+            headers: {
+              'X-Dashboard-Bypass-Token': ENTERPRISE_API_TOKEN,
+            },
+            cache: 'no-store',
+          });
+          if (!res.ok) return { count: 0, ok: false };
+          const json = await res.json();
+          const count = json?.pagination?.total ?? 0;
+          return { count, ok: true };
+        } catch (e) {
+          console.warn(`[stats] command_logs fetch error:`, e);
+          return { count: 0, ok: false };
+        }
+      })(),
     ]);
 
     const result = {
       customers: customers.count,
-      coupons: coupons.count,
       verse_scripts: verseScripts.count,
       members: members.count,
       trackers: trackers.count,
+      command_logs: commandLogs.count,
     };
 
     // Log which endpoints are unavailable — tells you what to implement in Flask
     const unsupported = [
       !customers.ok && 'customers',
-      !coupons.ok && 'coupons',
       !verseScripts.ok && 'verse_scripts',
       !members.ok && 'members',
       !trackers.ok && 'trackers',
+      !commandLogs.ok && 'command_logs',
     ].filter(Boolean);
 
     if (unsupported.length > 0) {
@@ -111,6 +134,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(result);
   } catch (err) {
     console.error('[stats] Unexpected error:', err);
-    return NextResponse.json({ customers: 0, coupons: 0, verse_scripts: 0, members: 0, trackers: 0 });
+    return NextResponse.json({ customers: 0, verse_scripts: 0, members: 0, trackers: 0, command_logs: 0 });
   }
 }

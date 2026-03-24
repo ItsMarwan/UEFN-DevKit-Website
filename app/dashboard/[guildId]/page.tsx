@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useToast } from '@/components/ToastProvider';
 import { extractErrorMessage } from '@/lib/api-error';
 
@@ -11,7 +12,7 @@ import { extractErrorMessage } from '@/lib/api-error';
 
 interface User { id: string; username: string; email: string; avatar: string | null }
 interface GuildInfo { id: string; name: string; icon: string | null }
-interface Stats { customers: number; coupons: number; verse_scripts: number; members: number; trackers: number }
+interface Stats { customers: number; verse_scripts: number; members: number; trackers: number; command_logs: number }
 
 interface GuildConfig {
   id?: number;
@@ -28,7 +29,7 @@ interface GuildConfig {
   updated_at?: string;
 }
 
-type TabId = 'overview' | 'customers' | 'coupons' | 'members' | 'verse_scripts' | 'trackers' | 'config' | 'editor';
+type TabId = 'overview' | 'customers' | 'logs' | 'members' | 'verse_scripts' | 'trackers' | 'config' | 'editor';
 type LoadState = 'checking' | 'loading' | 'ready' | 'forbidden' | 'error';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -144,26 +145,30 @@ function CustomerDetail({ row }: { row: Record<string, unknown> }) {
   );
 }
 
-function CouponDetail({ row }: { row: Record<string, unknown> }) {
+function CommandLogDetail({ row }: { row: Record<string, unknown> }) {
+  const timestamp = row.created_at ? new Date(String(row.created_at)) : new Date();
+  const timeStr = timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const dateStr = timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const isSuccess = String(row.status ?? 'success') === 'success';
+  
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10">
-      <div className="font-mono text-sm bg-black/50 px-3 py-1.5 rounded border border-white/10 text-cyan-300 flex-shrink-0">
-        {String(row.code ?? row.coupon_code ?? '—')}
+    <div className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/8 transition-colors">
+      <div className="flex-shrink-0 pt-0.5">
+        <span className="text-lg">{isSuccess ? '✅' : '❌'}</span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-white text-sm truncate">{String(row.description ?? row.name ?? '—')}</p>
-        <p className="text-white/40 text-xs">
-          Uses: {String(row.uses ?? row.use_count ?? '0')}
-          {row.max_uses ? ` / ${row.max_uses}` : ''}
-          {row.expires_at ? ` · Expires ${new Date(String(row.expires_at)).toLocaleDateString()}` : ''}
-        </p>
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <p className="text-white text-sm font-mono truncate">{String(row.command_name ?? '—')}</p>
+          <span className="text-white/40 text-xs whitespace-nowrap">{timeStr}</span>
+        </div>
+        <p className="text-white/60 text-xs mb-1">User: {String(row.user_id ?? '—')}</p>
+        {row.details && <p className="text-white/40 text-xs truncate">Details: {String(row.details ?? '')}</p>}
+        <p className="text-white/30 text-xs mt-1">{dateStr}</p>
       </div>
-      <span className={`px-2 py-0.5 rounded text-xs font-medium flex-shrink-0 ${row.is_active !== false ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-        {row.is_active !== false ? 'Active' : 'Inactive'}
-      </span>
     </div>
   );
 }
+
 
 function EditorSoon() {
   return (
@@ -356,11 +361,11 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
     <div className="space-y-8">
 
       {/* Current Status */}
-      <div className="p-5 rounded-xl border border-white/10 bg-black/40">
-        <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+      <div className="p-4 sm:p-5 rounded-xl border border-white/10 bg-black/40">
+        <h3 className="text-white font-bold mb-4 flex items-center gap-2 text-sm sm:text-base">
           <span>📊</span> Server Status
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
           <div className="space-y-1">
             <p className="text-white/40 text-xs uppercase tracking-wide">Tier</p>
             <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold border ${tierColor}`}>
@@ -380,7 +385,7 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
             </span>
           </div>
           <div className="space-y-1">
-            <p className="text-white/40 text-xs uppercase tracking-wide">Last Updated</p>
+            <p className="text-white/40 text-xs uppercase tracking-wide">Updated</p>
             <p className="text-white/60 text-xs font-mono">
               {config?.updated_at ? new Date(config.updated_at).toLocaleDateString() : '—'}
             </p>
@@ -389,31 +394,31 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
       </div>
 
       {/* Redeem Code */}
-      <div className="p-5 rounded-xl border border-white/10 bg-black/40">
-        <h3 className="text-white font-bold mb-1 flex items-center gap-2">
+      <div className="p-4 sm:p-5 rounded-xl border border-white/10 bg-black/40">
+        <h3 className="text-white font-bold mb-1 flex items-center gap-2 text-sm sm:text-base">
           <span>🎟️</span> Redeem Code / Activate Premium
         </h3>
         <p className="text-white/40 text-xs mb-4">Enter a redeem code to activate premium or unlock features for this server.</p>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <input
             type="text"
             value={redeemCode}
             onChange={e => setRedeemCode(e.target.value.replace(/[^a-zA-Z0-9_\-]/g, ''))}
             placeholder="e.g. PREMIUM-ABC123"
             maxLength={64}
-            className="flex-1 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
+            className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono transition-colors"
           />
           <button
             onClick={handleRedeem}
             disabled={redeemLoading || !redeemCode.trim()}
-            className="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+            className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm whitespace-nowrap"
           >
             {redeemLoading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : '✓'}
             Redeem
           </button>
         </div>
         {redeemMsg && (
-          <div className={`mt-3 px-4 py-2.5 rounded-lg text-sm border ${redeemMsg.type === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
+          <div className={`mt-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-sm border ${redeemMsg.type === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
             {redeemMsg.text}
           </div>
         )}
@@ -426,13 +431,13 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
       </div>
 
       {/* Editable Settings */}
-      <div className="p-5 rounded-xl border border-white/10 bg-black/40">
-        <h3 className="text-white font-bold mb-1 flex items-center gap-2">
+      <div className="p-4 sm:p-5 rounded-xl border border-white/10 bg-black/40">
+        <h3 className="text-white font-bold mb-1 flex items-center gap-2 text-sm sm:text-base">
           <span>⚙️</span> Server Settings
         </h3>
         <p className="text-white/40 text-xs mb-5">Changes are saved immediately. Server tier and IDs cannot be edited here.</p>
 
-        <div className="space-y-5">
+        <div className="space-y-4 sm:space-y-5">
           {/* Log Channel */}
           <div>
             <label className="block text-white/60 text-xs font-semibold mb-1.5 uppercase tracking-wide">
@@ -443,7 +448,7 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
               value={logChannel}
               onChange={e => setLogChannel(e.target.value.replace(/\D/g, '').slice(0, 20))}
               placeholder="Discord channel snowflake ID (leave empty to clear)"
-              className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
+              className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
             />
             <p className="text-white/30 text-xs mt-1">Bot will send activity logs to this channel.</p>
           </div>
@@ -458,7 +463,7 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
               value={defaultRole}
               onChange={e => setDefaultRole(e.target.value.replace(/\D/g, '').slice(0, 20))}
               placeholder="Discord role snowflake ID (leave empty to clear)"
-              className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
+              className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
             />
             <p className="text-white/30 text-xs mt-1">Assigned to new customers via <code className="text-cyan-400">/customer add</code>.</p>
           </div>
@@ -473,7 +478,7 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
               value={adminRoles}
               onChange={e => setAdminRoles(e.target.value)}
               placeholder="Comma-separated role snowflake IDs, e.g. 1234567890, 9876543210"
-              className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
+              className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
             />
             <p className="text-white/30 text-xs mt-1">Roles that can use admin bot commands. Separate multiple IDs with commas.</p>
           </div>
@@ -482,34 +487,34 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
           <div className="pt-2 border-t border-white/5">
             <p className="text-white/60 text-xs font-semibold uppercase tracking-wide mb-3">🔒 Encryption</p>
             <div className="space-y-3">
-              <label className="flex items-center gap-3 cursor-pointer group">
+              <label className="flex items-start sm:items-center gap-2 sm:gap-3 cursor-pointer group">
                 <button
                   type="button"
                   role="switch"
                   aria-checked={encEnabled}
                   onClick={() => setEncEnabled(v => !v)}
-                  className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${encEnabled ? 'bg-blue-500' : 'bg-white/20'}`}
+                  className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 mt-0.5 sm:mt-0 ${encEnabled ? 'bg-blue-500' : 'bg-white/20'}`}
                 >
                   <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${encEnabled ? 'translate-x-5' : ''}`} />
                 </button>
                 <div>
-                  <span className="text-white text-sm font-medium">Enable encryption</span>
+                  <span className="text-white text-xs sm:text-sm font-medium">Enable encryption</span>
                   <p className="text-white/30 text-xs">Encrypts sensitive data fields at rest.</p>
                 </div>
               </label>
 
-              <label className="flex items-center gap-3 cursor-pointer group">
+              <label className="flex items-start sm:items-center gap-2 sm:gap-3 cursor-pointer group">
                 <button
                   type="button"
                   role="switch"
                   aria-checked={keyOnServer}
                   onClick={() => setKeyOnServer(v => !v)}
-                  className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${keyOnServer ? 'bg-yellow-500' : 'bg-white/20'}`}
+                  className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 mt-0.5 sm:mt-0 ${keyOnServer ? 'bg-yellow-500' : 'bg-white/20'}`}
                 >
                   <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${keyOnServer ? 'translate-x-5' : ''}`} />
                 </button>
                 <div>
-                  <span className="text-white text-sm font-medium">Store key on server</span>
+                  <span className="text-white text-xs sm:text-sm font-medium">Store key on server</span>
                   <p className="text-white/30 text-xs">Disabling this means only you can decrypt your data (zero-knowledge).</p>
                 </div>
               </label>
@@ -524,7 +529,7 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
                   onChange={e => setEncKey(e.target.value)}
                   placeholder="Enter new passphrase to update (leave blank to keep current)"
                   autoComplete="new-password"
-                  className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
                 />
                 <p className="text-white/30 text-xs mt-1">⚠️ If you lose your passphrase, encrypted data cannot be recovered.</p>
               </div>
@@ -533,11 +538,11 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
         </div>
 
         {/* Save button */}
-        <div className="mt-6 flex items-center gap-4">
+        <div className="mt-6 flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+            className="w-full sm:w-auto px-5 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
           >
             {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : '💾'}
             Save Settings
@@ -545,14 +550,14 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
           <button
             onClick={fetchConfig}
             disabled={loading}
-            className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white/70 hover:text-white font-medium rounded-lg transition-all text-sm"
+            className="w-full sm:w-auto px-4 py-2 sm:py-2.5 bg-white/10 hover:bg-white/20 text-white/70 hover:text-white font-medium rounded-lg transition-all text-sm"
           >
             ↻ Reset
           </button>
         </div>
 
         {saveMsg && (
-          <div className={`mt-4 px-4 py-2.5 rounded-lg text-sm border ${saveMsg.type === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
+          <div className={`mt-4 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm border ${saveMsg.type === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
             {saveMsg.text}
           </div>
         )}
@@ -567,8 +572,6 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
     </div>
   );
 }
-
-//Main page 
 
 export default function GuildDashboardPage() {
   const router = useRouter();
@@ -585,6 +588,7 @@ export default function GuildDashboardPage() {
 
   const [tabData, setTabData] = useState<Record<string, Record<string, unknown>[] | null>>({});
   const [tabLoading, setTabLoading] = useState<Record<string, boolean>>({});
+  const [logsPreview, setLogsPreview] = useState<Record<string, unknown>[] | null>(null);
 
   const fetched = useRef(false);
 
@@ -626,6 +630,18 @@ export default function GuildDashboardPage() {
         else {
           const statsErr = await extractErrorMessage(statsRes);
           showToast('warning', 'Stats Failed', statsErr);
+        }
+
+        // Fetch logs preview for the overview section
+        try {
+          const logsRes = await fetch(`/api/dashboard/data?guildId=${guildId}&endpoint=logs&limit=5`);
+          if (logsRes.ok) {
+            const logsJson = await logsRes.json();
+            const rows = logsJson?.data?.data ?? logsJson?.data ?? [];
+            setLogsPreview(Array.isArray(rows) ? rows.slice(0, 5) : []);
+          }
+        } catch {
+          // Silently ignore logs preview errors
         }
 
         setLoadState('ready');
@@ -709,7 +725,7 @@ export default function GuildDashboardPage() {
   const tabs: { id: TabId; label: string; icon: string; soon?: boolean }[] = [
     { id: 'overview',      label: 'Overview',      icon: '📊' },
     { id: 'customers',     label: 'Customers',     icon: '👥' },
-    { id: 'coupons',       label: 'Coupons',       icon: '🎟️' },
+    { id: 'logs',          label: 'Command Logs',  icon: '📋' },
     { id: 'members',       label: 'Members',       icon: '🤝' },
     { id: 'verse_scripts', label: 'Verse Scripts', icon: '📦' },
     { id: 'trackers',      label: 'Trackers',      icon: '🏝️' },
@@ -728,32 +744,73 @@ export default function GuildDashboardPage() {
         <div className="space-y-8">
           <div>
             <h2 className="text-sm font-semibold text-white/50 uppercase tracking-widest mb-4">Server Stats</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <StatCard icon="👥" label="Customers"    value={stats?.customers ?? 0}     color="border-blue-500/30" />
-              <StatCard icon="🎟️" label="Coupons"      value={stats?.coupons ?? 0}       color="border-cyan-500/30" />
               <StatCard icon="📦" label="Verse Scripts" value={stats?.verse_scripts ?? 0} color="border-purple-500/30" />
               <StatCard icon="🤝" label="Members"      value={stats?.members ?? 0}       color="border-green-500/30" />
               <StatCard icon="🏝️" label="Trackers"     value={stats?.trackers ?? 0}      color="border-orange-500/30" />
+              
+              {/* Console Preview for Command Logs */}
+              <div className="lg:col-span-2 p-4 rounded-xl border border-cyan-500/30 bg-black/40">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-white/60 text-xs font-semibold uppercase tracking-wide">Command Logs Console</p>
+                  <span className="text-white/40 text-xs">{logsPreview?.length ?? 0} entries</span>
+                </div>
+                <div className="bg-black border border-white/10 rounded-lg overflow-hidden font-mono text-xs">
+                  <div className="bg-white/5 border-b border-white/10 px-3 py-2">
+                    <span className="text-white/50">server@discord ~ $ command-logs</span>
+                  </div>
+                  <div className="max-h-[180px] overflow-y-auto p-3 space-y-1">
+                    {logsPreview && logsPreview.length > 0 ? (
+                      logsPreview.map((row, i) => {
+                        const timestamp = row.created_at ? new Date(String(row.created_at)) : new Date();
+                        const timeStr = timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                        const isSuccess = String(row.status ?? 'success') === 'success';
+                        const statusIcon = isSuccess ? '✓' : '✗';
+                        const statusColor = isSuccess ? 'text-green-400' : 'text-red-400';
+                        
+                        return (
+                          <div key={i} className="text-white/80 hover:bg-white/5 px-1 transition-colors">
+                            <span className={`${statusColor} font-bold`}>[{statusIcon}]</span>
+                            {' '}
+                            <span className="text-white/50">{timeStr}</span>
+                            {' '}
+                            <span className="text-cyan-400">{String(row.command_name ?? 'unknown')}</span>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-white/40">server@discord ~ $ # No logs available</div>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setActiveTab('logs')}
+                  className="mt-2 w-full px-3 py-2 rounded-lg text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  View Full Log Console →
+                </button>
+              </div>
             </div>
           </div>
 
           <div>
             <h2 className="text-sm font-semibold text-white/50 uppercase tracking-widest mb-4">Quick Actions</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
               {[
-                { label: 'View Customers',  tab: 'customers'     as TabId, icon: '👥', desc: `${fmt(stats?.customers)} total records` },
-                { label: 'View Coupons',    tab: 'coupons'       as TabId, icon: '🎟️', desc: `${fmt(stats?.coupons)} codes` },
-                { label: 'Verse Scripts',   tab: 'verse_scripts' as TabId, icon: '📦', desc: `${fmt(stats?.verse_scripts)} uploads` },
-                { label: 'Server Config',   tab: 'config'        as TabId, icon: '⚙️', desc: 'Edit settings & redeem codes' },
+                { label: 'Customers',  tab: 'customers'     as TabId, icon: '👥', desc: `${fmt(stats?.customers)}` },
+                { label: 'Logs',    tab: 'logs'          as TabId, icon: '📋', desc: `View console` },
+                { label: 'Scripts',   tab: 'verse_scripts' as TabId, icon: '📦', desc: `${fmt(stats?.verse_scripts)}` },
+                { label: 'Config',   tab: 'config'        as TabId, icon: '⚙️', desc: 'Settings' },
               ].map(a => (
                 <button
                   key={a.tab}
                   onClick={() => setActiveTab(a.tab)}
-                  className="p-4 rounded-xl border border-white/10 bg-black/40 hover:border-blue-500/50 transition-all text-left group"
+                  className="p-2 sm:p-4 rounded-xl border border-white/10 bg-black/40 hover:border-blue-500/50 transition-all text-left group"
                 >
-                  <div className="text-xl mb-2">{a.icon}</div>
-                  <p className="text-white font-semibold text-sm group-hover:text-blue-400 transition-colors">{a.label}</p>
-                  <p className="text-white/40 text-xs mt-0.5">{a.desc}</p>
+                  <div className="text-lg sm:text-xl mb-1 sm:mb-2">{a.icon}</div>
+                  <p className="text-white font-semibold text-xs sm:text-sm group-hover:text-blue-400 transition-colors">{a.label}</p>
+                  <p className="text-white/40 text-xs hidden sm:block mt-0.5">{a.desc}</p>
                 </button>
               ))}
             </div>
@@ -764,13 +821,13 @@ export default function GuildDashboardPage() {
             <div className="grid sm:grid-cols-2 gap-2">
               {[
                 { cmd: '/customer add',           desc: 'Register a new customer' },
-                { cmd: '/coupon add',             desc: 'Create a coupon code' },
                 { cmd: '/verse',                  desc: 'Upload a Verse script' },
                 { cmd: '/start begin',            desc: 'Start a service session' },
                 { cmd: '/seller create',          desc: 'Create your seller profile' },
                 { cmd: '/island',                 desc: 'Look up island stats by code' },
                 { cmd: '/stats',                  desc: 'View server dashboard metrics' },
                 { cmd: '/export data',            desc: 'Export all server data' },
+                { cmd: '/redeem <code>',          desc: 'Redeem a feature code' },
               ].map(c => (
                 <div key={c.cmd} className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10">
                   <code className="text-cyan-400 font-mono text-xs bg-black/40 px-2 py-1 rounded flex-shrink-0">{c.cmd}</code>
@@ -794,12 +851,12 @@ export default function GuildDashboardPage() {
     if (activeTab === 'customers') {
       return (
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white font-bold">
-              Customers <span className="text-white/30 font-normal text-sm ml-1">{rows ? `(${rows.length})` : ''}</span>
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <h2 className="text-white font-bold text-sm sm:text-base">
+              Customers <span className="text-white/30 font-normal text-xs sm:text-sm ml-1">{rows ? `(${rows.length})` : ''}</span>
             </h2>
             <button onClick={() => { setTabData(p => { const n = {...p}; delete n.customers; return n; }); fetchTabData('customers'); }}
-              className="text-white/40 hover:text-white text-xs transition-colors">↻ Refresh</button>
+              className="text-white/40 hover:text-white text-xs px-2 py-1 rounded hover:bg-white/10 transition-colors">↻ Refresh</button>
           </div>
           {isLoading || !rows ? (
             <div className="flex items-center justify-center py-16">
@@ -816,25 +873,55 @@ export default function GuildDashboardPage() {
       );
     }
 
-    if (activeTab === 'coupons') {
+    if (activeTab === 'logs') {
       return (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white font-bold">
-              Coupons <span className="text-white/30 font-normal text-sm ml-1">{rows ? `(${rows.length})` : ''}</span>
-            </h2>
-            <button onClick={() => { setTabData(p => { const n = {...p}; delete n.coupons; return n; }); fetchTabData('coupons'); }}
+            <h2 className="text-white font-bold">Command Logs Console</h2>
+            <button onClick={() => { setTabData(p => { const n = {...p}; delete n.logs; return n; }); fetchTabData('logs'); }}
               className="text-white/40 hover:text-white text-xs transition-colors">↻ Refresh</button>
+          </div>
+          <div className="text-white/50 text-xs mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
+            📖 Real-time command execution logs from your Discord server.
           </div>
           {isLoading || !rows ? (
             <div className="flex items-center justify-center py-16">
               <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
             </div>
-          ) : rows.length === 0 ? (
-            <div className="text-center py-16 text-white/30">No coupons yet</div>
           ) : (
-            <div className="space-y-2">
-              {rows.map((row, i) => <CouponDetail key={i} row={row} />)}
+            <div className="bg-black border border-white/10 rounded-lg overflow-hidden font-mono text-sm">
+              <div className="bg-white/5 border-b border-white/10 px-4 py-2 flex items-center justify-between">
+                <span className="text-white/50">server@discord ~ $ command-logs</span>
+                <span className="text-white/30 text-xs">{rows?.length || 0} entries</span>
+              </div>
+              <div className="max-h-[600px] overflow-y-auto">
+                {rows && rows.length > 0 ? (
+                  <div className="p-4 space-y-0">
+                    {rows.map((row, i) => {
+                      const timestamp = row.created_at ? new Date(String(row.created_at)) : new Date();
+                      const timeStr = timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                      const isSuccess = String(row.status ?? 'success') === 'success';
+                      const statusIcon = isSuccess ? '✓' : '✗';
+                      const statusColor = isSuccess ? 'text-green-400' : 'text-red-400';
+                      
+                      return (
+                        <div key={i} className="text-white/80 hover:bg-white/5 px-2 py-1 transition-colors">
+                          <span className={`${statusColor} font-bold`}>[{statusIcon}]</span>
+                          {' '}
+                          <span className="text-white/50">{timeStr}</span>
+                          {' '}
+                          <span className="text-cyan-400">{String(row.command_name ?? 'unknown')}</span>
+                          {' '}
+                          <span className="text-white/40">@{String(row.user_id ?? '?')}</span>
+                          {row.details && <span className="text-white/30"> - {String(row.details).substring(0, 80)}</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="p-4 text-white/40">server@discord ~ $ # No logs available</div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -866,7 +953,7 @@ export default function GuildDashboardPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {icon ? (
-                <img src={icon} alt={guild!.name} className="w-12 h-12 rounded-xl" />
+                <Image src={icon} alt={guild!.name} width={48} height={48} className="w-12 h-12 rounded-xl" />
               ) : (
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center">
                   <span className="text-white font-bold text-lg">{guild?.name?.charAt(0)}</span>
@@ -879,7 +966,7 @@ export default function GuildDashboardPage() {
             </div>
             {user && (
               <div className="hidden sm:flex items-center gap-3">
-                <img src={avatarUrl(user)} alt={user.username} className="w-8 h-8 rounded-full border-2 border-blue-500/50" />
+                <Image src={avatarUrl(user)} alt={user.username} width={32} height={32} className="w-8 h-8 rounded-full border-2 border-blue-500/50" />
                 <div>
                   <p className="text-white text-sm font-medium">{user.username}</p>
                   <p className="text-white/40 text-xs">{user.email}</p>
@@ -893,15 +980,15 @@ export default function GuildDashboardPage() {
         </div>
       </section>
 
-      {/* Tabs */}
+      {/* Tabs - Mobile Friendly Scroll */}
       <div className="border-b border-white/10 sticky top-16 z-40 bg-black/90 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex gap-1 overflow-x-auto py-1" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex gap-1 overflow-x-auto py-1 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
                   activeTab === tab.id
                     ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                     : 'text-white/50 hover:text-white hover:bg-white/5'
@@ -923,6 +1010,26 @@ export default function GuildDashboardPage() {
       {/* Content */}
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h1 className="text-lg sm:text-2xl font-bold text-white">
+              {tabs.find(t => t.id === activeTab)?.label || 'Dashboard'}
+            </h1>
+            {(['customers', 'logs', 'members', 'verse_scripts', 'trackers'].includes(activeTab)) && (
+              <button
+                onClick={() => {
+                  setTabData(p => {
+                    const n = {...p};
+                    delete n[activeTab];
+                    return n;
+                  });
+                  fetchTabData(activeTab as TabId);
+                }}
+                className="px-3 py-1.5 text-xs sm:text-sm bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded-lg transition-colors"
+              >
+                🔄 Refresh Data
+              </button>
+            )}
+          </div>
           {renderTabContent()}
         </div>
       </section>

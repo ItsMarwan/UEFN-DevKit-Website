@@ -28,15 +28,15 @@ export default function PremiumPage() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 bg-black">
+      <section className="py-12 md:py-20 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8 lg:gap-6">
+          <div className="grid md:grid-cols-3 gap-4 md:gap-8 lg:gap-6">
             {/* Free Tier */}
-            <div className="rounded-2xl border border-white/10 bg-black/30 p-8 hover:border-blue-500/30 transition-all animate-slideInLeft">
-              <h2 className="text-3xl font-bold mb-2 text-white">Free</h2>
-              <p className="text-white/60 text-sm mb-6">Perfect for small communities</p>
+            <div className="rounded-2xl border border-white/10 bg-black/30 p-6 md:p-8 hover:border-blue-500/30 transition-all animate-slideInLeft">
+              <h2 className="text-2xl md:text-3xl font-bold mb-2 text-white">Free</h2>
+              <p className="text-white/60 text-xs md:text-sm mb-6">Perfect for small communities</p>
               <div className="mb-8">
-                <span className="text-5xl font-bold text-white">€0</span>
+                <span className="text-4xl md:text-5xl font-bold text-white">€0</span>
                 <span className="text-white/60 ml-2">Forever</span>
               </div>
 
@@ -50,13 +50,6 @@ export default function PremiumPage() {
                   <div>
                     <p className="font-semibold text-white">Customer Management</p>
                     <p className="text-xs text-white/50">Up to 1000 customers</p>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-400 mr-3 mt-1">✓</span>
-                  <div>
-                    <p className="font-semibold text-white">Coupon System</p>
-                    <p className="text-xs text-white/50">Basic code validation</p>
                   </div>
                 </li>
                 <li className="flex items-start">
@@ -77,17 +70,17 @@ export default function PremiumPage() {
             </div>
 
             {/* Premium Tier (Highlighted) */}
-            <div className="rounded-2xl border-2 border-blue-500 bg-black/50 p-8 scale-105 shadow-2xl shadow-blue-500/20 relative animate-slideInLeft">
+            <div className="rounded-2xl border-2 border-blue-500 bg-black/50 p-6 md:p-8 scale-100 md:scale-105 shadow-2xl shadow-blue-500/20 relative animate-slideInLeft">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                 <div className="px-4 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold text-sm rounded-full">
                   Most Popular
                 </div>
               </div>
 
-              <h2 className="text-3xl font-bold mb-2 text-blue-400">Premium</h2>
-              <p className="text-white/60 text-sm mb-6">For growing communities</p>
+              <h2 className="text-2xl md:text-3xl font-bold mb-2 text-blue-400">Premium</h2>
+              <p className="text-white/60 text-xs md:text-sm mb-6">For growing communities</p>
               <div className="mb-8">
-                <span className="text-5xl font-bold text-white">€9.99</span>
+                <span className="text-4xl md:text-5xl font-bold text-white">€9.99</span>
                 <span className="text-white/60 ml-2">/month</span>
               </div>
 
@@ -100,12 +93,6 @@ export default function PremiumPage() {
                   <span className="text-cyan-400 mr-3 mt-1">✓</span>
                   <div>
                     <p className="font-semibold text-white">5000 customers</p>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-cyan-400 mr-3 mt-1">✓</span>
-                  <div>
-                    <p className="font-semibold text-white">300 Max stored coupons</p>
                   </div>
                 </li>
                 <li className="flex items-start">
@@ -199,7 +186,6 @@ export default function PremiumPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               { title: '👥 5000 Customers', desc: 'Manage as many customers as you need without limits' },
-              { title: '🎟️ 300 Coupons', desc: 'Create and store up to 300 unique coupon codes' },
               { title: '⚡ Priority Support', desc: 'Get help instantly with our priority support team' },
               { title: '📦 512KB Verse File upload', desc: 'Upload larger Verse files for your maps and assets' },
               { title: '📈 Higher Map Pulling Rate', desc: 'Faster map pulling for Fortnite tracking' },

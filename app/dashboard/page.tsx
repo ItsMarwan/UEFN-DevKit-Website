@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useToast } from '@/components/ToastProvider';
 import { extractErrorMessage } from '@/lib/api-error';
 
@@ -124,7 +125,7 @@ export default function DashboardPage() {
       >
         <div className="flex items-center gap-4">
           {icon ? (
-            <img src={icon} alt={guild.name} className="w-12 h-12 rounded-xl flex-shrink-0" />
+            <Image src={icon} alt={guild.name} width={48} height={48} className="w-12 h-12 rounded-xl flex-shrink-0" />
           ) : (
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center flex-shrink-0">
               <span className="text-white font-bold text-lg">{guild.name.charAt(0)}</span>
@@ -173,9 +174,11 @@ export default function DashboardPage() {
           </div>
           {user && (
             <div className="flex items-center gap-3">
-              <img
+              <Image
                 src={getAvatarUrl(user)}
                 alt={user.username}
+                width={40}
+                height={40}
                 className="w-10 h-10 rounded-full border-2 border-blue-500/50"
               />
               <div className="hidden sm:block">

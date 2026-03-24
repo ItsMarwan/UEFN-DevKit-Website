@@ -42,7 +42,7 @@ async function flaskFetch(endpoint: string, guildId: string, parameters: Record<
   }
 }
 
-const ALLOWED_ENDPOINTS = ['customers', 'coupons', 'verse_scripts', 'members', 'trackers', 'guild_settings'];
+const ALLOWED_ENDPOINTS = ['customers', 'verse_scripts', 'members', 'trackers', 'guild_settings', 'logs'];
 const DISCORD_API = 'https://discord.com/api/v10';
 
 export async function GET(req: NextRequest) {
@@ -83,10 +83,37 @@ export async function GET(req: NextRequest) {
     // Build parameters per endpoint
     const params: Record<string, unknown> = { limit, offset };
     if (endpoint === 'customers') params.filter = searchParams.get('filter') ?? 'all';
-    if (endpoint === 'coupons') params.active_only = searchParams.get('active_only') === 'true';
     if (endpoint === 'verse_scripts') params.search = searchParams.get('search') ?? '';
     if (endpoint === 'trackers') params.type = searchParams.get('type') ?? '';
     if (endpoint === 'members') params.role = searchParams.get('role') ?? '';
+
+    // Special handling for logs endpoint — fetch from command-logs API
+    if (endpoint === 'logs') {
+      const protocol = req.headers.get('x-forwarded-proto') ?? 'http';
+      const host = req.headers.get('host') ?? 'localhost:3000';
+      const baseUrl = `${protocol}://${host}`;
+      
+      try {
+        const logsRes = await fetch(`${baseUrl}/api/dashboard/command-logs?guild_id=${guildId}&limit=${limit}&offset=${offset}`, {
+          headers: {
+            'X-Dashboard-Bypass-Token': ENTERPRISE_API_TOKEN,
+          },
+          cache: 'no-store',
+        });
+        if (!logsRes.ok) {
+          console.warn(`[data] logs endpoint ${logsRes.status}`);
+          return NextResponse.json({ success: false, data: [] });
+        }
+        const logsJson = await logsRes.json();
+        return NextResponse.json({
+          success: true,
+          data: logsJson?.data ?? [],
+        });
+      } catch (e) {
+        console.warn(`[data] logs endpoint error:`, e);
+        return NextResponse.json({ success: false, data: [] });
+      }
+    }
 
     const result = await flaskFetch(endpoint, guildId, params);
     return NextResponse.json(result);

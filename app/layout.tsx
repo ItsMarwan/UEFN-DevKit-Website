@@ -15,12 +15,12 @@ export const metadata: Metadata = {
     template: '%s | UEFN DevKit',
   },
   description:
-    'UEFN DevKit: Discord bot for Fortnite island builders. Manage customers, coupons, analytics & more. Free & premium tiers.',
+    'UEFN DevKit: Discord bot for Fortnite island builders. Manage customers, analytics & more. Free & premium tiers.',
   keywords: [
     'UEFN DevKit', 'UEFN Discord bot', 'Fortnite island bot', 'UEFN bot',
     'Discord bot for UEFN', 'Fortnite creative Discord bot', 'island analytics bot',
     'UEFN customer management', 'UEFN session system', 'Verse script bot',
-    'Fortnite island builder tools', 'UEFN seller profiles', 'Discord coupon system',
+    'Fortnite island builder tools', 'UEFN seller profiles', 'Discord bot',
     'UEFN moderation bot', 'Fortnite UEFN', 'island tracker Discord', 'UEFN premium bot',
   ],
   authors: [{ name: 'UEFN DevKit', url: BASE_URL }],
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
         <meta charSet="utf-8" />
         <meta name="theme-color" content="#2399df" />
@@ -124,7 +124,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   operatingSystem: 'Discord',
                   url: BASE_URL,
                   image: `${BASE_URL}/images/banner.png`,
-                  description: 'All-in-one Discord bot for UEFN Fortnite island builders. Customer management, session channels, island analytics, coupon system, Verse script uploads, and seller profiles.',
+                  description: 'All-in-one Discord bot for UEFN Fortnite island builders. Customer management, session channels, island analytics, Verse script uploads, and seller profiles.',
                   author: { '@type': 'Organization', name: 'UEFN DevKit' },
                   offers: [
                     { '@type': 'Offer', name: 'Free', price: '0', priceCurrency: 'EUR', availability: 'https://schema.org/InStock' },

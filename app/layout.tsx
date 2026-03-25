@@ -4,6 +4,7 @@ import { Footer } from '@/components/Footer';
 import { LegalProvider } from '@/components/LegalProvider';
 import { ToastProvider } from '@/components/ToastProvider';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
+import { LayoutWrapper } from '@/components/LayoutWrapper';
 import './globals.css';
 
 const BASE_URL = 'https://uefndevkit.rweb.site';
@@ -146,8 +147,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <GoogleAnalytics />
         <ToastProvider>
           <LegalProvider>
-            <Navigation />
-            <main>{children}</main>
+            <LayoutWrapper>
+              <Navigation />
+              <main>{children}</main>
+            </LayoutWrapper>
             <Footer />
           </LegalProvider>
         </ToastProvider>

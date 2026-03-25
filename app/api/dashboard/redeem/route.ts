@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
   if (!FLASK_API_URL || !ENTERPRISE_API_TOKEN)
     return NextResponse.json({ error: 'API not configured' }, { status: 503 });
 
-  const payload = { endpoint: 'redeem_code', method: 'POST', parameters: { code: sanitizedCode } };
+  const payload = { endpoint: 'redeem_code', method: 'POST', parameters: { code: sanitizedCode, guild_id: guildId } };
   const bodyStr = JSON.stringify(payload);
 
   try {
@@ -81,8 +81,13 @@ export async function POST(req: NextRequest) {
       body: bodyStr,
       cache: 'no-store',
     });
-    return NextResponse.json(await res.json(), { status: res.status });
+    const responseBody = await res.json();
+    if (!res.ok) {
+      console.error(`[REDEEM] Flask returned ${res.status}:`, responseBody);
+    }
+    return NextResponse.json(responseBody, { status: res.status });
   } catch (e) {
+    console.error('[REDEEM] Error:', e);
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }

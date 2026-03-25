@@ -10,7 +10,7 @@ export default function CommandsPage() {
   const displayCategories = selectedCategory ? [selectedCategory] : categories;
 
   return (
-    <div className="bg-black text-white min-h-screen pt-16">
+    <div className="bg-black text-white min-h-screen">
       {/* Header */}
       <section className="py-12 md:py-16 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

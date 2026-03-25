@@ -25,7 +25,7 @@ function LegalParamHandler() {
 
 export default function Home() {
   return (
-    <div className="bg-black text-white min-h-screen pt-16">
+    <div className="bg-black text-white min-h-screen">
       {/* Reads ?legal=tos or ?legal=privacy and opens the modal */}
       <Suspense fallback={null}>
         <LegalParamHandler />

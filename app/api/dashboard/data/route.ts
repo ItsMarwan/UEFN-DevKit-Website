@@ -10,10 +10,29 @@ const FLASK_API_URL = process.env.FLASK_API_URL;
 const ENTERPRISE_API_TOKEN = process.env.ENTERPRISE_API_TOKEN;
 const ENTERPRISE_ORIGIN = process.env.ENTERPRISE_API_ORIGIN ?? process.env.NEXT_PUBLIC_APP_URL ?? '';
 
+// Add request timeout (in ms)
+const REQUEST_TIMEOUT = 15000;
+const FLASK_TIMEOUT = 10000;
+
 function generateAuthHeader(secret: string, bodyStr: string): string {
   const timestamp = Math.floor(Date.now() / 1000).toString();
   const signature = crypto.createHmac('sha256', secret).update(`${timestamp}.${bodyStr}`).digest('hex');
   return `Bearer ${timestamp}.${signature}`;
+}
+
+// Create fetch with timeout
+async function fetchWithTimeout(url: string, init?: Omit<RequestInit, 'signal'>, timeoutMs: number = REQUEST_TIMEOUT) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  
+  try {
+    return await fetch(url, {
+      ...init,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 async function flaskFetch(endpoint: string, guildId: string, parameters: Record<string, unknown> = {}) {
@@ -21,7 +40,7 @@ async function flaskFetch(endpoint: string, guildId: string, parameters: Record<
   const body = { endpoint, method: 'GET', parameters };
   const bodyStr = JSON.stringify(body);
   try {
-    const res = await fetch(`${FLASK_API_URL}/api/v1/fetch`, {
+    const res = await fetchWithTimeout(`${FLASK_API_URL}/api/v1/fetch`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -32,7 +51,7 @@ async function flaskFetch(endpoint: string, guildId: string, parameters: Record<
       },
       body: bodyStr,
       cache: 'no-store',
-    });
+    }, FLASK_TIMEOUT);
     if (!res.ok) { console.warn(`[data] ${endpoint} ${res.status}`); return { success: false, data: null }; }
     const json = await res.json();
     return { success: true, data: json?.data ?? null };
@@ -66,10 +85,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid endpoint' }, { status: 400 });
 
     // Verify guild permission via Discord — can't be spoofed, uses their real token
-    const guildsRes = await fetch(`${DISCORD_API}/users/@me/guilds?limit=200`, {
+    const guildsRes = await fetchWithTimeout(`${DISCORD_API}/users/@me/guilds?limit=200`, {
       headers: { Authorization: `Bearer ${session.access_token}` },
       cache: 'no-store',
-    });
+    }, 8000);
     if (!guildsRes.ok) return NextResponse.json({ error: 'Could not verify guild access' }, { status: 401 });
 
     const userGuilds: Array<{ id: string; owner: boolean; permissions: number }> = await guildsRes.json();
@@ -94,12 +113,12 @@ export async function GET(req: NextRequest) {
       const baseUrl = `${protocol}://${host}`;
       
       try {
-        const logsRes = await fetch(`${baseUrl}/api/dashboard/command-logs?guild_id=${guildId}&limit=${limit}&offset=${offset}`, {
+        const logsRes = await fetchWithTimeout(`${baseUrl}/api/dashboard/command-logs?guild_id=${guildId}&limit=${limit}&offset=${offset}`, {
           headers: {
             'X-Dashboard-Bypass-Token': ENTERPRISE_API_TOKEN,
           },
           cache: 'no-store',
-        });
+        }, FLASK_TIMEOUT);
         if (!logsRes.ok) {
           console.warn(`[data] logs endpoint ${logsRes.status}`);
           return NextResponse.json({ success: false, data: [] });

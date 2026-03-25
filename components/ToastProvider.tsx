@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useRef } from 'react';
 import { ToastContainer, type ToastMessage, type ToastType } from './Toast';
 
 interface ToastContextType {
@@ -9,12 +9,17 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
+/**
+ * ToastProvider - Context provider for toast notifications
+ * Manages toast state and provides showToast function to components
+ */
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const toastIdRef = useRef(0);
 
   const showToast = useCallback(
     (type: ToastType, title: string, message?: string, duration: number = 5000) => {
-      const id = Date.now().toString();
+      const id = `toast-${++toastIdRef.current}`;
       const newToast: ToastMessage = { id, type, title, message, duration };
       setToasts((prev) => [...prev, newToast]);
     },
@@ -33,6 +38,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Hook to use toast notifications
+ * Must be called within ToastProvider
+ */
 export function useToast() {
   const context = useContext(ToastContext);
   if (!context) {

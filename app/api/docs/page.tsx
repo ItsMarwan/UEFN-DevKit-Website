@@ -65,9 +65,9 @@ function DocsContent() {
     },
     {
       id: 'coupons',
-      title: 'Coupons',
+      title: 'Coupons [DEPRECATED]',
       method: 'GET',
-      endpoint: '/api/v1/coupons',
+      endpoint: '/api/v1/coupons [DEPRECATED]',
       description: 'Retrieve coupon codes with optional active filter',
       parameters: [
         { name: 'limit', type: 'number', default: '100', description: 'Results per page (max 1000)' },
@@ -123,7 +123,7 @@ function DocsContent() {
       title: 'Members',
       method: 'GET',
       endpoint: '/api/v1/members',
-      description: 'congregate members filtered by role',
+      description: 'Retrieve server members filtered by role or other criteria',
       parameters: [
         { name: 'limit', type: 'number', default: '100', description: 'Results per page (max 1000)' },
         { name: 'offset', type: 'number', default: '0', description: 'Pagination offset' },
@@ -225,7 +225,7 @@ Content-Type: application/json
   };
 
   return (
-    <div className="bg-black text-white min-h-screen pt-16">
+    <div className="bg-black text-white min-h-screen">
       {/* Header */}
       <section className="py-12 md:py-16 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

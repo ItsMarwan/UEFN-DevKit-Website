@@ -68,18 +68,38 @@ function getSessionToken(req: NextRequest): string | null {
 }
 
 async function verifyGuildAccess(accessToken: string, guildId: string): Promise<boolean> {
-  try {
-    const res = await fetch(`${DISCORD_API}/users/@me/guilds?limit=200`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-      cache: 'no-store',
-    });
-    if (!res.ok) return false;
-    const guilds: Array<{ id: string; owner: boolean; permissions: number }> = await res.json();
-    const guild = guilds.find((g) => g.id === guildId);
-    if (!guild) return false;
-    const perms = typeof guild.permissions === 'string' ? parseInt(guild.permissions) : guild.permissions;
-    return guild.owner || (perms & 0x8) !== 0 || (perms & 0x20) !== 0;
-  } catch { return false; }
+  // Retry logic for Discord API rate limiting/timeouts
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetch(`${DISCORD_API}/users/@me/guilds?limit=200`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        cache: 'no-store',
+        signal: AbortSignal.timeout(5000),  // 5 second timeout
+      });
+      if (!res.ok) {
+        if (res.status === 429 && attempt === 0) {
+          const retryAfter = res.headers.get('Retry-After');
+          const delay = retryAfter ? parseInt(retryAfter) * 1000 : 500;
+          await new Promise(r => setTimeout(r, Math.min(delay, 1000)));
+          continue;  // Retry on rate limit
+        }
+        return false;
+      }
+      const guilds: Array<{ id: string; owner: boolean; permissions: number }> = await res.json();
+      const guild = guilds.find((g) => g.id === guildId);
+      if (!guild) return false;
+      const perms = typeof guild.permissions === 'string' ? parseInt(guild.permissions) : guild.permissions;
+      return guild.owner || (perms & 0x8) !== 0 || (perms & 0x20) !== 0;
+    } catch (e) {
+      if (attempt === 1) {
+        console.error('[GUILD_ACCESS] Failed after retry:', e);
+        return false;
+      }
+      // Retry on timeout/error
+      await new Promise(r => setTimeout(r, 300));
+    }
+  }
+  return false;
 }
 
 function makeHeaders(guildId: string, bodyStr: string): Record<string, string> {

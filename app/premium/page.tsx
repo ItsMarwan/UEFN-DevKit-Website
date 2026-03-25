@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 export default function PremiumPage() {
   return (
-    <div className="bg-black text-white min-h-screen pt-16">
+    <div className="bg-black text-white min-h-screen">
       {/* Hero Section */}
       <section className="relative py-20 md:py-32 overflow-hidden">
         <div className="absolute inset-0 opacity-20">

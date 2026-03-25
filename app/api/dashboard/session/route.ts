@@ -5,6 +5,22 @@ import { fetchBotGuildIds } from '@/lib/discord-bot-guilds';
 export const dynamic = 'force-dynamic';
 
 const DISCORD_API = 'https://discord.com/api/v10';
+const REQUEST_TIMEOUT = 15000;
+
+// Create fetch with timeout
+async function fetchWithTimeout(url: string, init?: Omit<RequestInit, 'signal'>, timeoutMs: number = REQUEST_TIMEOUT) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  
+  try {
+    return await fetch(url, {
+      ...init,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
 
 interface Guild {
   id: string;
@@ -37,16 +53,16 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Session expired' }, { status: 401 });
     }
 
-    // Fetch user info and their guild list in parallel
+    // Fetch user info and their guild list in parallel with timeouts
     const [userRes, guildsRes, botGuildIds] = await Promise.all([
-      fetch(`${DISCORD_API}/users/@me`, {
+      fetchWithTimeout(`${DISCORD_API}/users/@me`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
         cache: 'no-store',
-      }),
-      fetch(`${DISCORD_API}/users/@me/guilds?limit=200`, {
+      }, 8000),
+      fetchWithTimeout(`${DISCORD_API}/users/@me/guilds?limit=200`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
         cache: 'no-store',
-      }),
+      }, 8000),
       fetchBotGuildIds(),
     ]);
 
@@ -78,8 +94,9 @@ export async function GET(req: NextRequest) {
           (perms & MANAGE_GUILD) !== 0;
 
         return { ...g, hasPerms };
-      })
-      .filter((g) => g.hasPerms); // Only include guilds where user has admin permissions
+      });
+      // Include ALL guilds the bot is in, regardless of permissions
+      // Frontend will show them in separate sections
 
     return NextResponse.json({ user, guilds: filteredGuilds });
   } catch (err) {

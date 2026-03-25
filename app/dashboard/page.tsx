@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/components/ToastProvider';
+import { useBotHealth } from '@/hooks/useBotHealth';
+import { OfflineBanner } from '@/components/OfflineBanner';
 import { extractErrorMessage } from '@/lib/api-error';
 
 interface Guild {
@@ -29,6 +31,7 @@ type LoadState = 'loading' | 'ready' | 'error';
 export default function DashboardPage() {
   const router = useRouter();
   const { showToast } = useToast();
+  const botHealth = useBotHealth();
   const [user, setUser] = useState<User | null>(null);
   const [guilds, setGuilds] = useState<Guild[]>([]);
   const [loadState, setLoadState] = useState<LoadState>('loading');
@@ -158,7 +161,8 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="bg-black text-white min-h-screen pt-16">
+    <div className="bg-black text-white min-h-screen">
+      <OfflineBanner health={botHealth} />
       {/* Header */}
       <section className="py-10 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -234,11 +238,17 @@ export default function DashboardPage() {
                 <div>
                   <div className="flex items-center gap-4 mb-6">
                     <div className="flex-1 h-px bg-white/10" />
-                    <span className="text-white/30 text-xs font-medium uppercase tracking-widest">
-                      No manage permission
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-yellow-500/70">🔒</span>
+                      <span className="text-white/30 text-xs font-medium uppercase tracking-widest">
+                        No manage access
+                      </span>
+                    </div>
                     <div className="flex-1 h-px bg-white/10" />
                   </div>
+                  <p className="text-white/40 text-xs mb-4 ml-1">
+                    You&apos;re in these servers with UEFN DevKit, but you need to be a server owner or manager to access the dashboard.
+                  </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {viewOnlyGuilds.map((g) => (
                       <GuildCard key={g.id} guild={g} disabled />

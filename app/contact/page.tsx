@@ -124,7 +124,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="bg-black text-white min-h-screen pt-16">
+    <div className="bg-black text-white min-h-screen">
       {/* Header */}
       <section className="py-12 md:py-20 border-b border-white/10 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">

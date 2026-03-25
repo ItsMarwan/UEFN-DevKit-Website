@@ -16,12 +16,16 @@ interface ToastProps extends ToastMessage {
   onClose: (id: string) => void;
 }
 
+/**
+ * Toast - Individual notification component
+ * Auto-dismisses based on duration prop
+ * Handles entry/exit animations
+ */
 export function Toast({ id, type, title, message, duration = 5000, onClose }: ToastProps) {
   const [isExiting, setIsExiting] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // Trigger mount animation
     setIsMounted(true);
   }, []);
 
@@ -133,6 +137,10 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
   );
 }
 
+/**
+ * ToastContainer - Renders all active toast notifications
+ * Positioned at bottom-right with proper layering
+ */
 export function ToastContainer({ toasts, onClose }: { toasts: ToastMessage[]; onClose: (id: string) => void }) {
   return (
     <div className="fixed bottom-6 right-6 z-50 space-y-3 pointer-events-none">

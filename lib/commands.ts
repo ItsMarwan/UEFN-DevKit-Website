@@ -276,17 +276,17 @@ export const commands: Record<string, Command> = {
     premium: false,
     details: 'Set up the session channel system for your server. Configure where service sessions are created.',
     examples: ['/session config'],
-    relatedCommands: ['session begin', 'session exit'],
+    relatedCommands: ['session start', 'session exit'],
   },
-  'session-begin': {
-    name: 'session begin',
+  'session-start': {
+    name: 'session start',
     description: 'Create or connect to a service session',
-    usage: '/session begin [category]',
+    usage: '/session start [category]',
     category: 'Session System',
     permission: 'All',
     premium: false,
     details: 'Create a private session channel for service delivery. The bot will automatically set up permissions.',
-    examples: ['/session begin', '/session begin Sales'],
+    examples: ['/session start', '/session start Sales'],
     relatedCommands: ['session exit', 'session file'],
   },
   'session-images': {
@@ -298,7 +298,7 @@ export const commands: Record<string, Command> = {
     premium: false,
     details: 'Attach proof or delivery images to the current session channel.',
     examples: ['/session images attach', '/session images view'],
-    relatedCommands: ['session file', 'session begin'],
+    relatedCommands: ['session file', 'session start'],
   },
   'session-file': {
     name: 'session file',
@@ -309,7 +309,7 @@ export const commands: Record<string, Command> = {
     premium: false,
     details: 'Attach a delivery file (code, build, etc.) to the current session.',
     examples: ['/session file island_build.txt'],
-    relatedCommands: ['session images', 'session begin'],
+    relatedCommands: ['session images', 'session start'],
   },
   'session-exit': {
     name: 'session exit',
@@ -320,7 +320,7 @@ export const commands: Record<string, Command> = {
     premium: false,
     details: 'End the current session. The channel will be deleted after confirmation.',
     examples: ['/session exit'],
-    relatedCommands: ['session begin'],
+    relatedCommands: ['session start'],
   },
   'session-reassign-user': {
     name: 'session reassign-user',
@@ -331,7 +331,7 @@ export const commands: Record<string, Command> = {
     premium: false,
     details: 'Reassign the provider role in the current session to a different user.',
     examples: ['/session reassign-user @NewProvider'],
-    relatedCommands: ['session begin'],
+    relatedCommands: ['session start'],
   },
   'seller-dashboard': {
     name: 'seller dashboard',

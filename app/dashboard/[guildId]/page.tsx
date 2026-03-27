@@ -176,10 +176,14 @@ function VerseScriptsTable({ data, loading }: { data: Record<string, unknown>[] 
           </thead>
           <tbody>
             {data.map((row, i) => {
-              const scriptName = String(row.name || row.title || 'Untitled');
-              const scriptContent = String(row.content || row.script || '');
-              const createdAt = row.created_at ? new Date(String(row.created_at)).toLocaleDateString() : '—';
-              const sizeKb = scriptContent.length > 0 ? (scriptContent.length / 1024).toFixed(2) : '0';
+              const scriptName = String(row.title || row.name || row.file_id || 'Untitled');
+              const scriptContent = String(row.content ?? row.code ?? row.script ?? '');
+              const createdAt = row.updated_at || row.created_at ? new Date(String(row.updated_at || row.created_at)).toLocaleDateString() : '—';
+              const sizeKb = row.file_size_kb !== undefined && row.file_size_kb !== null
+                ? String(Number(row.file_size_kb).toFixed(2))
+                : scriptContent.length > 0
+                ? (scriptContent.length / 1024).toFixed(2)
+                : '0.00';
 
               return (
                 <tr key={i} className="border-b border-white/5 hover:bg-white/5 transition-colors">

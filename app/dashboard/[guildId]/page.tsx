@@ -1059,6 +1059,9 @@ export default function GuildDashboardPage() {
         const sessionData = await sessionRes.json();
         setUser(sessionData.user);
 
+        // Small delay to ensure session is fully propagated
+        await new Promise(resolve => setTimeout(resolve, 50));
+
         const statsRes = await fetch(`/api/dashboard/stats?guildId=${guildId}`);
         if (statsRes.ok) setStats(await statsRes.json());
         else {
@@ -1093,6 +1096,12 @@ export default function GuildDashboardPage() {
     if (tab === 'overview' || tab === 'editor' || tab === 'config') return;
     if (tabData[tab] !== undefined) return;
 
+    // Ensure user session is loaded before making API calls
+    if (!user) {
+      console.warn(`User session not loaded yet, skipping ${tab} data fetch`);
+      return;
+    }
+
     // Cancel any existing request for this tab
     if (pendingRequests.current[tab]) {
       pendingRequests.current[tab].abort();
@@ -1104,6 +1113,9 @@ export default function GuildDashboardPage() {
     setTabLoading(p => ({ ...p, [tab]: true }));
 
     try {
+      // Add a small delay to ensure session is fully established
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       const res = await fetch(`/api/dashboard/data?guildId=${guildId}&endpoint=${tab}`, {
         signal: abortController.signal,
       });
@@ -1115,6 +1127,23 @@ export default function GuildDashboardPage() {
         const rows = json?.data?.data ?? json?.data ?? [];
         setTabData(p => ({ ...p, [tab]: Array.isArray(rows) ? rows : [] }));
       } else {
+        // If we get a 401/403, it might be a session issue - retry once after a longer delay
+        if (res.status === 401 || res.status === 403) {
+          console.warn(`Access denied for ${tab}, retrying...`);
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+          const retryRes = await fetch(`/api/dashboard/data?guildId=${guildId}&endpoint=${tab}`, {
+            signal: abortController.signal,
+          });
+
+          if (retryRes.ok) {
+            const json = await retryRes.json();
+            const rows = json?.data?.data ?? json?.data ?? [];
+            setTabData(p => ({ ...p, [tab]: Array.isArray(rows) ? rows : [] }));
+            return;
+          }
+        }
+
         const errorMsg = await extractErrorMessage(res);
         showToast('error', 'Failed to Load Data', errorMsg);
         setTabData(p => ({ ...p, [tab]: [] }));
@@ -1130,11 +1159,11 @@ export default function GuildDashboardPage() {
       }
       delete pendingRequests.current[tab];
     }
-  }, [guildId, tabData, showToast]);
+  }, [guildId, tabData, showToast, user]);
 
   useEffect(() => {
-    if (loadState === 'ready') fetchTabData(activeTab);
-  }, [activeTab, loadState, fetchTabData]);
+    if (loadState === 'ready' && user) fetchTabData(activeTab);
+  }, [activeTab, loadState, fetchTabData, user]);
 
   if (loadState === 'checking' || loadState === 'loading') {
     return (

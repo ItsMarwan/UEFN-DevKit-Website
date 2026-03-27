@@ -89,6 +89,7 @@ function VerseScriptViewer({ scriptName, scriptContent, onClose }: { scriptName:
   const editorRef = useRef<any>(null);
   const [monacoLoaded, setMonacoLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   useEffect(() => {
     if (!containerRef.current || editorRef.current) return;
@@ -320,8 +321,14 @@ function VerseScriptViewer({ scriptName, scriptContent, onClose }: { scriptName:
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
               <div className="text-center">
-                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-white/60">Loading Monaco Editor...</p>
+                <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
+                <div className="w-48 h-2 bg-white/10 rounded-full mx-auto mb-2 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${loadingProgress}%` }}
+                  />
+                </div>
+                <p className="text-white/60 text-sm">Loading the Verse viewer... {loadingProgress}%</p>
               </div>
             </div>
           )}
@@ -332,8 +339,44 @@ function VerseScriptViewer({ scriptName, scriptContent, onClose }: { scriptName:
   );
 }
 
-function VerseScriptsTable({ data, loading }: { data: Record<string, unknown>[] | null; loading: boolean }) {
-  const [viewingScript, setViewingScript] = useState<{ name: string; content: string } | null>(null);
+function VerseScriptsTable({ data, loading, guildId }: { data: Record<string, unknown>[] | null; loading: boolean; guildId: string }) {
+  const [viewingScript, setViewingScript] = useState<{ name: string; content: string; id: string } | null>(null);
+
+  // Check URL parameters on mount to auto-open viewer
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const scriptId = urlParams.get('v');
+      if (scriptId && data) {
+        const script = data.find(row => String(row.file_id || row.id) === scriptId);
+        if (script) {
+          const scriptName = String(script.title || script.name || script.file_id || 'Untitled');
+          const scriptContent = String(script.content ?? script.code ?? script.script ?? '');
+          setViewingScript({ name: scriptName, content: scriptContent, id: scriptId });
+        }
+      }
+    }
+  }, [data]);
+
+  const handleViewScript = (script: Record<string, unknown>) => {
+    const scriptId = String(script.file_id || script.id);
+    const scriptName = String(script.title || script.name || script.file_id || 'Untitled');
+    const scriptContent = String(script.content ?? script.code ?? script.script ?? '');
+
+    // Update URL
+    const newUrl = `/dashboard/${guildId}/verse_scripts?v=${encodeURIComponent(scriptId)}`;
+    window.history.replaceState({ scriptId }, '', newUrl);
+
+    setViewingScript({ name: scriptName, content: scriptContent, id: scriptId });
+  };
+
+  const handleCloseViewer = () => {
+    // Remove URL parameter
+    const newUrl = `/dashboard/${guildId}/verse_scripts`;
+    window.history.replaceState({}, '', newUrl);
+
+    setViewingScript(null);
+  };
 
   if (loading) return (
     <div className="flex items-center justify-center py-16">
@@ -376,7 +419,7 @@ function VerseScriptsTable({ data, loading }: { data: Record<string, unknown>[] 
                   <td className="px-4 py-3 text-white/80 text-xs">{sizeKb} KB</td>
                   <td className="px-4 py-3 text-white/80">
                     <button
-                      onClick={() => setViewingScript({ name: scriptName, content: scriptContent })}
+                      onClick={() => handleViewScript(row)}
                       className="px-3 py-1.5 text-xs bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 border border-blue-500/30 rounded transition-colors"
                     >
                       👁️ View
@@ -393,7 +436,7 @@ function VerseScriptsTable({ data, loading }: { data: Record<string, unknown>[] 
         <VerseScriptViewer
           scriptName={viewingScript.name}
           scriptContent={viewingScript.content}
-          onClose={() => setViewingScript(null)}
+          onClose={handleCloseViewer}
         />
       )}
     </>
@@ -1383,7 +1426,7 @@ export default function GuildDashboardPage() {
           <div className="text-white/50 text-xs mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
             📜 View and inspect your uploaded Verse scripts. Click the view button to open any script in a read-only Monaco editor.
           </div>
-          <VerseScriptsTable data={rows ?? null} loading={isLoading} />
+          <VerseScriptsTable data={rows ?? null} loading={isLoading} guildId={guildId} />
         </div>
       );
     }

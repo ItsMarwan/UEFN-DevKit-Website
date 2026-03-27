@@ -84,6 +84,136 @@ function StatCard({ icon, label, value, color }: { icon: string; label: string; 
   );
 }
 
+function VerseScriptViewer({ scriptName, scriptContent, onClose }: { scriptName: string; scriptContent: string; onClose: () => void }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!containerRef.current || editorRef.current) return;
+
+    // Check if Monaco is available
+    if (typeof (window as any).monaco === 'undefined') {
+      console.warn('Monaco Editor not available');
+      return;
+    }
+
+    // Create editor instance
+    const monaco = (window as any).monaco;
+    editorRef.current = monaco.editor.create(containerRef.current, {
+      value: scriptContent,
+      language: 'verse',
+      theme: 'verse-dark',
+      automaticLayout: true,
+      readOnly: true,
+      minimap: { enabled: true, side: 'right' },
+      fontFamily: "Consolas, 'Courier New', monospace",
+      fontSize: 13,
+      lineHeight: 20,
+      renderLineHighlight: 'all',
+      smoothScrolling: true,
+      cursorBlinking: 'blink',
+      mouseWheelZoom: true,
+      padding: { top: 4, bottom: 4 }
+    });
+
+    return () => {
+      if (editorRef.current) {
+        try {
+          editorRef.current.dispose();
+          editorRef.current = null;
+        } catch (e) {}
+      }
+    };
+  }, [scriptContent]);
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-[9999]">
+      <div className="bg-[#1e1e1e] rounded-lg shadow-2xl text-white w-[95vw] h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/50">
+          <div>
+            <h3 className="text-lg font-bold text-white">{scriptName}</h3>
+            <p className="text-xs text-white/50 mt-0.5">Read-only Verse Script Viewer</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white/50 hover:text-white text-2xl font-bold w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded transition-colors"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Monaco Editor Container */}
+        <div ref={containerRef} className="flex-1" />
+      </div>
+    </div>
+  );
+}
+
+function VerseScriptsTable({ data, loading }: { data: Record<string, unknown>[] | null; loading: boolean }) {
+  const [viewingScript, setViewingScript] = useState<{ name: string; content: string } | null>(null);
+
+  if (loading) return (
+    <div className="flex items-center justify-center py-16">
+      <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+  if (!data || data.length === 0) return (
+    <div className="text-center py-16 text-white/30">No scripts found</div>
+  );
+
+  return (
+    <>
+      <div className="overflow-x-auto rounded-xl border border-white/10">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-white/10 bg-white/5">
+              <th className="px-4 py-3 text-left text-white/50 font-medium text-xs uppercase tracking-wide whitespace-nowrap">Name</th>
+              <th className="px-4 py-3 text-left text-white/50 font-medium text-xs uppercase tracking-wide whitespace-nowrap">Created</th>
+              <th className="px-4 py-3 text-left text-white/50 font-medium text-xs uppercase tracking-wide whitespace-nowrap">Size</th>
+              <th className="px-4 py-3 text-left text-white/50 font-medium text-xs uppercase tracking-wide whitespace-nowrap">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row, i) => {
+              const scriptName = String(row.name || row.title || 'Untitled');
+              const scriptContent = String(row.content || row.script || '');
+              const createdAt = row.created_at ? new Date(String(row.created_at)).toLocaleDateString() : '—';
+              const sizeKb = scriptContent.length > 0 ? (scriptContent.length / 1024).toFixed(2) : '0';
+
+              return (
+                <tr key={i} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                  <td className="px-4 py-3 text-white/80 font-mono text-xs">
+                    <span className="text-blue-400">{scriptName}</span>
+                  </td>
+                  <td className="px-4 py-3 text-white/80 text-xs">{createdAt}</td>
+                  <td className="px-4 py-3 text-white/80 text-xs">{sizeKb} KB</td>
+                  <td className="px-4 py-3 text-white/80">
+                    <button
+                      onClick={() => setViewingScript({ name: scriptName, content: scriptContent })}
+                      className="px-3 py-1.5 text-xs bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 border border-blue-500/30 rounded transition-colors"
+                    >
+                      👁️ View
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {viewingScript && (
+        <VerseScriptViewer
+          scriptName={viewingScript.name}
+          scriptContent={viewingScript.content}
+          onClose={() => setViewingScript(null)}
+        />
+      )}
+    </>
+  );
+}
+
 function DataTable({ data, loading }: { data: Record<string, unknown>[] | null; loading: boolean }) {
   if (loading) return (
     <div className="flex items-center justify-center py-16">
@@ -1050,6 +1180,24 @@ export default function GuildDashboardPage() {
               </div>
             </div>
           )}
+        </div>
+      );
+    }
+
+    if (activeTab === 'verse_scripts') {
+      return (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-white font-bold">
+              Verse Scripts <span className="text-white/30 font-normal text-sm ml-1">{rows ? `(${rows.length})` : ''}</span>
+            </h2>
+            <button onClick={() => { setTabData(p => { const n = {...p}; delete n.verse_scripts; return n; }); fetchTabData('verse_scripts'); }}
+              className="text-white/40 hover:text-white text-xs transition-colors">↻ Refresh</button>
+          </div>
+          <div className="text-white/50 text-xs mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
+            📜 View and inspect your uploaded Verse scripts. Click the view button to open any script in a read-only Monaco editor.
+          </div>
+          <VerseScriptsTable data={rows ?? null} loading={isLoading} />
         </div>
       );
     }

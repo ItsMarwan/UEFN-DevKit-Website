@@ -44,7 +44,7 @@ export function Navigation() {
 
             {/* Logo — icon + wordmark */}
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="relative w-8 h-8 flex-shrink-0">
+              <div className="relative w-8 h-8 flex-shrink-0" suppressHydrationWarning>
                 <Image
                   src="/icon.png"
                   alt="UEFN DevKit icon"
@@ -53,6 +53,7 @@ export function Navigation() {
                   className="rounded-lg"
                   style={{ mixBlendMode: 'screen' }}
                   priority
+                  suppressHydrationWarning
                 />
               </div>
               <span className="font-bold text-white group-hover:text-blue-400 transition-colors">
@@ -94,6 +95,7 @@ export function Navigation() {
                 viewBox="0 0 24 24"
                 strokeWidth={2}
                 strokeLinecap="round"
+                suppressHydrationWarning
               >
                 {/* Top bar */}
                 <line

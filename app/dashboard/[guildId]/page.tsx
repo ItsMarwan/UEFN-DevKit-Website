@@ -34,6 +34,18 @@ interface GuildConfig {
 type TabId = 'overview' | 'customers' | 'logs' | 'members' | 'verse_scripts' | 'trackers' | 'config' | 'editor';
 type LoadState = 'checking' | 'loading' | 'ready' | 'forbidden' | 'error';
 
+const VALID_TABS: TabId[] = ['overview', 'customers', 'logs', 'members', 'verse_scripts', 'trackers', 'config', 'editor'];
+
+function getTabFromPath(): TabId {
+  if (typeof window === 'undefined') return 'overview';
+  const pathParts = window.location.pathname.split('/');
+  const urlTab = pathParts[pathParts.length - 1];
+  if (VALID_TABS.includes(urlTab as TabId)) {
+    return urlTab as TabId;
+  }
+  return 'overview';
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function guildIcon(g: GuildInfo) {
@@ -147,31 +159,6 @@ function CustomerDetail({ row }: { row: Record<string, unknown> }) {
   );
 }
 
-function CommandLogDetail({ row }: { row: Record<string, unknown> }) {
-  const timestamp = row.created_at ? new Date(String(row.created_at)) : new Date();
-  const timeStr = timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const dateStr = timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const isSuccess = String(row.status ?? 'success') === 'success';
-  
-  return (
-    <div className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/8 transition-colors">
-      <div className="flex-shrink-0 pt-0.5">
-        <span className="text-lg">{isSuccess ? '✅' : '❌'}</span>
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <p className="text-white text-sm font-mono truncate">{String(row.command_name ?? '—')}</p>
-          <span className="text-white/40 text-xs whitespace-nowrap">{timeStr}</span>
-        </div>
-        <p className="text-white/60 text-xs mb-1">User: {String(row.user_id ?? '—')}</p>
-        {row.details && <p className="text-white/40 text-xs truncate">Details: {String(row.details ?? '')}</p>}
-        <p className="text-white/30 text-xs mt-1">{dateStr}</p>
-      </div>
-    </div>
-  );
-}
-
-
 function EditorSoon() {
   return (
     <div className="relative">
@@ -232,14 +219,10 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
   const [redeemLoading, setRedeemLoading] = useState(false);
   const [redeemMsg, setRedeemMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Track pending requests to prevent race conditions
   const fetchAbortController = useRef<AbortController | null>(null);
-  const fetchedRef = useRef(false);
+  const hasFetched = useRef(false);
 
   const fetchConfig = useCallback(async () => {
-    // Prevent duplicate simultaneous requests
-    if (loading) return;
-    
     // Cancel any existing request
     if (fetchAbortController.current) {
       fetchAbortController.current.abort();
@@ -250,76 +233,68 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/dashboard/server-config?guildId=${guildId}`, {
-        signal: abortController.signal,
-      });
-      
-      // If request was aborted, skip state updates
-      if (abortController.signal.aborted) return;
-      
-      if (!res.ok) { 
+      const res = await fetch(`/api/dashboard/server-config?guildId=${guildId}`);
+
+      if (!res.ok) {
         const errorMsg = await extractErrorMessage(res);
         showToast('error', 'Failed to Load Config', errorMsg);
-        setLoading(false); 
-        return; 
+        return;
       }
       const json = await res.json();
-      
+
       // Flask response structure: { success, data: { endpoint, data: {...settings} }, request_id }
-      // Extract the actual settings from nested structure
       let raw: GuildConfig;
       if (json?.data?.endpoint === 'guild_settings' && json?.data?.data) {
-        // New endpoint structure: json.data = { endpoint: "guild_settings", data: {...} }
         raw = json.data.data as GuildConfig;
       } else if (json?.data?.data && typeof json.data.data === 'object' && !Array.isArray(json.data.data)) {
-        // Nested structure from Flask: json.data.data = settings object
         raw = json.data.data as GuildConfig;
       } else if (json?.data?.[0]) {
-        // Array format (Supabase)
         raw = json.data[0] as GuildConfig;
       } else if (json?.data && typeof json.data === 'object') {
-        // Direct settings object
         raw = json.data as GuildConfig;
       } else {
         raw = json as GuildConfig;
       }
-      
-      if (!abortController.signal.aborted) {
-        setConfig(raw);
 
-        // Populate editable fields with actual values from config
-        setLogChannel(raw.log_channel_id ?? '');
-        setDefaultRole(raw.default_customer_role_id ?? '');
-        setEncEnabled(raw.encryption_enabled ?? false);
-        setKeyOnServer(raw.key_stored_on_server ?? false);
-        setEncKey(''); // never pre-fill encryption key
-        // admin_allowed_roles may be JSON string or array
-        const roles = Array.isArray(raw.admin_allowed_roles)
-          ? raw.admin_allowed_roles
-          : typeof raw.admin_allowed_roles === 'string'
-          ? (() => { try { return JSON.parse(raw.admin_allowed_roles) ?? []; } catch { return []; } })()
-          : [];
-        setAdminRoles(roles.join(', '));
+      // Warn if guild IDs do not match; continue to render so page is not stuck
+      if (raw.guild_id && String(raw.guild_id) !== guildId) {
+        showToast('warning', 'Guild ID Mismatch', `Server response guild_id ${raw.guild_id} does not match requested guild ${guildId}.`);
       }
-    } catch (error: unknown) {
-      // Silently ignore abort errors
-      if (error instanceof Error && error.name === 'AbortError') return;
-      
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      showToast('error', 'Connection Error', errorMsg);
-    }
-    
-    if (!abortController.signal.aborted) {
-      setLoading(false);
-    }
-    fetchAbortController.current = null;
-  }, [guildId, loading, showToast]);
 
-  useEffect(() => { 
-    if (fetchedRef.current) return;
-    fetchedRef.current = true;
+      setConfig(raw);
+      setLogChannel(raw.log_channel_id ?? '');
+      setDefaultRole(raw.default_customer_role_id ?? '');
+      setEncEnabled(raw.encryption_enabled ?? false);
+      setKeyOnServer(raw.key_stored_on_server ?? false);
+      setEncKey('');
+      const roles = Array.isArray(raw.admin_allowed_roles)
+        ? raw.admin_allowed_roles
+        : typeof raw.admin_allowed_roles === 'string'
+        ? (() => { try { return JSON.parse(raw.admin_allowed_roles) ?? []; } catch { return []; } })()
+        : [];
+      setAdminRoles(roles.join(', '));
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        showToast('warning', 'Request Aborted', 'Config request was aborted.');
+      } else {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        showToast('error', 'Connection Error', errorMsg);
+      }
+    } finally {
+      if (!abortController.signal.aborted) {
+        setLoading(false);
+      }
+      if (fetchAbortController.current === abortController) {
+        fetchAbortController.current = null;
+      }
+    }
+  }, [guildId, showToast]);
+
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
     fetchConfig();
-    
+
     return () => {
       if (fetchAbortController.current) {
         fetchAbortController.current.abort();
@@ -331,7 +306,6 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
     setSaving(true);
     setSaveMsg(null);
 
-    // Build payload with only changed / non-empty values
     const rolesArr = adminRoles
       .split(',')
       .map(s => s.trim())
@@ -339,21 +313,25 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
 
     const payload: Record<string, unknown> = {};
 
-    // Only add fields that have actual values (skip empty/null)
     if (encEnabled !== undefined) payload.encryption_enabled = encEnabled;
     if (keyOnServer !== undefined) payload.key_stored_on_server = keyOnServer;
     if (rolesArr.length > 0) payload.admin_allowed_roles = rolesArr;
-
     if (logChannel.trim()) payload.log_channel_id = logChannel.trim();
     if (defaultRole.trim()) payload.default_customer_role_id = defaultRole.trim();
     if (encKey.trim()) payload.server_encryption_key = encKey.trim();
 
     try {
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => abortController.abort(), 15000); // 15 second timeout
+
       const res = await fetch(`/api/dashboard/server-config?guildId=${guildId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
+        signal: abortController.signal,
       });
+
+      clearTimeout(timeoutId);
       const json = await res.json();
       if (!res.ok) {
         const errorMsg = json.error ?? 'Save failed';
@@ -364,6 +342,7 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
         setSaveMsg({ type: 'success', text: successMsg });
         showToast('success', 'Settings Saved', successMsg);
         setEncKey('');
+        hasFetched.current = false;
         fetchConfig();
       }
     } catch (e) {
@@ -394,7 +373,8 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
         setRedeemMsg({ type: 'success', text: successMsg });
         showToast('success', 'Code Redeemed', successMsg);
         setRedeemCode('');
-        fetchConfig(); // refresh tier display
+        hasFetched.current = false;
+        fetchConfig();
       }
     } catch (e) {
       const errorMsg = String(e);
@@ -607,7 +587,7 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
             Save Settings
           </button>
           <button
-            onClick={fetchConfig}
+            onClick={() => { hasFetched.current = false; fetchConfig(); }}
             disabled={loading}
             className="w-full sm:w-auto px-4 py-2 sm:py-2.5 bg-white/10 hover:bg-white/20 text-white/70 hover:text-white font-medium rounded-lg transition-all text-sm"
           >
@@ -644,7 +624,8 @@ export default function GuildDashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loadState, setLoadState] = useState<LoadState>('checking');
   const [errorMsg, setErrorMsg] = useState('');
-  const [activeTab, setActiveTab] = useState<TabId>('overview');
+  // Initialize activeTab from URL immediately (client-side only)
+  const [activeTab, setActiveTab] = useState<TabId>(() => getTabFromPath());
 
   const [tabData, setTabData] = useState<Record<string, Record<string, unknown>[] | null>>({});
   const [tabLoading, setTabLoading] = useState<Record<string, boolean>>({});
@@ -652,15 +633,16 @@ export default function GuildDashboardPage() {
 
   const fetched = useRef(false);
   const pendingRequests = useRef<Record<string, AbortController>>({});
-  const requestQueue = useRef<Promise<void>>(Promise.resolve());
 
   // Sync URL with activeTab
-  useEffect(() => {
-    const newUrl = `/dashboard/${guildId}/${activeTab}`;
+  const handleTabChange = useCallback((tab: TabId) => {
+    setActiveTab(tab);
+    const newUrl = `/dashboard/${guildId}/${tab}`;
     if (typeof window !== 'undefined') {
-      window.history.replaceState({ tab: activeTab }, '', newUrl);
+      window.history.replaceState({ tab }, '', newUrl);
     }
-  }, [activeTab, guildId]);
+  }, [guildId]);
+
   // Cleanup abort controllers on unmount
   useEffect(() => {
     return () => {
@@ -673,20 +655,10 @@ export default function GuildDashboardPage() {
 
   useEffect(() => {
     if (!guildId || fetched.current) return;
-    
-    // Parse tab from URL path
-    if (typeof window !== 'undefined') {
-      const pathParts = window.location.pathname.split('/');
-      const urlTab = pathParts[pathParts.length - 1];
-      const validTabNames = ['overview', 'customers', 'logs', 'members', 'verse_scripts', 'trackers', 'config', 'editor'];
-      if (validTabNames.includes(urlTab)) {
-        setActiveTab(urlTab as TabId);
-      }
-    }
-    
+
     // Wait for health check to complete (not 'checking')
     if (health.status === 'checking') return;
-    
+
     // Block if offline
     if (health.status === 'offline') {
       fetched.current = true;
@@ -713,17 +685,17 @@ export default function GuildDashboardPage() {
           showToast('error', 'Access Denied', errorText);
           setLoadState('forbidden'); return;
         }
-        
+
         const accessData = await accessRes.json();
         setGuild(accessData.guild);
         setLoadState('loading');
 
         const sessionRes = await fetch('/api/dashboard/session');
-        if (!sessionRes.ok) { 
+        if (!sessionRes.ok) {
           const sessionErr = await extractErrorMessage(sessionRes);
           showToast('error', 'Session Error', sessionErr);
-          router.replace('/api/dashboard/login'); 
-          return; 
+          router.replace('/api/dashboard/login');
+          return;
         }
         const sessionData = await sessionRes.json();
         setUser(sessionData.user);
@@ -761,7 +733,7 @@ export default function GuildDashboardPage() {
   const fetchTabData = useCallback(async (tab: TabId) => {
     if (tab === 'overview' || tab === 'editor' || tab === 'config') return;
     if (tabData[tab] !== undefined) return;
-    
+
     // Cancel any existing request for this tab
     if (pendingRequests.current[tab]) {
       pendingRequests.current[tab].abort();
@@ -771,15 +743,14 @@ export default function GuildDashboardPage() {
     pendingRequests.current[tab] = abortController;
 
     setTabLoading(p => ({ ...p, [tab]: true }));
-    
+
     try {
       const res = await fetch(`/api/dashboard/data?guildId=${guildId}&endpoint=${tab}`, {
         signal: abortController.signal,
       });
-      
-      // If request was aborted, skip state updates
+
       if (abortController.signal.aborted) return;
-      
+
       if (res.ok) {
         const json = await res.json();
         const rows = json?.data?.data ?? json?.data ?? [];
@@ -790,9 +761,7 @@ export default function GuildDashboardPage() {
         setTabData(p => ({ ...p, [tab]: [] }));
       }
     } catch (error: unknown) {
-      // Silently ignore abort errors
       if (error instanceof Error && error.name === 'AbortError') return;
-      
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       showToast('error', 'Connection Error', errorMsg);
       setTabData(p => ({ ...p, [tab]: [] }));
@@ -835,15 +804,14 @@ export default function GuildDashboardPage() {
   }
 
   if (loadState === 'error') {
-    // Check if it's a connection error
     const isConnectionError = errorMsg === 'Connection not found';
-    
+
     return (
       <div className="bg-black text-white min-h-screen flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 ${
-            isConnectionError 
-              ? 'bg-red-500/20 border border-red-500/30' 
+            isConnectionError
+              ? 'bg-red-500/20 border border-red-500/30'
               : 'bg-yellow-500/20 border border-yellow-500/30'
           }`}>
             <div className="text-5xl">{isConnectionError ? '🔌' : '⚠️'}</div>
@@ -852,8 +820,8 @@ export default function GuildDashboardPage() {
             {isConnectionError ? 'Connection Lost' : 'Error Loading Dashboard'}
           </h2>
           <p className="text-white/60 mb-8 leading-relaxed">
-            {isConnectionError 
-              ? 'Cannot connect to the server. The Flask server may be down or unreachable.' 
+            {isConnectionError
+              ? 'Cannot connect to the server. The Flask server may be down or unreachable.'
               : errorMsg}
           </p>
           <div className="space-y-3">
@@ -863,8 +831,8 @@ export default function GuildDashboardPage() {
             >
               ↻ Try Again
             </button>
-            <Link 
-              href="/dashboard" 
+            <Link
+              href="/dashboard"
               className="block px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg font-semibold text-white transition-all"
             >
               Back to Servers
@@ -907,7 +875,7 @@ export default function GuildDashboardPage() {
               <StatCard icon="📦" label="Verse Scripts" value={stats?.verse_scripts ?? 0} color="border-purple-500/30" />
               <StatCard icon="🤝" label="Members"      value={stats?.members ?? 0}       color="border-green-500/30" />
               <StatCard icon="🏝️" label="Trackers"     value={stats?.trackers ?? 0}      color="border-orange-500/30" />
-              
+
               {/* Console Preview for Command Logs */}
               <div className="lg:col-span-2 p-4 rounded-xl border border-cyan-500/30 bg-black/40">
                 <div className="flex items-center justify-between mb-3">
@@ -926,7 +894,7 @@ export default function GuildDashboardPage() {
                         const isSuccess = String(row.status ?? 'success') === 'success';
                         const statusIcon = isSuccess ? '✓' : '✗';
                         const statusColor = isSuccess ? 'text-green-400' : 'text-red-400';
-                        
+
                         return (
                           <div key={i} className="text-white/80 hover:bg-white/5 px-1 transition-colors">
                             <span className={`${statusColor} font-bold`}>[{statusIcon}]</span>
@@ -943,7 +911,7 @@ export default function GuildDashboardPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setActiveTab('logs')}
+                  onClick={() => handleTabChange('logs')}
                   className="mt-2 w-full px-3 py-2 rounded-lg text-xs font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
                 >
                   View Full Log Console →
@@ -963,7 +931,7 @@ export default function GuildDashboardPage() {
               ].map(a => (
                 <button
                   key={a.tab}
-                  onClick={() => setActiveTab(a.tab)}
+                  onClick={() => handleTabChange(a.tab)}
                   className="p-2 sm:p-4 rounded-xl border border-white/10 bg-black/40 hover:border-blue-500/50 transition-all text-left group"
                 >
                   <div className="text-lg sm:text-xl mb-1 sm:mb-2">{a.icon}</div>
@@ -1061,7 +1029,7 @@ export default function GuildDashboardPage() {
                       const isSuccess = String(row.status ?? 'success') === 'success';
                       const statusIcon = isSuccess ? '✓' : '✗';
                       const statusColor = isSuccess ? 'text-green-400' : 'text-red-400';
-                      
+
                       return (
                         <div key={i} className="text-white/80 hover:bg-white/5 px-2 py-1 transition-colors">
                           <span className={`${statusColor} font-bold`}>[{statusIcon}]</span>
@@ -1139,14 +1107,14 @@ export default function GuildDashboardPage() {
         </div>
       </section>
 
-      {/* Tabs - Mobile Friendly Scroll */}
+      {/* Tabs */}
       <div className="border-b border-white/10 sticky top-0 z-40 bg-black/95 backdrop-blur">
         <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8">
           <div className="flex gap-1 overflow-x-auto overflow-y-hidden pb-2 pt-2 px-4 sm:px-0 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent hover:scrollbar-thumb-white/40">
             {tabs.map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
                   activeTab === tab.id
                     ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'

@@ -119,6 +119,7 @@ async function flaskPost(guildId: string, parameters: Record<string, unknown>) {
   try {
     const res = await fetch(`${FLASK_API_URL}/api/v1/fetch`, {
       method: 'POST', headers: makeHeaders(guildId, bodyStr), body: bodyStr, cache: 'no-store',
+      signal: AbortSignal.timeout(10000),  // 10 second timeout
     });
     return { ok: res.ok, status: res.status, data: await res.json() };
   } catch (e) { return { ok: false, status: 500, data: { error: String(e) } }; }
@@ -131,6 +132,7 @@ async function flaskPatch(guildId: string, fields: Record<string, unknown>) {
   try {
     const res = await fetch(`${FLASK_API_URL}/api/v1/config`, {
       method: 'PATCH', headers: makeHeaders(guildId, bodyStr), body: bodyStr, cache: 'no-store',
+      signal: AbortSignal.timeout(10000),  // 10 second timeout
     });
     return { ok: res.ok, status: res.status, data: await res.json() };
   } catch (e) { return { ok: false, status: 500, data: { error: String(e) } }; }
@@ -142,7 +144,20 @@ export async function GET(req: NextRequest) {
   const guildId = new URL(req.url).searchParams.get('guildId');
   if (!guildId) return NextResponse.json({ error: 'Missing guildId' }, { status: 400 });
   if (!(await verifyGuildAccess(accessToken, guildId))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
   const result = await flaskPost(guildId, {});
+
+  // Validate that the data returned from the enterprise backend is for the requested guild.
+  const returnedGuildId = result.data?.data?.data?.guild_id || result.data?.data?.guild_id;
+  if (returnedGuildId && String(returnedGuildId) !== String(guildId)) {
+    return NextResponse.json({
+      error: 'Guild ID mismatch',
+      expected_guild_id: guildId,
+      returned_guild_id: String(returnedGuildId),
+      source: 'enterprise_api',
+    }, { status: 409 });
+  }
+
   return NextResponse.json(result.data, { status: result.ok ? 200 : result.status });
 }
 

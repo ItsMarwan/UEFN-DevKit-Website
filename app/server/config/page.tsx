@@ -14,6 +14,7 @@ function ServerConfigContent() {
   const [loading, setLoading] = useState(true);
   const [config, setConfig] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   useEffect(() => {
     if (!guildId) {
@@ -42,7 +43,21 @@ function ServerConfigContent() {
         } else {
           configData = json.data || json;
         }
-        
+
+        // Warn if guild IDs do not match, but continue to show data if available
+        if (configData?.guild_id && String(configData.guild_id) !== guildId) {
+          setWarning(`Received data for wrong guild (${configData.guild_id}). Expected ${guildId}.`);
+        }
+
+        // Normalize admin_allowed_roles string -> array
+        if (typeof configData.admin_allowed_roles === 'string') {
+          try {
+            configData.admin_allowed_roles = JSON.parse(configData.admin_allowed_roles);
+          } catch {
+            configData.admin_allowed_roles = [];
+          }
+        }
+
         setConfig(configData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -76,8 +91,14 @@ function ServerConfigContent() {
     );
   }
 
+
   return (
     <div className="space-y-6">
+      {warning && (
+        <div className="px-4 py-3 rounded-lg border border-yellow-300 bg-yellow-500/10 text-yellow-200 text-sm">
+          ⚠️ {warning}
+        </div>
+      )}
       {!config ? (
         <div className="text-center text-white/60">No configuration available</div>
       ) : (

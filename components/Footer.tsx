@@ -55,7 +55,7 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="https://github.com/ItsMarwan/UEFN-Helper-Website" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-blue-400 transition-colors">
+                <a href="https://github.com/ItsMarwan/UEFN-DevKit-Website" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-blue-400 transition-colors">
                   GitHub
                 </a>
               </li>

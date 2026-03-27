@@ -1,10 +1,10 @@
-# Contributing to UEFN Helper Website
+# Contributing to UEFN DevKit Website
 
 Thanks for taking the time to contribute! 🎉
 
 ## Ways to Contribute
 
-- 🐛 **Report bugs** — Open an [issue](https://github.com/ItsMarwan/UEFN-Helper-Website/issues) with steps to reproduce
+- 🐛 **Report bugs** — Open an [issue](https://github.com/ItsMarwan/UEFN-DevKit-Website/issues) with steps to reproduce
 - ✨ **Suggest features** — Open an issue describing what you'd like to see
 - 📝 **Improve docs** — Fix typos, clarify explanations, add missing command docs
 - 💻 **Submit a PR** — Fix a bug or implement a feature
@@ -12,10 +12,10 @@ Thanks for taking the time to contribute! 🎉
 ## Development Setup
 
 ```bash
-git clone https://github.com/ItsMarwan/UEFN-Helper-Website.git
-cd UEFN-Helper-Website
+git clone https://github.com/ItsMarwan/UEFN-DevKit-Website.git
+cd UEFN-DevKit-Website
 npm install
-cp .env.local.example .env.local  # fill in your keys
+cp .env.example .env.local  # fill in your keys
 npm run dev
 ```
 

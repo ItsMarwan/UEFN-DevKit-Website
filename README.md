@@ -1,20 +1,20 @@
 <div align="center">
 
-<img src="public/images/banner.png" alt="UEFN Helper Banner" width="100%" />
+<img src="public/images/banner.png" alt="UEFN DevKit Banner" width="100%" />
 
-# UEFN Helper — Website
+# UEFN DevKit — Website
 
-**The official open-source website for the UEFN Helper Discord Bot.**  
-Built with Next.js 14, TypeScript, and Tailwind CSS.
-
-<br />
-
-[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/) [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/) [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?tyle=for-the-badge)](LICENSE)
+**The official open-source website for the UEFN DevKit Discord Bot.**  
+Built with Next.js 16, TypeScript, and Tailwind CSS.
 
 <br />
 
-[**🌐 Live Site**](https://uefnhelper.frii.site) · [**🤖 Bot Invite**](https://discord.gg/) · [**💬 Discord**](https://discord.gg/) · [**🐛 Report Bug**](https://github.com/ItsMarwan/UEFN-Helper-Website/issues) · [**✨ Request Feature**](https://github.com/ItsMarwan/UEFN-Helper-Website/issues)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/) [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/) [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
+[![License: VCL](https://img.shields.io/badge/License-VCL-yellow?style=for-the-badge)](LICENSE)
+
+<br />
+
+[**🌐 Live Site**](https://uefndevkit.rweb.site) · [**🤖 Bot Invite**](https://discord.com/api/oauth2/authorize?client_id=123456789012345678&permissions=8&scope=bot%20applications.commands) · [**💬 Discord**](https://discord.gg/wfPfEw6b6w) · [**🐛 Report Bug**](https://github.com/ItsMarwan/UEFN-DevKit-Website/issues) · [**✨ Request Feature**](https://github.com/ItsMarwan/UEFN-DevKit-Website/issues)
 
 </div>
 
@@ -39,7 +39,7 @@ Built with Next.js 14, TypeScript, and Tailwind CSS.
 
 ## 🧩 About
 
-This is the open-source frontend for **UEFN Helper** — a Discord bot built for Fortnite UEFN (Unreal Editor for Fortnite) island builders. The website documents every bot command, explains pricing tiers, and provides a contact form for support.
+This is the open-source frontend for **UEFN DevKit** — a Discord bot built for Fortnite UEFN (Unreal Editor for Fortnite) island builders. The website documents every bot command, explains pricing tiers, and provides a contact form for support.
 
 The site is fully static-generation-ready, mobile responsive, and dark-mode only. It was designed to be easy to fork, customize, and self-host.
 
@@ -63,7 +63,7 @@ The site is fully static-generation-ready, mobile responsive, and dark-mode only
 
 ## 🛠️ Tech Stack
 
-- **Framework** — [Next.js 14](https://nextjs.org/) (App Router)
+- **Framework** — [Next.js 16](https://nextjs.org/) (App Router)
 - **Language** — [TypeScript 5](https://www.typescriptlang.org/)
 - **Styling** — [Tailwind CSS 3](https://tailwindcss.com/)
 - **Email** — [Resend](https://resend.com/)
@@ -74,7 +74,7 @@ The site is fully static-generation-ready, mobile responsive, and dark-mode only
 
 ## 🌐 Live Site
 
-The UEFN Helper website is live at **[UEFNDevKit.rweb.site](https://uefndevkit.rweb.site)**
+The UEFN DevKit website is live at **[uefndevkit.rweb.site](https://uefndevkit.rweb.site)**
 
 Features:
 - Full command documentation with searchable categories
@@ -129,7 +129,7 @@ Features:
 │       ├── banner.png          # OG banner (1200×630)
 │       └── logo.png            # Bot logo used in hero section
 │
-├── .env.local.example          # Environment variable template
+├── .env.example          # Environment variable template
 ├── next.config.js
 ├── tailwind.config.js
 ├── tsconfig.json
@@ -170,6 +170,13 @@ To run this project locally or self-host it:
    - `HCAPTCHA_SECRET_KEY` — hCaptcha secret key  
    - `RESEND_API_KEY` — Resend API key for contact form emails
    - `CONTACT_TO_EMAIL` — Recipient email for contact submissions
+   - `NEXT_PUBLIC_SUPABASE_URL` — Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase anonymous key
+   - `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key
+   - `DISCORD_CLIENT_ID` — Discord application client ID
+   - `DISCORD_CLIENT_SECRET` — Discord application client secret
+   - `DISCORD_BOT_TOKEN` — Discord bot token
+   - Additional optional variables for Redis rate limiting and other features
 
 5. **Run:**
    ```bash
@@ -231,7 +238,7 @@ See [SECURITY.md](SECURITY.md) for:
 
 This project is licensed under the **VCL License** — see the [LICENSE](LICENSE) file for details.
 
-You are free to fork, modify, and use this project for your own Discord bot website. Attribution is appreciated but not required.
+You are free to view, study, and contribute to this project. However, using the Software in any application, product, or service is strictly prohibited without explicit permission from the copyright holder.
 
 ---
 
@@ -239,7 +246,7 @@ You are free to fork, modify, and use this project for your own Discord bot webs
 
 Made with ❤️ by [ItsMarwan](https://github.com/ItsMarwan)
 
-**[⭐ Star this repo](https://github.com/ItsMarwan/UEFN-Helper-Website)** if you found it useful!
+**[⭐ Star this repo](https://github.com/ItsMarwan/UEFN-DevKit-Website)** if you found it useful!
 
 <br />
 

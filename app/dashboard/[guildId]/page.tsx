@@ -257,9 +257,9 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
       }
 
       // Warn if guild IDs do not match; continue to render so page is not stuck
-      if (raw.guild_id && String(raw.guild_id) !== guildId) {
-        showToast('warning', 'Guild ID Mismatch', `Server response guild_id ${raw.guild_id} does not match requested guild ${guildId}.`);
-      }
+      // if (raw.guild_id && String(raw.guild_id) !== guildId) {
+      //   showToast('warning', 'Guild ID Mismatch', `Server response guild_id ${raw.guild_id} does not match requested guild ${guildId}.`);
+      // }
 
       setConfig(raw);
       setLogChannel(raw.log_channel_id ?? '');

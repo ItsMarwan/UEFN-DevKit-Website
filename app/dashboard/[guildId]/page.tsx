@@ -87,44 +87,216 @@ function StatCard({ icon, label, value, color }: { icon: string; label: string; 
 function VerseScriptViewer({ scriptName, scriptContent, onClose }: { scriptName: string; scriptContent: string; onClose: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<any>(null);
+  const [monacoLoaded, setMonacoLoaded] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!containerRef.current || editorRef.current) return;
 
-    // Check if Monaco is available
-    if (typeof (window as any).monaco === 'undefined') {
-      console.warn('Monaco Editor not available');
+    // Check if Monaco is already available
+    if (typeof (window as any).monaco !== 'undefined') {
+      setMonacoLoaded(true);
       return;
     }
 
-    // Create editor instance
-    const monaco = (window as any).monaco;
-    editorRef.current = monaco.editor.create(containerRef.current, {
-      value: scriptContent,
-      language: 'verse',
-      theme: 'verse-dark',
-      automaticLayout: true,
-      readOnly: true,
-      minimap: { enabled: true, side: 'right' },
-      fontFamily: "Consolas, 'Courier New', monospace",
-      fontSize: 13,
-      lineHeight: 20,
-      renderLineHighlight: 'all',
-      smoothScrolling: true,
-      cursorBlinking: 'blink',
-      mouseWheelZoom: true,
-      padding: { top: 4, bottom: 4 }
-    });
+    // Load Monaco dynamically
+    const loadMonaco = async () => {
+      try {
+        // Load Monaco loader
+        const loaderScript = document.createElement('script');
+        loaderScript.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs/loader.js';
+        loaderScript.onload = () => {
+          // Configure Monaco
+          (window as any).require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' } });
+          (window as any).require(['vs/editor/editor.main'], () => {
+            // Register Verse language
+            const monaco = (window as any).monaco;
 
-    return () => {
-      if (editorRef.current) {
-        try {
-          editorRef.current.dispose();
-          editorRef.current = null;
-        } catch (e) {}
+            monaco.languages.register({ id: 'verse' });
+
+            monaco.languages.setLanguageConfiguration('verse', {
+              comments: {
+                lineComment: '#',
+                blockComment: ['<#', '#>']
+              },
+              brackets: [['{', '}'], ['[', ']'], ['(', ')']],
+              autoIndent: 'advanced',
+              indentationRules: {
+                increaseIndentPattern: /^[^#]*([:]|[!]|[:][\>]|[\<][#][\>]|[=]|[\.])[\s\t]*($|[#])/,
+                decreaseIndentPattern: /.^/
+              }
+            });
+
+            monaco.languages.setMonarchTokensProvider('verse', {
+              defaultToken: 'variable',
+              tokenPostfix: '.verse',
+
+              tokenizer: {
+                root: [
+                  [/<#(?!>)/, { token: 'comment', next: '@blockcomment' }],
+                  [/(?<!<)#(?!>)[^\n]*/, 'comment'],
+                  [/\/[A-Za-z0-9_][A-Za-z0-9_\-.]*(?:\/[A-Za-z0-9_.@-]*)*/, 'constant.language'],
+                  [/"/, { token: 'string', next: '@string_double' }],
+                  [/'(?=[^'\n]*')/, { token: 'string', next: '@string_single' }],
+                  [/0x[0-9A-Fa-f]+/, 'constant.numeric'],
+                  [/[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?(?:%|[A-Za-z_][A-Za-z0-9_]*)?/, 'constant.numeric'],
+                  [/<(?:override|suspends|decides|transacts|computes|converges|abstract|final|public|private|internal|protected|native|no_rollback|persist|epic_internal|allow_multiple|component|editable|serialized|unique|localizes|attaches|wears|constructor|immunity|event|parametric|checked)>/, 'punctuation.definition.tag'],
+                  [/:=/, 'punctuation.definition.tag'],
+                  [/@/, 'punctuation.definition.tag'],
+                  [/&/, 'punctuation.definition.tag'],
+                  [/\b(and|or|not)\b/, 'keyword.operator.logical'],
+                  [/\b(return|yield|break|continue)\b/, 'keyword.control'],
+                  [/\b(is|over|when|where|while|next|in|var|set|ref|alias|live|with|do|until|catch|then|else|of|at)\b/, 'keyword.declaration'],
+                  [/[A-Za-z_][A-Za-z0-9_]*(?=\s*(?::=|\s*:[^=)\n][^=\n]*=))/, 'entity.name.function'],
+                  [/[A-Za-z_][A-Za-z0-9_]*/, 'variable'],
+                  [/[|]|[.][.]|=>|[+\-*/]=/, 'keyword.operator'],
+                  [/[+\-*/]|->/, 'keyword.operator.arithmetic'],
+                  [/=(?!=)|<>|<=|<|>=|>/, 'keyword.operator.comparison'],
+                  [/[:.](?=\s*(#|$))/, 'punctuation.definition.tag'],
+                  [/[;,]/, 'punctuation.definition.tag'],
+                  [/[{}\[\]()]/, 'delimiter.bracket'],
+                  [/[.]/, 'delimiter'],
+                ],
+
+                blockcomment: [
+                  [/<#(?!>)/, { token: 'comment', next: '@push' }],
+                  [/(?<!<)#>/, { token: 'comment', next: '@pop' }],
+                  [/./, 'comment'],
+                  [/$/, 'comment']
+                ],
+
+                string_double: [
+                  [/[^"\\{]+/, 'string'],
+                  [/\\./, 'constant.character.escape'],
+                  [/\{/, { token: 'constant.character.escape', next: '@interp' }],
+                  [/"/, { token: 'string', next: '@pop' }],
+                  [/$/, { token: 'string', next: '@pop' }]
+                ],
+
+                string_single: [
+                  [/[^'\\]+/, 'string'],
+                  [/\\./, 'constant.character.escape'],
+                  [/'/, { token: 'string', next: '@pop' }],
+                  [/$/, { token: 'string', next: '@pop' }]
+                ],
+
+                interp: [
+                  [/\}/, { token: 'constant.character.escape', next: '@pop' }],
+                  { include: '@root' }
+                ]
+              }
+            });
+
+            // Define Verse dark theme
+            monaco.editor.defineTheme('verse-dark', {
+              base: 'vs-dark',
+              inherit: false,
+              rules: [
+                { token: 'invalid', foreground: 'f44747' },
+                { token: 'comment', foreground: '77B06B' },
+                { token: 'constant.language', foreground: '569cd6' },
+                { token: 'constant.numeric', foreground: 'c2ddb4' },
+                { token: 'constant.regexp', foreground: '646695' },
+                { token: 'constant.character.escape', foreground: 'B89047' },
+                { token: 'string', foreground: 'C09077' },
+                { token: 'keyword', foreground: '569cd6' },
+                { token: 'keyword.control', foreground: '569cd6' },
+                { token: 'keyword.operator', foreground: '77AFAF' },
+                { token: 'keyword.operator.logical', foreground: '77AFAF' },
+                { token: 'keyword.operator.arithmetic', foreground: '77AFAF' },
+                { token: 'keyword.operator.comparison', foreground: '77AFAF' },
+                { token: 'keyword.other.unit', foreground: '92a788' },
+                { token: 'keyword.declaration', foreground: '8499b7' },
+                { token: 'punctuation.definition.tag', foreground: '8499b7' },
+                { token: 'entity.name.function', foreground: 'e5c2ff' },
+                { token: 'variable', foreground: 'b9d6ff' },
+                { token: 'storage', foreground: '569CD6' },
+                { token: 'storage.type', foreground: '569CD6' },
+                { token: 'storage.modifier', foreground: '569CD6' },
+                { token: 'delimiter.bracket', foreground: 'D4D4D4' },
+                { token: 'delimiter', foreground: 'D4D4D4' },
+                { token: '', foreground: 'D4D4D4', background: '000000' },
+              ],
+              colors: {
+                'editor.background': '#000000',
+                'editor.foreground': '#D4D4D4',
+                'editor.lineHighlightBackground': '#12002C',
+                'editor.lineHighlightBorder': '#12002C',
+                'editor.inactiveSelectionBackground': '#3A3D41',
+                'editor.selectionHighlightBackground': '#ADD6FF26',
+                'editorIndentGuide.background': '#404040',
+                'editorIndentGuide.activeBackground': '#707070',
+                'list.dropBackground': '#383B3D',
+                'activityBarBadge.background': '#007ACC',
+                'sideBarTitle.foreground': '#BBBBBB',
+                'statusBarItem.remoteBackground': '#16825D',
+                'statusBarItem.remoteForeground': '#FFF',
+                'editor.selectionBackground': '#264F78',
+                'editorCursor.foreground': '#AEAFAD',
+                'editorLineNumber.foreground': '#858585',
+                'editorLineNumber.activeForeground': '#C6C6C6',
+                'editorGutter.background': '#000000',
+                'editorWhitespace.foreground': '#3B3B3B',
+                'editorRuler.foreground': '#5A5A5A',
+                'editorBracketMatch.background': '#0D3A58',
+                'editorBracketMatch.border': '#888888',
+                'scrollbarSlider.background': '#79797966',
+                'scrollbarSlider.hoverBackground': '#646464B3',
+                'scrollbarSlider.activeBackground': '#BFBFBF66',
+                'minimap.background': '#000000',
+                'minimap.selectionHighlight': '#264F78',
+                'minimapSlider.background': '#79797933',
+                'minimapSlider.hoverBackground': '#64646459',
+                'minimapSlider.activeBackground': '#BFBFBF33',
+                'editorSuggestWidget.background': '#252526',
+                'editorSuggestWidget.border': '#454545',
+                'editorSuggestWidget.foreground': '#D4D4D4',
+                'editorSuggestWidget.highlightForeground': '#0097FB',
+                'editorSuggestWidget.selectedBackground': '#094771',
+                'editorHoverWidget.background': '#252526',
+                'editorHoverWidget.border': '#454545',
+                'editorOverviewRuler.border': '#7F7F7F4D',
+                'editorError.foreground': '#F44747',
+                'editorWarning.foreground': '#CCA700',
+                'editorInfo.foreground': '#75BEFF',
+                'widget.shadow': '#000000',
+              }
+            });
+
+            setMonacoLoaded(true);
+          });
+        };
+        document.head.appendChild(loaderScript);
+      } catch (error) {
+        console.error('Failed to load Monaco Editor:', error);
       }
     };
-  }, [scriptContent]);
+
+    loadMonaco();
+  }, []);
+
+  useEffect(() => {
+    if (monacoLoaded && containerRef.current && !editorRef.current) {
+      const monaco = (window as any).monaco;
+      editorRef.current = monaco.editor.create(containerRef.current, {
+        value: scriptContent,
+        language: 'verse',
+        theme: 'verse-dark',
+        automaticLayout: true,
+        readOnly: true,
+        minimap: { enabled: true, side: 'right' },
+        fontFamily: "Consolas, 'Courier New', monospace",
+        fontSize: 13,
+        lineHeight: 20,
+        renderLineHighlight: 'all',
+        smoothScrolling: true,
+        cursorBlinking: 'blink',
+        mouseWheelZoom: true,
+        padding: { top: 4, bottom: 4 }
+      });
+      setLoading(false);
+    }
+  }, [monacoLoaded, scriptContent]);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-[9999]">
@@ -144,7 +316,17 @@ function VerseScriptViewer({ scriptName, scriptContent, onClose }: { scriptName:
         </div>
 
         {/* Monaco Editor Container */}
-        <div ref={containerRef} className="flex-1" />
+        <div className="flex-1 relative">
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+              <div className="text-center">
+                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-white/60">Loading Monaco Editor...</p>
+              </div>
+            </div>
+          )}
+          <div ref={containerRef} className="w-full h-full" />
+        </div>
       </div>
     </div>
   );

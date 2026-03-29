@@ -43,223 +43,29 @@ function CopyableCode({ code }: { code: string }) {
   );
 }
 
-const allEndpoints = [
-  {
-    id: 'customers',
-    title: 'Customers',
-    tier: 'enterprise' as const,
-    method: 'GET',
-    endpoint: '/api/v1/customers',
-    description: 'Retrieve customer data with filtering options',
-    parameters: [
-      { name: 'limit', type: 'number', default: '100', description: 'Results per page (max 1000)' },
-      { name: 'offset', type: 'number', default: '0', description: 'Pagination offset' },
-      { name: 'filter', type: 'string', description: 'active, inactive, or all' },
-    ],
-    example: '/api/v1/customers?limit=50&offset=0&filter=active',
-    curl: 'curl -H "Authorization: Bearer YOUR_TOKEN" -H "X-Discord-Server-ID: YOUR_SERVER_ID" https://uefndevkit.rweb.site/api/v1/customers?filter=active',
-  },
-  {
-    id: 'coupons',
-    title: 'Coupons [DEPRECATED]',
-    tier: 'enterprise' as const,
-    method: 'GET',
-    endpoint: '/api/v1/coupons [DEPRECATED]',
-    description: 'Retrieve coupon codes with optional active filter',
-    parameters: [
-      { name: 'limit', type: 'number', default: '100', description: 'Results per page (max 1000)' },
-      { name: 'offset', type: 'number', default: '0', description: 'Pagination offset' },
-      { name: 'active_only', type: 'boolean', description: 'Show only active coupons (true/false)' },
-    ],
-    example: '/api/v1/coupons?limit=50&active_only=true',
-    curl: 'curl -H "Authorization: Bearer YOUR_TOKEN" -H "X-Discord-Server-ID: YOUR_SERVER_ID" https://uefndevkit.rweb.site/api/v1/coupons?active_only=true',
-  },
-  {
-    id: 'subscriptions',
-    title: 'Subscriptions',
-    tier: 'enterprise' as const,
-    method: 'GET',
-    endpoint: '/api/v1/subscriptions',
-    description: 'Retrieve subscription data',
-    parameters: [
-      { name: 'limit', type: 'number', default: '100', description: 'Results per page (max 1000)' },
-      { name: 'offset', type: 'number', default: '0', description: 'Pagination offset' },
-    ],
-    example: '/api/v1/subscriptions?limit=50&offset=0',
-    curl: 'curl -H "Authorization: Bearer YOUR_TOKEN" -H "X-Discord-Server-ID: YOUR_SERVER_ID" https://uefndevkit.rweb.site/api/v1/subscriptions',
-  },
-  {
-    id: 'verse-scripts',
-    title: 'Verse Scripts',
-    tier: 'enterprise' as const,
-    method: 'GET',
-    endpoint: '/api/v1/verse-scripts',
-    description: 'Search and retrieve Verse scripts',
-    parameters: [
-      { name: 'limit', type: 'number', default: '100', description: 'Results per page (max 1000)' },
-      { name: 'offset', type: 'number', default: '0', description: 'Pagination offset' },
-      { name: 'search', type: 'string', description: 'Search by script name' },
-    ],
-    example: '/api/v1/verse-scripts?search=example&limit=50',
-    curl: 'curl -H "Authorization: Bearer YOUR_TOKEN" -H "X-Discord-Server-ID: YOUR_SERVER_ID" https://uefndevkit.rweb.site/api/v1/verse-scripts?search=example',
-  },
-  {
-    id: 'trackers',
-    title: 'Trackers',
-    tier: 'enterprise' as const,
-    method: 'GET',
-    endpoint: '/api/v1/trackers',
-    description: 'Retrieve trackers filtered by type',
-    parameters: [
-      { name: 'limit', type: 'number', default: '100', description: 'Results per page (max 1000)' },
-      { name: 'offset', type: 'number', default: '0', description: 'Pagination offset' },
-      { name: 'type', type: 'string', description: 'Filter by type (youtube, twitch, etc.)' },
-    ],
-    example: '/api/v1/trackers?type=youtube&limit=50',
-    curl: 'curl -H "Authorization: Bearer YOUR_TOKEN" -H "X-Discord-Server-ID: YOUR_SERVER_ID" https://uefndevkit.rweb.site/api/v1/trackers?type=youtube',
-  },
-  {
-    id: 'members',
-    title: 'Members',
-    tier: 'enterprise' as const,
-    method: 'GET',
-    endpoint: '/api/v1/members',
-    description: 'Retrieve server members filtered by role or other criteria',
-    parameters: [
-      { name: 'limit', type: 'number', default: '100', description: 'Results per page (max 1000)' },
-      { name: 'offset', type: 'number', default: '0', description: 'Pagination offset' },
-      { name: 'role', type: 'string', description: 'Filter by user role (admin, moderator, etc.)' },
-    ],
-    example: '/api/v1/members?role=admin&limit=50',
-    curl: 'curl -H "Authorization: Bearer YOUR_TOKEN" -H "X-Discord-Server-ID: YOUR_SERVER_ID" https://uefndevkit.rweb.site/api/v1/members?role=admin',
-  },
-  {
-    id: 'guild-settings',
-    title: 'Guild Settings',
-    tier: 'enterprise' as const,
-    method: 'GET',
-    endpoint: '/api/v1/guild-settings',
-    description: 'Retrieve current Discord server configuration (read-only)',
-    parameters: [],
-    example: '/api/v1/guild-settings',
-    curl: 'curl -H "Authorization: Bearer YOUR_TOKEN" -H "X-Discord-Server-ID: YOUR_SERVER_ID" https://uefndevkit.rweb.site/api/v1/guild-settings',
-  },
-  {
-    id: 'server-config-update',
-    title: 'Server Config (Update)',
-    tier: 'enterprise' as const,
-    method: 'PATCH',
-    endpoint: '/api/v1/config',
-    description: 'Partially update editable server configuration fields. Immutable fields (guild_id, server_tier, id, timestamps) are always blocked.',
-    parameters: [
-      { name: 'log_channel_id', type: 'string | null', description: 'Discord channel snowflake ID for bot logs' },
-      { name: 'default_customer_role_id', type: 'string | null', description: 'Discord role snowflake ID assigned to new customers' },
-      { name: 'encryption_enabled', type: 'boolean', description: 'Enable/disable at-rest field encryption' },
-      { name: 'key_stored_on_server', type: 'boolean', description: 'Whether the encryption key is stored server-side' },
-      { name: 'server_encryption_key', type: 'string | null', description: 'New encryption passphrase (omit to keep current)' },
-      { name: 'admin_allowed_roles', type: 'string[]', description: 'Array of Discord role snowflake IDs that can use admin commands' },
-    ],
-    example: `PATCH /api/v1/config\nContent-Type: application/json\n\n{\n  "endpoint": "guild_settings_update",\n  "method": "POST",\n  "parameters": {\n    "fields": {\n      "log_channel_id": "1234567890123456789",\n      "encryption_enabled": true,\n      "admin_allowed_roles": ["9876543210987654321"]\n    }\n  }\n}`,
-    curl: `curl -X PATCH \\\n  -H "Authorization: Bearer YOUR_TOKEN" \\\n  -H "X-Discord-Server-ID: YOUR_SERVER_ID" \\\n  -H "Content-Type: application/json" \\\n  -d '{"endpoint":"guild_settings_update","method":"POST","parameters":{"fields":{"encryption_enabled":true}}}' \\\n  https://uefndevkit.rweb.site/api/v1/config`,
-  },
-  {
-    id: 'redeem',
-    title: 'Redeem Code',
-    tier: 'enterprise' as const,
-    method: 'POST',
-    endpoint: '/api/v1/redeem',
-    description: 'Redeem a code to activate premium or unlock features for a guild.',
-    parameters: [
-      { name: 'code', type: 'string', description: 'Alphanumeric code (letters, digits, hyphens, underscores only)' },
-    ],
-    example: `POST /api/v1/redeem\nContent-Type: application/json\n\n{\n  "endpoint": "redeem_code",\n  "method": "POST",\n  "parameters": { "code": "PREMIUM-ABC123" }\n}`,
-    curl: `curl -X POST \\\n  -H "Authorization: Bearer YOUR_TOKEN" \\\n  -H "X-Discord-Server-ID: YOUR_SERVER_ID" \\\n  -H "Content-Type: application/json" \\\n  -d '{"endpoint":"redeem_code","method":"POST","parameters":{"code":"PREMIUM-ABC123"}}' \\\n  https://uefndevkit.rweb.site/api/v1/redeem`,
-  },
-  {
-    id: 'statistics',
-    title: 'Statistics',
-    tier: 'enterprise' as const,
-    method: 'GET',
-    endpoint: '/api/v1/statistics',
-    description: 'Retrieve server statistics and analytics',
-    parameters: [],
-    example: '/api/v1/statistics',
-    curl: 'curl -H "Authorization: Bearer YOUR_TOKEN" -H "X-Discord-Server-ID: YOUR_SERVER_ID" https://uefndevkit.rweb.site/api/v1/statistics',
-  },
-  {
-    id: 'files',
-    title: 'File Manager',
-    tier: 'enterprise' as const,
-    method: 'GET/POST',
-    endpoint: '/api/v1/files',
-    description: 'List, read, and write server files',
-    parameters: [
-      { name: 'filename', type: 'string', description: 'File name to read or write' },
-      { name: 'content', type: 'string', description: 'File content (POST only)' },
-    ],
-    example: 'GET /api/v1/files\nPOST /api/v1/files {"filename":"config.json","content":"{}"}',
-    curl: 'curl -H "Authorization: Bearer YOUR_TOKEN" -H "X-Discord-Server-ID: YOUR_SERVER_ID" https://uefndevkit.rweb.site/api/v1/files',
-  },
-  {
-    id: 'reports',
-    title: 'Reports',
-    tier: 'enterprise' as const,
-    method: 'GET/POST',
-    endpoint: '/api/v1/reports',
-    description: 'List reports and create new report submissions',
-    parameters: [
-      { name: 'user_id', type: 'string', description: 'Discord user ID to report' },
-      { name: 'reason', type: 'string', description: 'Report reason' },
-      { name: 'details', type: 'string', description: 'Additional details' },
-    ],
-    example: 'GET /api/v1/reports\nPOST /api/v1/reports {"user_id":"123","reason":"Spam","details":"..."}',
-    curl: 'curl -H "Authorization: Bearer YOUR_TOKEN" -H "X-Discord-Server-ID: YOUR_SERVER_ID" https://uefndevkit.rweb.site/api/v1/reports',
-  },
-  {
-    id: 'island-lookup',
-    title: 'Island Lookup',
-    tier: 'premium' as const,
-    method: 'GET',
-    endpoint: '/api/v1/island/lookup',
-    description: 'Get detailed statistics for a Fortnite Creative island',
-    parameters: [
-      { name: 'island_code', type: 'string', description: 'Island code (format: XXXX-XXXX-XXXX)' },
-    ],
-    example: '/api/v1/island/lookup?island_code=1234-5678-9012',
-    curl: 'curl -H "Authorization: Bearer YOUR_TOKEN" -H "X-Discord-Server-ID: YOUR_SERVER_ID" "https://uefndevkit.rweb.site/api/v1/island/lookup?island_code=1234-5678-9012"',
-  },
-  {
-    id: 'island-predict',
-    title: 'Island Predict',
-    tier: 'premium' as const,
-    method: 'GET',
-    endpoint: '/api/v1/island/predict',
-    description: 'Get AI-powered discovery predictions for an island',
-    parameters: [
-      { name: 'island_code', type: 'string', description: 'Island code (format: XXXX-XXXX-XXXX)' },
-    ],
-    example: '/api/v1/island/predict?island_code=1234-5678-9012',
-    curl: 'curl -H "Authorization: Bearer YOUR_TOKEN" -H "X-Discord-Server-ID: YOUR_SERVER_ID" "https://uefndevkit.rweb.site/api/v1/island/predict?island_code=1234-5678-9012"',
-  },
-  {
-    id: 'sellers',
-    title: 'Sellers',
-    tier: 'premium' as const,
-    method: 'GET/POST',
-    endpoint: '/api/v1/sellers',
-    description: 'List seller profiles and create new seller entries',
-    parameters: [
-      { name: 'limit', type: 'number', default: '50', description: 'Results per page' },
-      { name: 'offset', type: 'number', default: '0', description: 'Pagination offset' },
-      { name: 'name', type: 'string', description: 'Seller name (POST only)' },
-      { name: 'description', type: 'string', description: 'Seller description (POST only)' },
-      { name: 'contact', type: 'string', description: 'Contact information (POST only)' },
-      { name: 'region', type: 'string', description: 'Region (POST only)' },
-    ],
-    example: 'GET /api/v1/sellers?limit=50\nPOST /api/v1/sellers {"name":"Seller","description":"...","contact":"...","region":"US"}',
-    curl: 'curl -H "Authorization: Bearer YOUR_TOKEN" -H "X-Discord-Server-ID: YOUR_SERVER_ID" https://uefndevkit.rweb.site/api/v1/sellers',
-  },
-];
+interface ApiEndpoint {
+  path: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  description: string;
+  category: string;
+  auth: boolean;
+  premium: boolean;
+  details: string;
+  examples: string[];
+  relatedEndpoints: string[];
+}
+
+interface EndpointData {
+  id: string;
+  title: string;
+  tier: 'enterprise' | 'premium';
+  method: string;
+  endpoint: string;
+  description: string;
+  parameters: Array<{ name: string; type: string; default?: string; description: string }>;
+  example: string;
+  curl: string;
+}
 
 export function APIDocsComponent({ initialTier = 'enterprise' }: { initialTier?: 'enterprise' | 'premium' | 'all' }) {
   const router = useRouter();
@@ -267,15 +73,54 @@ export function APIDocsComponent({ initialTier = 'enterprise' }: { initialTier?:
 
   const [selectedEndpoint, setSelectedEndpoint] = useState<string | null>(null);
   const [activeTier, setActiveTier] = useState<'enterprise' | 'premium' | 'all'>(initialTier);
+  const [endpoints, setEndpoints] = useState<EndpointData[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  const endpoints = allEndpoints;
+  useEffect(() => {
+    const fetchEndpoints = async () => {
+      // Don't fetch if we already have data
+      if (endpoints.length > 0) return;
+      
+      try {
+        const response = await fetch('/lib/api.ts');
+        if (!response.ok) {
+          throw new Error('Failed to fetch API endpoints');
+        }
+        const apiData: Record<string, ApiEndpoint> = await response.json();
+        
+        // Convert lib data to component format
+        const convertedEndpoints: EndpointData[] = Object.entries(apiData).map(([key, endpoint]) => ({
+          id: key,
+          title: key.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          tier: endpoint.premium ? 'premium' : 'enterprise',
+          method: endpoint.method,
+          endpoint: endpoint.path,
+          description: endpoint.description,
+          parameters: [], // Could be populated from details or examples if needed
+          example: endpoint.examples.length > 0 ? endpoint.examples[0] : `${endpoint.method} ${endpoint.path}`,
+          curl: `curl -H "Authorization: Bearer YOUR_TOKEN" ${endpoint.auth ? '-H "X-Discord-Server-ID: YOUR_SERVER_ID" ' : ''}https://uefndevkit.rweb.site${endpoint.path}`,
+        }));
+        
+        setEndpoints(convertedEndpoints);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load endpoints');
+      }
+    };
+
+    fetchEndpoints();
+  }, []);
+
   const filteredEndpoints = activeTier === 'all' ? endpoints : endpoints.filter(e => e.tier === activeTier);
 
   useEffect(() => {
     const newFiltered = activeTier === 'all' ? endpoints : endpoints.filter(e => e.tier === activeTier);
-    if (newFiltered.length > 0) {
+    
+    // Check if current selectedEndpoint exists in the new filtered list
+    const currentExists = newFiltered.some(e => e.id === selectedEndpoint);
+    
+    if (newFiltered.length > 0 && (!selectedEndpoint || !currentExists)) {
       setSelectedEndpoint(newFiltered[0].id);
-    } else {
+    } else if (newFiltered.length === 0) {
       setSelectedEndpoint(null);
     }
 
@@ -283,7 +128,7 @@ export function APIDocsComponent({ initialTier = 'enterprise' }: { initialTier?:
     if (pathname !== targetPath) {
       router.replace(targetPath, { scroll: false });
     }
-  }, [activeTier, endpoints, pathname, router]);
+  }, [activeTier, endpoints, pathname, router, selectedEndpoint]);
 
   const selectedEndpointData = filteredEndpoints.find((e) => e.id === selectedEndpoint);
 
@@ -292,9 +137,22 @@ export function APIDocsComponent({ initialTier = 'enterprise' }: { initialTier?:
       case 'GET':   return 'from-blue-500 to-cyan-500 shadow-blue-500/20';
       case 'POST':  return 'from-green-500 to-emerald-500 shadow-green-500/20';
       case 'PATCH': return 'from-yellow-500 to-orange-500 shadow-yellow-500/20';
+      case 'PUT':   return 'from-orange-500 to-yellow-500 shadow-orange-500/20';
+      case 'DELETE': return 'from-red-500 to-pink-500 shadow-red-500/20';
       default:      return 'from-blue-500 to-cyan-500 shadow-blue-500/20';
     }
   };
+
+  if (error) {
+    return (
+      <div className="bg-black text-white min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-400 mb-4">⚠️ Error loading API documentation</div>
+          <p className="text-white/60">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-black text-white min-h-screen">

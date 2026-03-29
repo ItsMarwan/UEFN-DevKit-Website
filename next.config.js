@@ -50,6 +50,9 @@ const nextConfig = {
       { source: '/api/docs/premium', destination: '/docs/premium' },
       { source: '/api/docs/enterprise', destination: '/docs/enterprise' },
       { source: '/api/docs/api', destination: '/docs/api' },
+      { source: '/lib/commands.ts', destination: '/api/lib/commands' },
+      { source: '/lib/api', destination: '/api/lib/api' },
+      { source: '/lib/api.ts', destination: '/api/lib/api' },
     ];
   },
 };

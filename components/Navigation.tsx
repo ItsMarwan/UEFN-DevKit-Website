@@ -11,7 +11,7 @@ export function Navigation() {
     { href: '/', label: 'Home' },
     { href: '/commands', label: 'Commands' },
     { href: '/api/docs', label: 'API' },
-    { href: '/premium', label: 'Premium' },
+    { href: '/buy', label: 'Premium' },
     { href: '/dashboard', label: 'Dashboard' },
   ];
 

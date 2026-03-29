@@ -84,9 +84,9 @@ export default function PremiumPage() {
                 <span className="text-white/60 ml-2">/month</span>
               </div>
 
-              <button className="w-full py-3 rounded-lg font-bold bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:shadow-lg hover:shadow-blue-500/50 transition-all mb-8">
+              <Link href="/buy" className="w-full inline-flex justify-center py-3 rounded-lg font-bold bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:shadow-lg hover:shadow-blue-500/50 transition-all mb-8">
                 Upgrade Now
-              </button>
+              </Link>
 
               <ul className="space-y-4">
                 <li className="flex items-start">

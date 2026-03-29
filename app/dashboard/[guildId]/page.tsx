@@ -31,10 +31,10 @@ interface GuildConfig {
   updated_at?: string;
 }
 
-type TabId = 'overview' | 'customers' | 'logs' | 'members' | 'verse_scripts' | 'trackers' | 'config' | 'editor';
+type TabId = 'overview' | 'customers' | 'logs' | 'members' | 'verse_scripts' | 'trackers' | 'config' | 'island_tools' | 'files' | 'reports' | 'sellers' | 'editor';
 type LoadState = 'checking' | 'loading' | 'ready' | 'forbidden' | 'error';
 
-const VALID_TABS: TabId[] = ['overview', 'customers', 'logs', 'members', 'verse_scripts', 'trackers', 'config', 'editor'];
+const VALID_TABS: TabId[] = ['overview', 'customers', 'logs', 'members', 'verse_scripts', 'trackers', 'config', 'island_tools', 'files', 'reports', 'sellers', 'editor'];
 
 function getTabFromPath(): TabId {
   if (typeof window === 'undefined') return 'overview';
@@ -339,6 +339,104 @@ function VerseScriptViewer({ scriptName, scriptContent, onClose }: { scriptName:
   );
 }
 
+function VerseScriptsUploadForm({ guildId, onUploadSuccess }: { guildId: string; onUploadSuccess: () => void }) {
+  const { showToast } = useToast();
+  const [showForm, setShowForm] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [formData, setFormData] = useState({ script_name: '', script_content: '', description: '' });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.script_name.trim() || !formData.script_content.trim()) {
+      showToast('warning', 'Missing Fields', 'Please enter both a name and content');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const res = await fetch('/api/v1/verse', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Discord-Server-ID': guildId,
+          'Authorization': 'Bearer placeholder',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        showToast('error', 'Upload Failed', 'Could not upload verse script');
+        return;
+      }
+
+      showToast('success', 'Script Uploaded', `${formData.script_name} has been uploaded`);
+      setFormData({ script_name: '', script_content: '', description: '' });
+      setShowForm(false);
+      onUploadSuccess();
+    } catch (error) {
+      showToast('error', 'Error', error instanceof Error ? error.message : 'Failed to upload script');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className="mb-6 p-4 rounded-lg border border-blue-500/30 bg-blue-500/5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-white font-bold text-sm">Upload New Verse Script</h3>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="px-3 py-1.5 text-xs bg-blue-500/20 hover:bg-blue-500/40 border border-blue-500/30 text-blue-400 rounded transition-colors"
+        >
+          {showForm ? '− Collapse' : '+ Upload'}
+        </button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <input
+            type="text"
+            value={formData.script_name}
+            onChange={e => setFormData({ ...formData, script_name: e.target.value })}
+            placeholder="Script name (e.g., MyScript)"
+            className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 text-sm"
+          />
+          <textarea
+            value={formData.script_content}
+            onChange={e => setFormData({ ...formData, script_content: e.target.value })}
+            placeholder="Paste your Verse script code here..."
+            rows={6}
+            className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 text-sm font-mono resize-none"
+          />
+          <input
+            type="text"
+            value={formData.description}
+            onChange={e => setFormData({ ...formData, description: e.target.value })}
+            placeholder="Description (optional)"
+            className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 text-sm"
+          />
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={isUploading}
+              className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/40 border border-blue-500/30 text-blue-400 rounded-lg font-medium text-sm transition-colors disabled:opacity-50"
+            >
+              {isUploading ? 'Uploading...' : '✓ Upload Script'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 rounded-lg font-medium text-sm transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
 function VerseScriptsTable({ data, loading, guildId }: { data: Record<string, unknown>[] | null; loading: boolean; guildId: string }) {
   const [viewingScript, setViewingScript] = useState<{ name: string; content: string; id: string } | null>(null);
 
@@ -557,6 +655,831 @@ function EditorSoon() {
   );
 }
 
+
+function IslandToolsTab({ guildId }: { guildId: string }) {
+  const { showToast } = useToast();
+  const [islandCode, setIslandCode] = useState('');
+  const [lookupData, setLookupData] = useState<any | null>(null);
+  const [predictData, setPredictData] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'lookup' | 'predict'>('lookup');
+
+  const handleIslandLookup = async () => {
+    if (!islandCode.trim()) {
+      showToast('warning', 'Missing Code', 'Please enter an island code');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/v1/island?code=${encodeURIComponent(islandCode.trim())}&action=lookup`, {
+        headers: {
+          'X-Discord-Server-ID': guildId,
+          'Authorization': 'Bearer placeholder',
+        },
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        showToast('error', 'Lookup Failed', error.error || error.message || 'Failed to fetch island data');
+        setLookupData(null);
+        return;
+      }
+
+      const result = await res.json();
+      if (result.data?.data) {
+        setLookupData(result.data.data);
+        setActiveTab('lookup');
+        showToast('success', 'Island Found', `Data loaded for ${result.data.data.map_name}`);
+      } else {
+        showToast('error', 'No Data', 'No island data found for this code');
+        setLookupData(null);
+      }
+    } catch (error) {
+      showToast('error', 'Connection Error', error instanceof Error ? error.message : 'Failed to connect');
+      setLookupData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleIslandPredict = async () => {
+    if (!islandCode.trim()) {
+      showToast('warning', 'Missing Code', 'Please enter an island code');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/v1/island?code=${encodeURIComponent(islandCode.trim())}&action=predict`, {
+        headers: {
+          'X-Discord-Server-ID': guildId,
+          'Authorization': 'Bearer placeholder',
+        },
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        showToast('error', 'Prediction Failed', error.error || error.message || 'Failed to get prediction');
+        setPredictData(null);
+        return;
+      }
+
+      const result = await res.json();
+      if (result.data?.data) {
+        setPredictData(result.data.data);
+        setActiveTab('predict');
+        showToast('success', 'Prediction Generated', `Analysis complete for ${result.data.data.map_name || 'your island'}`);
+      } else {
+        showToast('error', 'No Data', 'Could not generate prediction');
+        setPredictData(null);
+      }
+    } catch (error) {
+      showToast('error', 'Connection Error', error instanceof Error ? error.message : 'Failed to connect');
+      setPredictData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Search Input */}
+      <div className="p-4 sm:p-6 rounded-xl border border-blue-500/30 bg-black/40">
+        <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+          <span>🏝️</span> Island Tools
+        </h3>
+        <p className="text-white/50 text-sm mb-4">Look up island statistics and get discovery predictions powered by AI analytics.</p>
+        
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          <input
+            type="text"
+            value={islandCode}
+            onChange={e => setIslandCode(e.target.value.toUpperCase())}
+            placeholder="Island code (e.g., 1234-5678-9012)"
+            maxLength={14}
+            className="flex-1 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
+          />
+          <button
+            onClick={handleIslandLookup}
+            disabled={loading}
+            className="px-4 py-2.5 bg-blue-500/20 hover:bg-blue-500/40 border border-blue-500/30 text-blue-400 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
+          >
+            {loading && activeTab === 'lookup' ? <div className="w-4 h-4 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin" /> : '🔍'}
+            Lookup
+          </button>
+          <button
+            onClick={handleIslandPredict}
+            disabled={loading}
+            className="px-4 py-2.5 bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/30 text-purple-400 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
+          >
+            {loading && activeTab === 'predict' ? <div className="w-4 h-4 border-2 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" /> : '🤖'}
+            Predict
+          </button>
+        </div>
+
+        {/* Results Tabs */}
+        {(lookupData || predictData) && (
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setActiveTab('lookup')}
+                disabled={!lookupData}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  activeTab === 'lookup' && lookupData
+                    ? 'bg-blue-500/20 border border-blue-500/30 text-blue-400'
+                    : 'bg-white/5 border border-white/10 text-white/50 disabled:opacity-50'
+                }`}
+              >
+                📊 Statistics
+              </button>
+              <button
+                onClick={() => setActiveTab('predict')}
+                disabled={!predictData}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  activeTab === 'predict' && predictData
+                    ? 'bg-purple-500/20 border border-purple-500/30 text-purple-400'
+                    : 'bg-white/5 border border-white/10 text-white/50 disabled:opacity-50'
+                }`}
+              >
+                🤖 Prediction
+              </button>
+            </div>
+
+            {/* Lookup Results */}
+            {activeTab === 'lookup' && lookupData && (
+              <div className="space-y-3 mt-4">
+                <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                  <h4 className="text-white font-bold mb-3">{lookupData.map_name}</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                    <div>
+                      <p className="text-white/50 text-xs uppercase tracking-wide">Creator</p>
+                      <p className="text-white font-mono text-xs mt-1">{lookupData.creator_code || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/50 text-xs uppercase tracking-wide">Category</p>
+                      <p className="text-white font-mono text-xs mt-1">{lookupData.category || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/50 text-xs uppercase tracking-wide">Plays</p>
+                      <p className="text-white font-bold text-sm mt-1">{lookupData.plays?.toLocaleString() || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/50 text-xs uppercase tracking-wide">Unique Players</p>
+                      <p className="text-white font-bold text-sm mt-1">{lookupData.unique_players?.toLocaleString() || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/50 text-xs uppercase tracking-wide">Peak CCU</p>
+                      <p className="text-white font-bold text-sm mt-1">{lookupData.peak_ccu?.toLocaleString() || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/50 text-xs uppercase tracking-wide">Avg Time</p>
+                      <p className="text-white font-bold text-sm mt-1">{lookupData.avg_time?.toFixed(1) || '—'} min</p>
+                    </div>
+                    <div>
+                      <p className="text-white/50 text-xs uppercase tracking-wide">Favorites</p>
+                      <p className="text-white font-bold text-sm mt-1">{lookupData.favorites?.toLocaleString() || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/50 text-xs uppercase tracking-wide">Minutes Played</p>
+                      <p className="text-white font-bold text-sm mt-1">{lookupData.minutes_played?.toLocaleString() || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/50 text-xs uppercase tracking-wide">Day 1 Retention</p>
+                      <p className="text-white font-bold text-sm mt-1">{lookupData.d1_retention ? (lookupData.d1_retention * 100).toFixed(1) + '%' : '—'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Prediction Results */}
+            {activeTab === 'predict' && predictData && (
+              <div className="space-y-3 mt-4">
+                <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-white font-bold">{predictData.map_name}</h4>
+                    <span className="text-2xl">{predictData.color_indicator}</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+                    <div>
+                      <p className="text-white/50 text-xs uppercase tracking-wide">Discovery Probability</p>
+                      <p className="text-white font-bold text-lg mt-1">{predictData.probability?.toFixed(1) || '—'}%</p>
+                    </div>
+                    <div>
+                      <p className="text-white/50 text-xs uppercase tracking-wide">Confidence</p>
+                      <p className="text-white font-bold text-lg mt-1">{predictData.confidence?.toFixed(1) || '—'}%</p>
+                    </div>
+                    <div>
+                      <p className="text-white/50 text-xs uppercase tracking-wide">Trending</p>
+                      <p className="text-white font-bold text-lg mt-1">{predictData.is_trending ? '🔥 Yes' : 'No'}</p>
+                    </div>
+                    <div>
+                      <p className="text-white/50 text-xs uppercase tracking-wide">CCU Momentum</p>
+                      <p className={`font-bold text-sm mt-1 ${predictData.ccu_momentum >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {predictData.ccu_momentum?.toFixed(2) || '—'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-white/50 text-xs uppercase tracking-wide">Should Update</p>
+                      <p className="text-white font-bold text-sm mt-1">{predictData.should_update ? '✅ Yes' : '❌ No'}</p>
+                    </div>
+                  </div>
+
+                  {predictData.update_reason && (
+                    <div className="mb-4 p-3 rounded bg-white/5 border border-white/10">
+                      <p className="text-white/60 text-xs uppercase tracking-wide mb-1">Update Recommendation</p>
+                      <p className="text-white text-sm">{predictData.update_reason}</p>
+                    </div>
+                  )}
+
+                  {predictData.discovery_tabs && Object.keys(predictData.discovery_tabs).length > 0 && (
+                    <div>
+                      <p className="text-white/60 text-xs uppercase tracking-wide mb-2">Discovery Tabs</p>
+                      <div className="space-y-1">
+                        {Object.entries(predictData.discovery_tabs)
+                          .sort((a, b) => (b[1] as number) - (a[1] as number))
+                          .slice(0, 5)
+                          .map(([tab, pct]) => (
+                            <div key={tab} className="flex items-center justify-between">
+                              <span className="text-white/60 text-xs">{tab}</span>
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-24 bg-white/10 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-gradient-to-r from-blue-500 to-cyan-500"
+                                    style={{ width: `${pct}%` }}
+                                  />
+                                </div>
+                                <span className="text-white font-bold text-xs w-8 text-right">{(pct as number).toFixed(1)}%</span>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Feature Info */}
+      <div className="p-4 sm:p-6 rounded-xl border border-white/10 bg-black/40">
+        <h3 className="text-white font-bold mb-3 flex items-center gap-2">
+          <span>ℹ️</span> About Island Tools
+        </h3>
+        <div className="space-y-3 text-sm text-white/60">
+          <p>
+            <span className="text-white font-semibold">🔍 Island Lookup</span> — Get real-time statistics for any Fortnite Creative island including player counts, engagement metrics, and retention rates.
+          </p>
+          <p>
+            <span className="text-white font-semibold">🤖 Discovery Prediction</span> — AI-powered analysis of discovery probability, trending status, and recommendations for when to update your island.
+          </p>
+          <p className="pt-2 border-t border-white/10">
+            Island Tools is a <span className="text-blue-400 font-semibold">Premium</span> feature. Both Discord commands and API access are available for premium servers.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+function FileManagerTab({ guildId }: { guildId: string }) {
+  const { showToast } = useToast();
+  const [activeTable, setActiveTable] = useState<'customers' | 'verse_scripts' | 'trackers' | 'guild_settings'>('customers');
+  const [tableData, setTableData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<any>(null);
+  const [monacoLoaded, setMonacoLoaded] = useState(false);
+  const [editorLoading, setEditorLoading] = useState(true);
+
+  // Load Monaco Editor
+  useEffect(() => {
+    if (!containerRef.current || editorRef.current || !selectedRow) return;
+
+    if (typeof (window as any).monaco !== 'undefined') {
+      setMonacoLoaded(true);
+      return;
+    }
+
+    const loadMonaco = async () => {
+      try {
+        const loaderScript = document.createElement('script');
+        loaderScript.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs/loader.js';
+        loaderScript.onload = () => {
+          (window as any).require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' } });
+          (window as any).require(['vs/editor/editor.main'], () => {
+            const monaco = (window as any).monaco;
+            monaco.editor.defineTheme('json-dark', {
+              base: 'vs-dark',
+              inherit: false,
+              rules: [
+                { token: 'string.key', foreground: 'CE9178' },
+                { token: 'string.value', foreground: 'CE9178' },
+                { token: 'number', foreground: 'B5CEA8' },
+                { token: 'keyword', foreground: '569CD6' },
+              ],
+              colors: {
+                'editor.background': '#1e1e1e',
+                'editor.foreground': '#D4D4D4',
+                'editor.lineHighlightBackground': '#2d2d30',
+                'editorLineNumber.foreground': '#858585',
+                'editorCursor.foreground': '#AEAFAD',
+                'editorGutter.background': '#1e1e1e',
+              }
+            });
+            setMonacoLoaded(true);
+          });
+        };
+        document.head.appendChild(loaderScript);
+      } catch (error) {
+        console.error('Failed to load Monaco Editor:', error);
+      }
+    };
+
+    loadMonaco();
+  }, [selectedRow]);
+
+  // Create editor when Monaco is loaded
+  useEffect(() => {
+    if (monacoLoaded && containerRef.current && !editorRef.current && selectedRow) {
+      const monaco = (window as any).monaco;
+      const jsonContent = JSON.stringify(selectedRow, null, 2);
+      editorRef.current = monaco.editor.create(containerRef.current, {
+        value: jsonContent,
+        language: 'json',
+        theme: 'json-dark',
+        automaticLayout: true,
+        readOnly: true,
+        minimap: { enabled: true, side: 'right' },
+        fontFamily: "Consolas, 'Courier New', monospace",
+        fontSize: 12,
+        lineHeight: 20,
+        renderLineHighlight: 'all',
+        smoothScrolling: true,
+        cursorBlinking: 'blink',
+        mouseWheelZoom: true,
+        padding: { top: 4, bottom: 4 }
+      });
+      setEditorLoading(false);
+    }
+  }, [monacoLoaded, selectedRow]);
+
+  const fetchTableData = async (table: string) => {
+    setLoading(true);
+    setSelectedRow(null);
+    editorRef.current = null;
+    try {
+      const res = await fetch(`/api/v1/files?what=${table}`, {
+        headers: {
+          'X-Discord-Server-ID': guildId,
+          'Authorization': 'Bearer placeholder',
+        },
+      });
+
+      if (!res.ok) {
+        showToast('error', 'Failed to Load Data', `Could not fetch ${table}`);
+        setTableData([]);
+        return;
+      }
+
+      const data = await res.json();
+      setTableData(Array.isArray(data.data) ? data.data : []);
+    } catch (error) {
+      showToast('error', 'Connection Error', error instanceof Error ? error.message : 'Failed to connect');
+      setTableData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTableData(activeTable);
+  }, [activeTable]);
+
+  const handleTableChange = (table: 'customers' | 'verse_scripts' | 'trackers' | 'guild_settings') => {
+    setActiveTable(table);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="p-4 sm:p-6 rounded-xl border border-blue-500/30 bg-black/40">
+        <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+          <span>📁</span> File Manager
+        </h3>
+        <p className="text-white/50 text-sm mb-4">Navigate and view your server data tables (read-only).</p>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-4 flex-wrap">
+          {(['customers', 'verse_scripts', 'trackers', 'guild_settings'] as const).map((table) => (
+            <button
+              key={table}
+              onClick={() => handleTableChange(table)}
+              className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                activeTable === table
+                  ? 'bg-blue-500/30 border border-blue-500/50 text-blue-200'
+                  : 'bg-white/5 border border-white/10 text-white/70 hover:border-blue-500/30'
+              }`}
+            >
+              {table === 'customers' ? '👥 Customers' : table === 'verse_scripts' ? '📦 Verse Scripts' : table === 'trackers' ? '🎯 Trackers' : '⚙️ Guild Settings'}
+            </button>
+          ))}
+        </div>
+
+        {selectedRow ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-white font-bold">Viewing Record</h4>
+                <p className="text-white/50 text-xs mt-1">Read-only JSON Viewer</p>
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedRow(null);
+                  editorRef.current = null;
+                }}
+                className="px-3 py-1.5 text-xs bg-white/10 hover:bg-white/20 text-white rounded transition-colors"
+              >
+                ← Back to List
+              </button>
+            </div>
+
+            {/* Monaco Editor Container */}
+            <div className="relative border border-white/10 rounded-lg bg-black/40 overflow-hidden" style={{ height: '400px' }}>
+              {editorLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+                  <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+              <div ref={containerRef} className="w-full h-full" />
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-white font-semibold text-sm">{tableData.length} records</h4>
+              <button
+                onClick={() => fetchTableData(activeTable)}
+                disabled={loading}
+                className="px-3 py-1.5 text-xs bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded transition-colors disabled:opacity-50"
+              >
+                ↻ Refresh
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : tableData.length === 0 ? (
+              <div className="text-center py-8 text-white/30">No records found in {activeTable}</div>
+            ) : (
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {tableData.map((record, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedRow(record)}
+                    className="w-full text-left px-4 py-3 rounded-lg bg-white/5 border border-white/10 hover:border-blue-500/50 hover:bg-white/10 transition-all"
+                  >
+                    <p className="text-white font-mono text-sm">
+                      {record.id || record.name || record.guild_id || `Record ${i + 1}`}
+                    </p>
+                    <p className="text-white/40 text-xs mt-1">Click to view details</p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ReportsTab({ guildId }: { guildId: string }) {
+  const { showToast } = useToast();
+  const [reports, setReports] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({ user_id: '', reason: '', details: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchReports = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/v1/reports', {
+        headers: {
+          'X-Discord-Server-ID': guildId,
+          'Authorization': 'Bearer placeholder',
+        },
+      });
+
+      if (!res.ok) {
+        showToast('error', 'Failed to Load Reports', 'Could not fetch reports');
+        setReports([]);
+        return;
+      }
+
+      const data = await res.json();
+      setReports(Array.isArray(data.data) ? data.data : []);
+    } catch (error) {
+      showToast('error', 'Error', error instanceof Error ? error.message : 'Failed to fetch reports');
+      setReports([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.user_id.trim()) {
+      showToast('warning', 'Missing Field', 'Please enter a user ID');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/v1/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Discord-Server-ID': guildId,
+          'Authorization': 'Bearer placeholder',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        showToast('error', 'Submission Failed', 'Could not create report');
+        return;
+      }
+
+      showToast('success', 'Report Created', 'Your report has been submitted');
+      setFormData({ user_id: '', reason: '', details: '' });
+      setShowForm(false);
+      fetchReports();
+    } catch (error) {
+      showToast('error', 'Error', error instanceof Error ? error.message : 'Failed to submit report');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReports();
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <div className="p-4 sm:p-6 rounded-xl border border-orange-500/30 bg-black/40">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-white font-bold flex items-center gap-2">
+            <span>🚩</span> Reports
+          </h3>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="px-3 py-1.5 text-xs bg-orange-500/20 hover:bg-orange-500/40 border border-orange-500/30 text-orange-400 rounded transition-colors"
+          >
+            + New Report
+          </button>
+        </div>
+
+        {showForm && (
+          <form onSubmit={handleSubmit} className="mb-6 p-4 rounded-lg bg-white/5 border border-white/10 space-y-3">
+            <input
+              type="text"
+              value={formData.user_id}
+              onChange={e => setFormData({ ...formData, user_id: e.target.value })}
+              placeholder="User ID to report"
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-orange-500 text-sm"
+            />
+            <input
+              type="text"
+              value={formData.reason}
+              onChange={e => setFormData({ ...formData, reason: e.target.value })}
+              placeholder="Reason (e.g., Spam, Abuse)"
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-orange-500 text-sm"
+            />
+            <textarea
+              value={formData.details}
+              onChange={e => setFormData({ ...formData, details: e.target.value })}
+              placeholder="Additional details..."
+              rows={3}
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-orange-500 text-sm resize-none"
+            />
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-orange-500/20 hover:bg-orange-500/40 border border-orange-500/30 text-orange-400 rounded-lg font-medium text-sm transition-colors disabled:opacity-50"
+              >
+                {isSubmitting ? 'Submitting...' : '✓ Submit Report'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white/70 rounded-lg font-medium text-sm transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : reports.length === 0 ? (
+          <div className="text-center py-8 text-white/30">No reports yet</div>
+        ) : (
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {reports.map((report, i) => (
+              <div key={i} className="px-4 py-3 rounded-lg bg-white/5 border border-white/10">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-white font-mono text-sm">User: {report.user_id}</p>
+                    <p className="text-white/60 text-xs mt-1">{report.reason || 'No reason provided'}</p>
+                    {report.details && <p className="text-white/40 text-xs mt-1">{report.details}</p>}
+                  </div>
+                  <span className="text-white/30 text-xs whitespace-nowrap ml-2">
+                    {report.created_at ? new Date(report.created_at).toLocaleDateString() : '—'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SellersTab({ guildId }: { guildId: string }) {
+  const { showToast } = useToast();
+  const [sellers, setSellers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({ name: '', description: '', contact: '', region: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchSellers = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/v1/sellers', {
+        headers: {
+          'X-Discord-Server-ID': guildId,
+          'Authorization': 'Bearer placeholder',
+        },
+      });
+
+      if (!res.ok) {
+        showToast('error', 'Failed to Load Sellers', 'Could not fetch seller list');
+        setSellers([]);
+        return;
+      }
+
+      const data = await res.json();
+      setSellers(Array.isArray(data.data) ? data.data : []);
+    } catch (error) {
+      showToast('error', 'Error', error instanceof Error ? error.message : 'Failed to fetch sellers');
+      setSellers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name.trim()) {
+      showToast('warning', 'Missing Field', 'Please enter a seller name');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/v1/sellers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Discord-Server-ID': guildId,
+          'Authorization': 'Bearer placeholder',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        showToast('error', 'Creation Failed', 'Could not create seller profile');
+        return;
+      }
+
+      showToast('success', 'Seller Created', `${formData.name} has been added`);
+      setFormData({ name: '', description: '', contact: '', region: '' });
+      setShowForm(false);
+      fetchSellers();
+    } catch (error) {
+      showToast('error', 'Error', error instanceof Error ? error.message : 'Failed to create seller profile');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSellers();
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <div className="p-4 sm:p-6 rounded-xl border border-green-500/30 bg-black/40">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-white font-bold flex items-center gap-2">
+            <span>👤</span> Seller Profiles
+          </h3>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="px-3 py-1.5 text-xs bg-green-500/20 hover:bg-green-500/40 border border-green-500/30 text-green-400 rounded transition-colors"
+          >
+            + New Seller
+          </button>
+        </div>
+
+        {showForm && (
+          <form onSubmit={handleSubmit} className="mb-6 p-4 rounded-lg bg-white/5 border border-white/10 space-y-3">
+            <input
+              type="text"
+              value={formData.name}
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Seller name"
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-green-500 text-sm"
+            />
+            <textarea
+              value={formData.description}
+              onChange={e => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Description"
+              rows={2}
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-green-500 text-sm resize-none"
+            />
+            <input
+              type="text"
+              value={formData.contact}
+              onChange={e => setFormData({ ...formData, contact: e.target.value })}
+              placeholder="Contact info"
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-green-500 text-sm"
+            />
+            <input
+              type="text"
+              value={formData.region}
+              onChange={e => setFormData({ ...formData, region: e.target.value })}
+              placeholder="Region"
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-green-500 text-sm"
+            />
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-green-500/20 hover:bg-green-500/40 border border-green-500/30 text-green-400 rounded-lg font-medium text-sm transition-colors disabled:opacity-50"
+              >
+                {isSubmitting ? 'Creating...' : '✓ Create Profile'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white/70 rounded-lg font-medium text-sm transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="w-6 h-6 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : sellers.length === 0 ? (
+          <div className="text-center py-8 text-white/30">No seller profiles yet</div>
+        ) : (
+          <div className="grid sm:grid-cols-2 gap-3">
+            {sellers.map((seller, i) => (
+              <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10">
+                <h4 className="text-white font-bold text-sm">{seller.name}</h4>
+                {seller.description && <p className="text-white/60 text-xs mt-1">{seller.description}</p>}
+                {seller.contact && <p className="text-white/40 text-xs mt-1">Contact: {seller.contact}</p>}
+                {seller.region && <p className="text-white/40 text-xs">Region: {seller.region}</p>}
+                {seller.rating && <p className="text-yellow-400 text-xs mt-2">⭐ {seller.rating}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function ServerConfigTab({ guildId }: { guildId: string }) {
   const { showToast } = useToast();
@@ -1238,19 +2161,27 @@ export default function GuildDashboardPage() {
 
   const tabs: { id: TabId; label: string; icon: string; soon?: boolean }[] = [
     { id: 'overview',      label: 'Overview',      icon: '📊' },
-    { id: 'customers',     label: 'Customers',     icon: '👥' },
+    { id: 'customers',     label: 'Customers',     icon: '💸' },
     { id: 'logs',          label: 'Command Logs',  icon: '📋' },
-    { id: 'members',       label: 'Members',       icon: '🤝' },
+    { id: 'members',       label: 'Members',       icon: '👥' },
     { id: 'verse_scripts', label: 'Verse Scripts', icon: '📦' },
-    { id: 'trackers',      label: 'Trackers',      icon: '🏝️' },
+    { id: 'trackers',      label: 'Trackers',      icon: '⏱️' },
+    { id: 'island_tools',  label: 'Island Tools',  icon: '🏝️' },
+    { id: 'files',         label: 'File Manager',  icon: '📁' },
+    { id: 'reports',       label: 'Reports',       icon: '🚩' },
+    { id: 'sellers',       label: 'Sellers',       icon: '👤' },
     { id: 'config',        label: 'Server Config', icon: '⚙️' },
-    { id: 'editor',        label: 'Editor',        icon: '⚡', soon: true },
+    // { id: 'editor',        label: 'Editor',        icon: '⚡', soon: true },
   ];
 
   const icon = guild ? guildIcon(guild) : null;
 
   function renderTabContent() {
     if (activeTab === 'editor') return <EditorSoon />;
+    if (activeTab === 'island_tools') return <IslandToolsTab guildId={guildId} />;
+    if (activeTab === 'files') return <FileManagerTab guildId={guildId} />;
+    if (activeTab === 'reports') return <ReportsTab guildId={guildId} />;
+    if (activeTab === 'sellers') return <SellersTab guildId={guildId} />;
     if (activeTab === 'config') return <ServerConfigTab guildId={guildId} />;
 
     if (activeTab === 'overview') {
@@ -1259,10 +2190,10 @@ export default function GuildDashboardPage() {
           <div>
             <h2 className="text-sm font-semibold text-white/50 uppercase tracking-widest mb-4">Server Stats</h2>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <StatCard icon="👥" label="Customers"    value={stats?.customers ?? 0}     color="border-blue-500/30" />
+              <StatCard icon="💸" label="Customers"    value={stats?.customers ?? 0}     color="border-blue-500/30" />
               <StatCard icon="📦" label="Verse Scripts" value={stats?.verse_scripts ?? 0} color="border-purple-500/30" />
-              <StatCard icon="🤝" label="Members"      value={stats?.members ?? 0}       color="border-green-500/30" />
-              <StatCard icon="🏝️" label="Trackers"     value={stats?.trackers ?? 0}      color="border-orange-500/30" />
+              <StatCard icon="👥" label="Members"      value={stats?.members ?? 0}       color="border-green-500/30" />
+              <StatCard icon="⏱️" label="Trackers"     value={stats?.trackers ?? 0}      color="border-orange-500/30" />
 
               {/* Console Preview for Command Logs */}
               <div className="lg:col-span-2 p-4 rounded-xl border border-cyan-500/30 bg-black/40">
@@ -1453,8 +2384,9 @@ export default function GuildDashboardPage() {
               className="text-white/40 hover:text-white text-xs transition-colors">↻ Refresh</button>
           </div>
           <div className="text-white/50 text-xs mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
-            📜 View and inspect your uploaded Verse scripts. Click the view button to open any script in a read-only Monaco editor.
+            📜 View and inspect your uploaded Verse scripts. Click the view button to open any script in a read-only Monaco editor. Use the form below to upload new scripts.
           </div>
+          <VerseScriptsUploadForm guildId={guildId} onUploadSuccess={() => { setTabData(p => { const n = {...p}; delete n.verse_scripts; return n; }); fetchTabData('verse_scripts'); }} />
           <VerseScriptsTable data={rows ?? null} loading={isLoading} guildId={guildId} />
         </div>
       );

@@ -43,6 +43,15 @@ const nextConfig = {
       },
     ];
   },
+
+  async rewrites() {
+    return [
+      { source: '/api/docs', destination: '/docs/api' },
+      { source: '/api/docs/premium', destination: '/docs/premium' },
+      { source: '/api/docs/enterprise', destination: '/docs/enterprise' },
+      { source: '/api/docs/api', destination: '/docs/api' },
+    ];
+  },
 };
 
 module.exports = nextConfig;

@@ -56,6 +56,7 @@ The site is fully static-generation-ready, mobile responsive, and dark-mode only
 | 🔒 **Legal Modals** | Privacy policy and Terms of Service open as popups (also accessible via `/privacy` and `/tos`) |
 | 🗺️ **Sitemap + Robots** | Auto-generated sitemap and robots.txt |
 | 📊 **Open Graph** | Full OG + Twitter Card metadata with banner image |
+| 📡 **REST API** | Enterprise and Premium REST API endpoints for server data access |
 | ⚡ **Performance** | Static generation, minimal JS, fast page loads |
 | 📱 **Responsive** | Mobile-first, works on all screen sizes |
 
@@ -146,11 +147,39 @@ Features:
 | `/commands` | All commands in a filterable grid |
 | `/docs` | Docs index — expandable category sections |
 | `/docs/[command]` | Full doc page for a single command |
+| `/api/docs` | REST API documentation and endpoint reference |
 | `/premium` | Pricing tiers + feature comparison + FAQ |
 | `/contact` | hCaptcha-protected contact form |
 | `/privacy` | Redirects home and opens Privacy Policy modal |
 | `/tos` | Redirects home and opens Terms of Service modal |
 | `/invite` | Redirects to the invite link of the bot |
+
+---
+
+## 📡 API Endpoints
+
+The website provides comprehensive REST API documentation at `/api/docs`. Available endpoints include:
+
+### Enterprise Tier
+- **Files** — List, read, and write server files
+- **Reports** — Create and manage user reports
+- **Verse Scripts** — Access and manage Verse script uploads
+- **Members** — Query server members and roles
+- **Trackers** — Manage social media trackers
+- **Subscriptions** — Retrieve subscription data
+
+### Premium Tier
+- **Island Lookup** — Get detailed stats for Fortnite Creative islands
+- **Island Prediction** — AI-powered discovery analysis and recommendations
+- **Sellers** — Manage seller profiles and ratings
+
+### Authentication
+All API endpoints require:
+- `Authorization: Bearer {token}` — HMAC-SHA256 signed token
+- `X-Discord-Server-ID: {server_id}` — Target Discord server ID
+- `Origin` — Request origin for domain validation
+
+Rate limits: **10 requests/sec** | Monthly quota: **5,000 requests** (Enterprise), **10,000 requests** (Premium)
 
 ---
 

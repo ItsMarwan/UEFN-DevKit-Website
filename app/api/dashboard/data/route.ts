@@ -61,7 +61,7 @@ async function flaskFetch(endpoint: string, guildId: string, parameters: Record<
   }
 }
 
-const ALLOWED_ENDPOINTS = ['customers', 'verse_scripts', 'members', 'trackers', 'guild_settings', 'logs'];
+const ALLOWED_ENDPOINTS = ['customers', 'verse_scripts', 'members', 'trackers', 'guild_settings', 'logs', 'files', 'reports', 'sellers', 'statistics', 'subscriptions'];
 const DISCORD_API = 'https://discord.com/api/v10';
 
 export async function GET(req: NextRequest) {

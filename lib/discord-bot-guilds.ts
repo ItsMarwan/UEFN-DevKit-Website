@@ -78,9 +78,32 @@ export async function fetchBotGuildIds(): Promise<Set<string> | null> {
  * @returns true if bot is in the guild, false otherwise
  */
 export async function isBotInGuild(guildId: string): Promise<boolean> {
-  const botGuildIds = await fetchBotGuildIds();
-  if (!botGuildIds) return false; // Conservative: assume not in guild if we can't check
-  return botGuildIds.has(guildId);
+  if (!BOT_TOKEN) {
+    console.error('DISCORD_BOT_TOKEN not set in environment');
+    return false;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+    const res = await fetch(`${DISCORD_API}/guilds/${guildId}`, {
+      headers: { Authorization: `Bot ${BOT_TOKEN}` },
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+    // If we can fetch the guild info, bot is in the guild
+    return res.ok;
+  } catch (e) {
+    if (e instanceof Error && e.name === 'AbortError') {
+      console.error(`Timeout checking bot presence in guild ${guildId}`);
+    } else {
+      console.error('Error checking if bot is in guild:', e);
+    }
+    return false; // Conservative: assume not in guild if we can't check
+  }
 }
 
 /**

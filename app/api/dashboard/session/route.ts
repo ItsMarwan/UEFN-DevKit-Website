@@ -1,6 +1,6 @@
 // app/api/dashboard/session/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchBotGuildIds } from '@/lib/discord-bot-guilds';
+import { isBotInGuild } from '@/lib/discord-bot-guilds';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,30 +53,61 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Session expired' }, { status: 401 });
     }
 
-    // Fetch user info and their guild list in parallel with timeouts
-    const [userRes, guildsRes, botGuildIds] = await Promise.all([
-      fetchWithTimeout(`${DISCORD_API}/users/@me`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        cache: 'no-store',
-      }, 8000),
-      fetchWithTimeout(`${DISCORD_API}/users/@me/guilds?limit=200`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        cache: 'no-store',
-      }, 8000),
-      fetchBotGuildIds(),
-    ]);
+    const url = new URL(req.url);
+    const isLightweight = url.searchParams.get('lightweight') === 'true';
+
+    // Fetch user info
+    const userRes = await fetchWithTimeout(`${DISCORD_API}/users/@me`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+      cache: 'no-store',
+    }, 8000);
 
     if (!userRes.ok) {
       return NextResponse.json({ error: 'Discord token invalid or expired' }, { status: 401 });
     }
 
     const user = await userRes.json();
+
+    if (isLightweight) {
+      // Return only user info for lightweight requests
+      return NextResponse.json({ user });
+    }
+
+    // Fetch guilds for full session
+    const guildsRes = await fetchWithTimeout(`${DISCORD_API}/users/@me/guilds?limit=200`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+      cache: 'no-store',
+    }, 8000);
+
     const allGuilds: Guild[] = guildsRes.ok ? await guildsRes.json() : [];
 
-    // Filter 1: Only include guilds where the bot is present
-    const botsGuilds = botGuildIds
-      ? allGuilds.filter((g) => botGuildIds.has(g.id))
-      : [];
+    // Filter guilds where the bot is present by checking each one individually
+    // Use limited concurrency to avoid overwhelming Discord's API
+    const MAX_CONCURRENT_CHECKS = 5;
+    const botsGuilds: Guild[] = [];
+
+    for (let i = 0; i < allGuilds.length; i += MAX_CONCURRENT_CHECKS) {
+      const batch = allGuilds.slice(i, i + MAX_CONCURRENT_CHECKS);
+      const batchResults = await Promise.all(
+        batch.map(async (guild) => {
+          try {
+            const botPresent = await isBotInGuild(guild.id);
+            return botPresent ? guild : null;
+          } catch (error) {
+            console.error(`Error checking bot presence in guild ${guild.id}:`, error);
+            return null;
+          }
+        })
+      );
+
+      // Add successful results to the list
+      botsGuilds.push(...batchResults.filter((g): g is Guild => g !== null));
+
+      // Small delay between batches to be respectful
+      if (i + MAX_CONCURRENT_CHECKS < allGuilds.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
 
     // Filter 2: Tag each guild with permission check (admin or owner)
     const MANAGE_GUILD = 0x20;

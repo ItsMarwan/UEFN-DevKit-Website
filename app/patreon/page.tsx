@@ -14,6 +14,7 @@ interface PatreonSetup {
   setup: boolean;
   roles: Array<{ tier_name: string; role_id: string; role_name?: string }>;
   item_roles: Array<{ item_name: string; role_id: string; role_name?: string }>;
+  patreon_page: string;
 }
 
 interface SessionUser {
@@ -261,7 +262,7 @@ function PatreonPageContent() {
         icon="💳"
         title="No Patreon Subscription Found"
         desc={errorMsg}
-        action={{ label: 'Visit Patreon', href: 'https://patreon.com' }}
+        action={{ label: 'Visit Patreon', href: patreonSetup?.patreon_page || 'https://patreon.com' }}
         guild={guild}
       />
     );
@@ -285,7 +286,7 @@ function PatreonPageContent() {
         icon="⏸️"
         title="Subscription Inactive"
         desc={errorMsg}
-        action={{ label: 'Manage Subscription', href: 'https://patreon.com' }}
+        action={{ label: 'Manage Subscription', href: patreonSetup?.patreon_page || 'https://patreon.com' }}
         guild={guild}
       />
     );

@@ -57,6 +57,7 @@ export async function GET(req: NextRequest) {
     setup: false,
     roles: [] as Array<{ tier_name: string; role_id: string; role_name?: string }>,
     item_roles: [] as Array<{ item_name: string; role_id: string; role_name?: string }>,
+    patreon_page: 'https://patreon.com',
   };
 
   if (supabase) {
@@ -64,11 +65,12 @@ export async function GET(req: NextRequest) {
       // Check if patreon is configured
       const { data: configData } = await supabase
         .from('patreon_configs')
-        .select('guild_id, auto_sync, campaign_id')
+        .select('guild_id, auto_sync, campaign_id, patreon_page')
         .eq('guild_id', guildId)
         .limit(1);
 
       const isSetup = !!(configData && configData.length > 0);
+      const patreonPage = configData?.[0]?.patreon_page || 'https://patreon.com';
 
       // Fetch tier role mappings
       const { data: tierRoles } = await supabase
@@ -117,6 +119,7 @@ export async function GET(req: NextRequest) {
         setup: isSetup,
         roles: resolvedTierRoles,
         item_roles: resolvedItemRoles,
+        patreon_page: patreonPage,
       };
     } catch (e) {
       // patreon not configured — leave defaults

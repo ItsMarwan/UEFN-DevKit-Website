@@ -101,9 +101,9 @@ export function Navigation() {
               {/* Discord auth / user avatar */}
               {sessionChecked && (
                 sessionUser ? (
-                  /* Logged in — show avatar linking to dashboard */
+                  /* Logged in — show avatar linking to profile */
                   <Link
-                    href="/dashboard"
+                    href="/me"
                     className="ml-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all"
                     title={sessionUser.username}
                   >
@@ -146,7 +146,7 @@ export function Navigation() {
               {/* Avatar or login icon for mobile */}
               {sessionChecked && (
                 sessionUser ? (
-                  <Link href="/dashboard">
+                  <Link href="/me">
                     <Image
                       src={avatarUrl(sessionUser)}
                       alt={sessionUser.username}

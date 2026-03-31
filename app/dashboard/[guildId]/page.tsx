@@ -1850,7 +1850,7 @@ export default function GuildDashboardPage() {
   }, [guildId, router, showToast, health.status]);
 
   const fetchTabData = useCallback(async (tab: TabId) => {
-    if (tab === 'overview' || tab === 'editor' || tab === 'config') return;
+    if (tab === 'overview' || tab === 'editor' || tab === 'config' || tab === 'island_tools') return;
     if (tabData[tab] !== undefined) return;
 
     // Ensure user session is loaded before making API calls

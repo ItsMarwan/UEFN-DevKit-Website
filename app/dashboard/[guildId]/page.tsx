@@ -667,7 +667,7 @@ function IslandToolsTab({ guildId }: { guildId: string }) {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/island?code=${encodeURIComponent(islandCode.trim())}&action=lookup`, {
+      const res = await fetch(`/api/v1/island/lookup?island_code=${encodeURIComponent(islandCode.trim())}`, {
         headers: {
           'X-Discord-Server-ID': guildId,
           'Authorization': 'Bearer placeholder',
@@ -706,7 +706,7 @@ function IslandToolsTab({ guildId }: { guildId: string }) {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/island?code=${encodeURIComponent(islandCode.trim())}&action=predict`, {
+      const res = await fetch(`/api/v1/island/predict?island_code=${encodeURIComponent(islandCode.trim())}`, {
         headers: {
           'X-Discord-Server-ID': guildId,
           'Authorization': 'Bearer placeholder',

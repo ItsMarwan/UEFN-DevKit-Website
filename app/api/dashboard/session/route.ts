@@ -1,6 +1,6 @@
 // app/api/dashboard/session/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { isBotInGuild } from '@/lib/discord-bot-guilds';
+import { isBotInGuild, fetchBotGuildIds } from '@/lib/discord-bot-guilds';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,31 +81,34 @@ export async function GET(req: NextRequest) {
 
     const allGuilds: Guild[] = guildsRes.ok ? await guildsRes.json() : [];
 
-    // Filter guilds where the bot is present by checking each one individually
-    // Use limited concurrency to avoid overwhelming Discord's API
-    const MAX_CONCURRENT_CHECKS = 5;
-    const botsGuilds: Guild[] = [];
+    // Fast path: use cached bot guild IDs, avoid per-guild lookup
+    const botGuildIds = await fetchBotGuildIds();
+    const botsGuilds: Guild[] = botGuildIds
+      ? allGuilds.filter((g) => botGuildIds.has(g.id))
+      : [];
 
-    for (let i = 0; i < allGuilds.length; i += MAX_CONCURRENT_CHECKS) {
-      const batch = allGuilds.slice(i, i + MAX_CONCURRENT_CHECKS);
-      const batchResults = await Promise.all(
-        batch.map(async (guild) => {
-          try {
-            const botPresent = await isBotInGuild(guild.id);
-            return botPresent ? guild : null;
-          } catch (error) {
-            console.error(`Error checking bot presence in guild ${guild.id}:`, error);
-            return null;
-          }
-        })
-      );
+    // Fallback: if cache unavailable, preserve the old batched behavior
+    if (!botGuildIds) {
+      const MAX_CONCURRENT_CHECKS = 5;
+      for (let i = 0; i < allGuilds.length; i += MAX_CONCURRENT_CHECKS) {
+        const batch = allGuilds.slice(i, i + MAX_CONCURRENT_CHECKS);
+        const batchResults = await Promise.all(
+          batch.map(async (guild) => {
+            try {
+              const botPresent = await isBotInGuild(guild.id);
+              return botPresent ? guild : null;
+            } catch (error) {
+              console.error(`Error checking bot presence in guild ${guild.id}:`, error);
+              return null;
+            }
+          })
+        );
 
-      // Add successful results to the list
-      botsGuilds.push(...batchResults.filter((g): g is Guild => g !== null));
+        botsGuilds.push(...batchResults.filter((g): g is Guild => g !== null));
 
-      // Small delay between batches to be respectful
-      if (i + MAX_CONCURRENT_CHECKS < allGuilds.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        if (i + MAX_CONCURRENT_CHECKS < allGuilds.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
       }
     }
 

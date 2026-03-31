@@ -171,7 +171,6 @@ The website provides comprehensive REST API documentation at `/api/docs`. Availa
 ### Premium Tier
 - **Island Lookup** — Get detailed stats for Fortnite Creative islands
 - **Island Prediction** — AI-powered discovery analysis and recommendations
-- **Sellers** — Manage seller profiles and ratings
 
 ### Authentication
 All API endpoints require:

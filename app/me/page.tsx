@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { useToast } from '@/components/ToastProvider';
 import { useBotHealth } from '@/hooks/useBotHealth';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import MaskedEmail from '@/components/MaskedEmail';
 import { extractErrorMessage } from '@/lib/api-error';
 
 interface Guild {
@@ -162,7 +163,7 @@ export default function MePage() {
                   <h2 className="text-xl font-semibold text-white">{user.username}</h2>
                   <p className="text-white/60 text-sm">Discord ID: {user.id}</p>
                   {user.email && (
-                    <p className="text-white/40 text-sm">{user.email}</p>
+                    <MaskedEmail email={user.email} className="text-white/40 text-sm" />
                   )}
                 </div>
               </div>

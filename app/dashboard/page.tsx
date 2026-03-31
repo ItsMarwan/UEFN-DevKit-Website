@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { useToast } from '@/components/ToastProvider';
 import { useBotHealth } from '@/hooks/useBotHealth';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import MaskedEmail from '@/components/MaskedEmail';
 import { extractErrorMessage } from '@/lib/api-error';
 
 interface Guild {
@@ -187,7 +188,7 @@ export default function DashboardPage() {
               />
               <div className="hidden sm:block">
                 <p className="text-white font-semibold text-sm">{user.username}</p>
-                <p className="text-white/40 text-xs">{user.email}</p>
+                <MaskedEmail email={user.email} className="text-white/40 text-xs" />
               </div>
               <a
                 href="/api/dashboard/logout"

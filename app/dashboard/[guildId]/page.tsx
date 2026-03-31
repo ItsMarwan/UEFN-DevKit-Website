@@ -8,11 +8,10 @@ import Image from 'next/image';
 import { useToast } from '@/components/ToastProvider';
 import { useBotHealth } from '@/hooks/useBotHealth';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import MaskedEmail from '@/components/MaskedEmail';
 import { extractErrorMessage } from '@/lib/api-error';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface User { id: string; username: string; email: string; avatar: string | null }
+interface User { id: string; username: string; email: string; avatar: string | null; patreon_verified?: boolean; patreon_guild_id?: string }
 interface GuildInfo { id: string; name: string; icon: string | null }
 interface Stats { customers: number; verse_scripts: number; members: number; trackers: number; command_logs: number }
 
@@ -31,10 +30,10 @@ interface GuildConfig {
   updated_at?: string;
 }
 
-type TabId = 'overview' | 'customers' | 'logs' | 'members' | 'verse_scripts' | 'trackers' | 'config' | 'island_tools' | 'files' | 'reports' | 'sellers' | 'editor';
+type TabId = 'overview' | 'customers' | 'logs' | 'members' | 'verse_scripts' | 'trackers' | 'config' | 'island_tools' | 'files' | 'reports' | 'editor' | 'profile';
 type LoadState = 'checking' | 'loading' | 'ready' | 'forbidden' | 'error';
 
-const VALID_TABS: TabId[] = ['overview', 'customers', 'logs', 'members', 'verse_scripts', 'trackers', 'config', 'island_tools', 'files', 'reports', 'sellers', 'editor'];
+const VALID_TABS: TabId[] = ['overview', 'customers', 'logs', 'members', 'verse_scripts', 'trackers', 'config', 'island_tools', 'files', 'reports', 'editor', 'profile'];
 
 function getTabFromPath(): TabId {
   if (typeof window === 'undefined') return 'overview';
@@ -45,8 +44,6 @@ function getTabFromPath(): TabId {
   }
   return 'overview';
 }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function guildIcon(g: GuildInfo) {
   return g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null;
@@ -71,8 +68,6 @@ function extractTier(config: GuildConfig): string {
   } catch { /* ignore */ }
   return config.server_tier ?? 'free';
 }
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StatCard({ icon, label, value, color }: { icon: string; label: string; value: number; color: string }) {
   return (
@@ -1320,167 +1315,6 @@ function ReportsTab({ guildId }: { guildId: string }) {
   );
 }
 
-function SellersTab({ guildId }: { guildId: string }) {
-  const { showToast } = useToast();
-  const [sellers, setSellers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ name: '', description: '', contact: '', region: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const fetchSellers = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/v1/sellers', {
-        headers: {
-          'X-Discord-Server-ID': guildId,
-          'Authorization': 'Bearer placeholder',
-        },
-      });
-
-      if (!res.ok) {
-        showToast('error', 'Failed to Load Sellers', 'Could not fetch seller list');
-        setSellers([]);
-        return;
-      }
-
-      const data = await res.json();
-      setSellers(Array.isArray(data.data) ? data.data : []);
-    } catch (error) {
-      showToast('error', 'Error', error instanceof Error ? error.message : 'Failed to fetch sellers');
-      setSellers([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim()) {
-      showToast('warning', 'Missing Field', 'Please enter a seller name');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const res = await fetch('/api/v1/sellers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Discord-Server-ID': guildId,
-          'Authorization': 'Bearer placeholder',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!res.ok) {
-        showToast('error', 'Creation Failed', 'Could not create seller profile');
-        return;
-      }
-
-      showToast('success', 'Seller Created', `${formData.name} has been added`);
-      setFormData({ name: '', description: '', contact: '', region: '' });
-      setShowForm(false);
-      fetchSellers();
-    } catch (error) {
-      showToast('error', 'Error', error instanceof Error ? error.message : 'Failed to create seller profile');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSellers();
-  }, []);
-
-  return (
-    <div className="space-y-6">
-      <div className="p-4 sm:p-6 rounded-xl border border-green-500/30 bg-black/40">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-white font-bold flex items-center gap-2">
-            <span>👤</span> Seller Profiles
-          </h3>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="px-3 py-1.5 text-xs bg-green-500/20 hover:bg-green-500/40 border border-green-500/30 text-green-400 rounded transition-colors"
-          >
-            + New Seller
-          </button>
-        </div>
-
-        {showForm && (
-          <form onSubmit={handleSubmit} className="mb-6 p-4 rounded-lg bg-white/5 border border-white/10 space-y-3">
-            <input
-              type="text"
-              value={formData.name}
-              onChange={e => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Seller name"
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-green-500 text-sm"
-            />
-            <textarea
-              value={formData.description}
-              onChange={e => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Description"
-              rows={2}
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-green-500 text-sm resize-none"
-            />
-            <input
-              type="text"
-              value={formData.contact}
-              onChange={e => setFormData({ ...formData, contact: e.target.value })}
-              placeholder="Contact info"
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-green-500 text-sm"
-            />
-            <input
-              type="text"
-              value={formData.region}
-              onChange={e => setFormData({ ...formData, region: e.target.value })}
-              placeholder="Region"
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-green-500 text-sm"
-            />
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-green-500/20 hover:bg-green-500/40 border border-green-500/30 text-green-400 rounded-lg font-medium text-sm transition-colors disabled:opacity-50"
-              >
-                {isSubmitting ? 'Creating...' : '✓ Create Profile'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white/70 rounded-lg font-medium text-sm transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        )}
-
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="w-6 h-6 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : sellers.length === 0 ? (
-          <div className="text-center py-8 text-white/30">No seller profiles yet</div>
-        ) : (
-          <div className="grid sm:grid-cols-2 gap-3">
-            {sellers.map((seller, i) => (
-              <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10">
-                <h4 className="text-white font-bold text-sm">{seller.name}</h4>
-                {seller.description && <p className="text-white/60 text-xs mt-1">{seller.description}</p>}
-                {seller.contact && <p className="text-white/40 text-xs mt-1">Contact: {seller.contact}</p>}
-                {seller.region && <p className="text-white/40 text-xs">Region: {seller.region}</p>}
-                {seller.rating && <p className="text-yellow-400 text-xs mt-2">⭐ {seller.rating}</p>}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 function ServerConfigTab({ guildId }: { guildId: string }) {
   const { showToast } = useToast();
   const [config, setConfig] = useState<GuildConfig | null>(null);
@@ -1972,7 +1806,7 @@ export default function GuildDashboardPage() {
         setGuild(accessData.guild);
         setLoadState('loading');
 
-        const sessionRes = await fetch('/api/dashboard/session');
+        const sessionRes = await fetch('/api/dashboard/session?lightweight=true');
         if (!sessionRes.ok) {
           const sessionErr = await extractErrorMessage(sessionRes);
           showToast('error', 'Session Error', sessionErr);
@@ -2169,7 +2003,6 @@ export default function GuildDashboardPage() {
     { id: 'island_tools',  label: 'Island Tools',  icon: '🏝️' },
     { id: 'files',         label: 'File Manager',  icon: '📁' },
     { id: 'reports',       label: 'Reports',       icon: '🚩' },
-    { id: 'sellers',       label: 'Sellers',       icon: '👤' },
     { id: 'config',        label: 'Server Config', icon: '⚙️' },
     // { id: 'editor',        label: 'Editor',        icon: '⚡', soon: true },
   ];
@@ -2181,7 +2014,6 @@ export default function GuildDashboardPage() {
     if (activeTab === 'island_tools') return <IslandToolsTab guildId={guildId} />;
     if (activeTab === 'files') return <FileManagerTab guildId={guildId} />;
     if (activeTab === 'reports') return <ReportsTab guildId={guildId} />;
-    if (activeTab === 'sellers') return <SellersTab guildId={guildId} />;
     if (activeTab === 'config') return <ServerConfigTab guildId={guildId} />;
 
     if (activeTab === 'overview') {
@@ -2268,8 +2100,8 @@ export default function GuildDashboardPage() {
                 { cmd: '/customer add',           desc: 'Register a new customer' },
                 { cmd: '/verse',                  desc: 'Upload a Verse script' },
                 { cmd: '/session start',          desc: 'Start a service session' },
-                { cmd: '/seller create',          desc: 'Create your seller profile' },
-                { cmd: '/island',                 desc: 'Look up island stats by code' },
+                { cmd: '/island predict',         desc: 'Predict island stats' },
+                { cmd: '/island lookup',          desc: 'Look up island stats by code' },
                 { cmd: '/stats',                  desc: 'View server dashboard metrics' },
                 { cmd: '/export data',            desc: 'Export all server data' },
                 { cmd: '/redeem <code>',          desc: 'Redeem a feature code' },
@@ -2434,7 +2266,7 @@ export default function GuildDashboardPage() {
                 <Image src={avatarUrl(user)} alt={user.username} width={32} height={32} className="w-8 h-8 rounded-full border-2 border-blue-500/50" />
                 <div>
                   <p className="text-white text-sm font-medium">{user.username}</p>
-                  <p className="text-white/40 text-xs">{user.email}</p>
+                  <MaskedEmail email={user.email} className="text-white/40 text-xs mt-0.5" />
                 </div>
                 <a href="/api/dashboard/logout" className="ml-2 px-3 py-1.5 text-xs bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-white/70 hover:text-white">
                   Logout

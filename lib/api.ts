@@ -53,18 +53,7 @@ export const apiEndpoints: Record<string, ApiEndpoint> = {
     premium: true,
     details: 'CRUD operations for customer management including adding, updating, and retrieving customer information.',
     examples: ['GET /api/v1/customers', 'POST /api/v1/customers'],
-    relatedEndpoints: ['sellers', 'reports'],
-  },
-  'sellers': {
-    path: '/api/v1/sellers',
-    method: 'GET',
-    description: 'Manage seller profiles',
-    category: 'Business',
-    auth: true,
-    premium: true,
-    details: 'Operations for managing seller profiles and their associated data.',
-    examples: ['GET /api/v1/sellers', 'POST /api/v1/sellers'],
-    relatedEndpoints: ['customers', 'reports'],
+    relatedEndpoints: ['reports'],
   },
   'reports': {
     path: '/api/v1/reports',
@@ -75,7 +64,7 @@ export const apiEndpoints: Record<string, ApiEndpoint> = {
     premium: true,
     details: 'Create and fetch various business reports and analytics.',
     examples: ['GET /api/v1/reports/sales', 'POST /api/v1/reports/generate'],
-    relatedEndpoints: ['customers', 'sellers', 'stats'],
+    relatedEndpoints: ['customers', 'stats'],
   },
   'stats': {
     path: '/api/v1/stats',

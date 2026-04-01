@@ -369,13 +369,21 @@ function PatreonPageContent() {
 
   if (pageState === 'role_grant_failed') {
     return (
-      <ErrorState
-        icon="🚫"
-        title="Permission Error"
-        desc={errorMsg}
-        action={{ label: 'Try Again', href: `/patreon?s=${serverId}` }}
-        guild={guild}
-      />
+      <div className="min-h-screen bg-black flex items-center justify-center px-4">
+        <div className="max-w-sm w-full text-center">
+          <div className="mb-4 p-4 text-left bg-yellow-400/15 border border-yellow-500/30 rounded-xl text-yellow-100">
+            <p className="font-semibold">⚠️ Role grant requires bot role &gt; target role + Manage Roles</p>
+            <p className="text-sm text-yellow-100/90 mt-1">If the message says "top role too low" or "bot lacks Manage Roles", raise the bot role above the Patreon role and try again.</p>
+          </div>
+          <ErrorState
+            icon="🚫"
+            title="Permission Error"
+            desc={errorMsg}
+            action={{ label: 'Try Again', href: `/patreon?s=${serverId}` }}
+            guild={guild}
+          />
+        </div>
+      </div>
     );
   }
 
@@ -413,7 +421,7 @@ function PatreonPageContent() {
               Roles granted in{' '}
               {icon ? (
                 <span className="inline-flex items-center gap-1.5">
-                  <Image src={icon} alt={guild.name} width={18} height={18} className="rounded-sm" />
+                  <Image src={icon} alt={guild.name} width={18} height={18} className="rounded-full" />
                   <span className="text-white font-semibold">{guild.name}</span>
                 </span>
               ) : (

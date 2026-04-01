@@ -49,9 +49,13 @@ function ServerConfigPageContent() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-white">Loading configuration...</p>
+        <div className="animate-pulse max-w-2xl w-full text-center p-6 bg-black/40 rounded-xl border border-white/10">
+          <div className="h-4 rounded bg-white/10 mx-auto mb-4 w-40" />
+          <div className="h-4 rounded bg-white/10 mx-auto mb-3 w-64" />
+          <div className="h-4 rounded bg-white/10 mx-auto mb-3 w-32" />
+          <div className="h-3 rounded bg-white/10 mx-auto mb-2 w-52" />
+          <div className="h-3 rounded bg-white/10 mx-auto mb-2 w-56" />
+          <p className="text-white/60 mt-4">Loading configuration...</p>
         </div>
       </div>
     );
@@ -73,9 +77,11 @@ function ServerConfigPageContent() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-        <p className="text-white">Redirecting to configuration...</p>
+      <div className="animate-pulse max-w-sm w-full p-6 text-center bg-black/40 rounded-xl border border-white/10">
+        <div className="h-4 bg-white/10 rounded w-40 mx-auto mb-3" />
+        <div className="h-4 bg-white/10 rounded w-52 mx-auto mb-3" />
+        <div className="h-3 bg-white/10 rounded w-48 mx-auto" />
+        <p className="text-white/60 mt-4">Redirecting to configuration...</p>
       </div>
     </div>
   );
@@ -85,9 +91,11 @@ export default function ServerConfigPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-white">Loading...</p>
+        <div className="animate-pulse max-w-md w-full text-center p-6 bg-black/40 rounded-xl border border-white/10">
+          <div className="h-4 rounded bg-white/10 mx-auto mb-4 w-48" />
+          <div className="h-4 rounded bg-white/10 mx-auto mb-3 w-40" />
+          <div className="h-4 rounded bg-white/10 mx-auto mb-3 w-32" />
+          <p className="text-white/60 mt-4">Loading...</p>
         </div>
       </div>
     }>

@@ -36,7 +36,7 @@ export function Navigation() {
     { href: '/', label: 'Home' },
     { href: '/commands', label: 'Commands' },
     { href: '/api/docs', label: 'API' },
-    { href: '/buy', label: 'Premium' },
+    { href: '/premium', label: 'Premium' },
     { href: '/dashboard', label: 'Dashboard' },
   ];
 
@@ -63,7 +63,7 @@ export function Navigation() {
         }
       `}</style>
 
-      <nav className="w-full border-b border-white/10 bg-black/80 backdrop-blur-md">
+      <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/60 backdrop-blur-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
 

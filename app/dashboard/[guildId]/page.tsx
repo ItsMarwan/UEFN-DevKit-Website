@@ -30,10 +30,10 @@ interface GuildConfig {
   updated_at?: string;
 }
 
-type TabId = 'overview' | 'customers' | 'logs' | 'members' | 'verse_scripts' | 'trackers' | 'config' | 'island_tools' | 'files' | 'reports' | 'editor' | 'profile';
+type TabId = 'overview' | 'customers' | 'logs' | 'members' | 'verse_scripts' | 'trackers' | 'config' | 'island_tools' | 'reports' | 'editor' | 'profile';
 type LoadState = 'checking' | 'loading' | 'ready' | 'forbidden' | 'error';
 
-const VALID_TABS: TabId[] = ['overview', 'customers', 'logs', 'members', 'verse_scripts', 'trackers', 'config', 'island_tools', 'files', 'reports', 'editor', 'profile'];
+const VALID_TABS: TabId[] = ['overview', 'customers', 'logs', 'members', 'verse_scripts', 'trackers', 'config', 'island_tools', 'reports', 'editor', 'profile'];
 
 function getTabFromPath(): TabId {
   if (typeof window === 'undefined') return 'overview';
@@ -315,15 +315,14 @@ function VerseScriptViewer({ scriptName, scriptContent, onClose }: { scriptName:
         <div className="flex-1 relative">
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
-              <div className="text-center">
-                <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
-                <div className="w-48 h-2 bg-white/10 rounded-full mx-auto mb-2 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full transition-all duration-300 ease-out"
-                    style={{ width: `${loadingProgress}%` }}
-                  />
-                </div>
-                <p className="text-white/60 text-sm">Loading the Verse viewer... {loadingProgress}%</p>
+              <div className="w-full max-w-2xl p-6 bg-black/80 rounded-xl animate-pulse">
+                <div className="h-5 bg-white/10 rounded mb-4 w-3/4" />
+                <div className="h-4 bg-white/10 rounded mb-2 w-1/2" />
+                <div className="h-4 bg-white/10 rounded mb-6 w-full" />
+                <div className="h-3 bg-white/10 rounded mb-2 w-5/6" />
+                <div className="h-3 bg-white/10 rounded mb-2 w-4/6" />
+                <div className="h-3 bg-white/10 rounded w-3/6" />
+                <p className="mt-3 text-white/60 text-sm">Loading the Verse viewer... {loadingProgress}%</p>
               </div>
             </div>
           )}
@@ -472,8 +471,13 @@ function VerseScriptsTable({ data, loading, guildId }: { data: Record<string, un
   };
 
   if (loading) return (
-    <div className="flex items-center justify-center py-16">
-      <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    <div className="py-16">
+      <div className="animate-pulse space-y-3">
+        <div className="h-4 bg-white/10 rounded w-3/4 mx-auto" />
+        <div className="h-4 bg-white/10 rounded w-1/2 mx-auto" />
+        <div className="h-4 bg-white/10 rounded w-1/3 mx-auto" />
+        <div className="h-40 rounded-xl bg-white/10 mx-auto" />
+      </div>
     </div>
   );
   if (!data || data.length === 0) return (
@@ -538,8 +542,13 @@ function VerseScriptsTable({ data, loading, guildId }: { data: Record<string, un
 
 function DataTable({ data, loading }: { data: Record<string, unknown>[] | null; loading: boolean }) {
   if (loading) return (
-    <div className="flex items-center justify-center py-16">
-      <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    <div className="py-12">
+      <div className="animate-pulse space-y-3">
+        <div className="h-5 bg-white/10 rounded w-24" />
+        {[...Array(6)].map((_, idx) => (
+          <div key={idx} className="h-8 bg-white/10 rounded" />
+        ))}
+      </div>
     </div>
   );
   if (!data || data.length === 0) return (
@@ -760,7 +769,7 @@ function IslandToolsTab({ guildId }: { guildId: string }) {
             disabled={loading}
             className="px-4 py-2.5 bg-blue-500/20 hover:bg-blue-500/40 border border-blue-500/30 text-blue-400 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
           >
-            {loading && activeTab === 'lookup' ? <div className="w-4 h-4 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin" /> : '🔍'}
+            {loading && activeTab === 'lookup' ? <div className="w-4 h-4 rounded-full bg-blue-400/60 animate-pulse" /> : '🔍'}
             Lookup
           </button>
           <button
@@ -768,7 +777,7 @@ function IslandToolsTab({ guildId }: { guildId: string }) {
             disabled={loading}
             className="px-4 py-2.5 bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/30 text-purple-400 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
           >
-            {loading && activeTab === 'predict' ? <div className="w-4 h-4 border-2 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" /> : '🤖'}
+            {loading && activeTab === 'predict' ? <div className="w-4 h-4 rounded-full bg-purple-400/60 animate-pulse" /> : '🤖'}
             Predict
           </button>
         </div>
@@ -942,227 +951,11 @@ function IslandToolsTab({ guildId }: { guildId: string }) {
 }
 
 
-function FileManagerTab({ guildId }: { guildId: string }) {
-  const { showToast } = useToast();
-  const [activeTable, setActiveTable] = useState<'customers' | 'verse_scripts' | 'trackers' | 'guild_settings'>('customers');
-  const [tableData, setTableData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedRow, setSelectedRow] = useState<any>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const editorRef = useRef<any>(null);
-  const [monacoLoaded, setMonacoLoaded] = useState(false);
-  const [editorLoading, setEditorLoading] = useState(true);
-
-  // Load Monaco Editor
-  useEffect(() => {
-    if (!containerRef.current || editorRef.current || !selectedRow) return;
-
-    if (typeof (window as any).monaco !== 'undefined') {
-      setMonacoLoaded(true);
-      return;
-    }
-
-    const loadMonaco = async () => {
-      try {
-        const loaderScript = document.createElement('script');
-        loaderScript.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs/loader.js';
-        loaderScript.onload = () => {
-          (window as any).require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' } });
-          (window as any).require(['vs/editor/editor.main'], () => {
-            const monaco = (window as any).monaco;
-            monaco.editor.defineTheme('json-dark', {
-              base: 'vs-dark',
-              inherit: false,
-              rules: [
-                { token: 'string.key', foreground: 'CE9178' },
-                { token: 'string.value', foreground: 'CE9178' },
-                { token: 'number', foreground: 'B5CEA8' },
-                { token: 'keyword', foreground: '569CD6' },
-              ],
-              colors: {
-                'editor.background': '#1e1e1e',
-                'editor.foreground': '#D4D4D4',
-                'editor.lineHighlightBackground': '#2d2d30',
-                'editorLineNumber.foreground': '#858585',
-                'editorCursor.foreground': '#AEAFAD',
-                'editorGutter.background': '#1e1e1e',
-              }
-            });
-            setMonacoLoaded(true);
-          });
-        };
-        document.head.appendChild(loaderScript);
-      } catch (error) {
-        console.error('Failed to load Monaco Editor:', error);
-      }
-    };
-
-    loadMonaco();
-  }, [selectedRow]);
-
-  // Create editor when Monaco is loaded
-  useEffect(() => {
-    if (monacoLoaded && containerRef.current && !editorRef.current && selectedRow) {
-      const monaco = (window as any).monaco;
-      const jsonContent = JSON.stringify(selectedRow, null, 2);
-      editorRef.current = monaco.editor.create(containerRef.current, {
-        value: jsonContent,
-        language: 'json',
-        theme: 'json-dark',
-        automaticLayout: true,
-        readOnly: true,
-        minimap: { enabled: true, side: 'right' },
-        fontFamily: "Consolas, 'Courier New', monospace",
-        fontSize: 12,
-        lineHeight: 20,
-        renderLineHighlight: 'all',
-        smoothScrolling: true,
-        cursorBlinking: 'blink',
-        mouseWheelZoom: true,
-        padding: { top: 4, bottom: 4 }
-      });
-      setEditorLoading(false);
-    }
-  }, [monacoLoaded, selectedRow]);
-
-  const fetchTableData = async (table: string) => {
-    setLoading(true);
-    setSelectedRow(null);
-    editorRef.current = null;
-    try {
-      const res = await fetch(`/api/v1/files?what=${table}`, {
-        headers: {
-          'X-Discord-Server-ID': guildId,
-          'Authorization': 'Bearer placeholder',
-        },
-      });
-
-      if (!res.ok) {
-        showToast('error', 'Failed to Load Data', `Could not fetch ${table}`);
-        setTableData([]);
-        return;
-      }
-
-      const data = await res.json();
-      setTableData(Array.isArray(data.data) ? data.data : []);
-    } catch (error) {
-      showToast('error', 'Connection Error', error instanceof Error ? error.message : 'Failed to connect');
-      setTableData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTableData(activeTable);
-  }, [activeTable]);
-
-  const handleTableChange = (table: 'customers' | 'verse_scripts' | 'trackers' | 'guild_settings') => {
-    setActiveTable(table);
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="p-4 sm:p-6 rounded-xl border border-blue-500/30 bg-black/40">
-        <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-          <span>📁</span> File Manager
-        </h3>
-        <p className="text-white/50 text-sm mb-4">Navigate and view your server data tables (read-only).</p>
-
-        {/* Tabs */}
-        <div className="flex gap-2 mb-4 flex-wrap">
-          {(['customers', 'verse_scripts', 'trackers', 'guild_settings'] as const).map((table) => (
-            <button
-              key={table}
-              onClick={() => handleTableChange(table)}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
-                activeTable === table
-                  ? 'bg-blue-500/30 border border-blue-500/50 text-blue-200'
-                  : 'bg-white/5 border border-white/10 text-white/70 hover:border-blue-500/30'
-              }`}
-            >
-              {table === 'customers' ? '👥 Customers' : table === 'verse_scripts' ? '📦 Verse Scripts' : table === 'trackers' ? '🎯 Trackers' : '⚙️ Guild Settings'}
-            </button>
-          ))}
-        </div>
-
-        {selectedRow ? (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-white font-bold">Viewing Record</h4>
-                <p className="text-white/50 text-xs mt-1">Read-only JSON Viewer</p>
-              </div>
-              <button
-                onClick={() => {
-                  setSelectedRow(null);
-                  editorRef.current = null;
-                }}
-                className="px-3 py-1.5 text-xs bg-white/10 hover:bg-white/20 text-white rounded transition-colors"
-              >
-                ← Back to List
-              </button>
-            </div>
-
-            {/* Monaco Editor Container */}
-            <div className="relative border border-white/10 rounded-lg bg-black/40 overflow-hidden" style={{ height: '400px' }}>
-              {editorLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
-                  <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
-              <div ref={containerRef} className="w-full h-full" />
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="text-white font-semibold text-sm">{tableData.length} records</h4>
-              <button
-                onClick={() => fetchTableData(activeTable)}
-                disabled={loading}
-                className="px-3 py-1.5 text-xs bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded transition-colors disabled:opacity-50"
-              >
-                ↻ Refresh
-              </button>
-            </div>
-
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : tableData.length === 0 ? (
-              <div className="text-center py-8 text-white/30">No records found in {activeTable}</div>
-            ) : (
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {tableData.map((record, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setSelectedRow(record)}
-                    className="w-full text-left px-4 py-3 rounded-lg bg-white/5 border border-white/10 hover:border-blue-500/50 hover:bg-white/10 transition-all"
-                  >
-                    <p className="text-white font-mono text-sm">
-                      {record.id || record.name || record.guild_id || `Record ${i + 1}`}
-                    </p>
-                    <p className="text-white/40 text-xs mt-1">Click to view details</p>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function ReportsTab({ guildId }: { guildId: string }) {
   const { showToast } = useToast();
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ user_id: '', reason: '', details: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchReports = async () => {
     setLoading(true);
@@ -1190,41 +983,6 @@ function ReportsTab({ guildId }: { guildId: string }) {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.user_id.trim()) {
-      showToast('warning', 'Missing Field', 'Please enter a user ID');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const res = await fetch('/api/v1/reports', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Discord-Server-ID': guildId,
-          'Authorization': 'Bearer placeholder',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!res.ok) {
-        showToast('error', 'Submission Failed', 'Could not create report');
-        return;
-      }
-
-      showToast('success', 'Report Created', 'Your report has been submitted');
-      setFormData({ user_id: '', reason: '', details: '' });
-      setShowForm(false);
-      fetchReports();
-    } catch (error) {
-      showToast('error', 'Error', error instanceof Error ? error.message : 'Failed to submit report');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   useEffect(() => {
     fetchReports();
   }, []);
@@ -1236,59 +994,15 @@ function ReportsTab({ guildId }: { guildId: string }) {
           <h3 className="text-white font-bold flex items-center gap-2">
             <span>🚩</span> Reports
           </h3>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="px-3 py-1.5 text-xs bg-orange-500/20 hover:bg-orange-500/40 border border-orange-500/30 text-orange-400 rounded transition-colors"
-          >
-            + New Report
-          </button>
         </div>
 
-        {showForm && (
-          <form onSubmit={handleSubmit} className="mb-6 p-4 rounded-lg bg-white/5 border border-white/10 space-y-3">
-            <input
-              type="text"
-              value={formData.user_id}
-              onChange={e => setFormData({ ...formData, user_id: e.target.value })}
-              placeholder="User ID to report"
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-orange-500 text-sm"
-            />
-            <input
-              type="text"
-              value={formData.reason}
-              onChange={e => setFormData({ ...formData, reason: e.target.value })}
-              placeholder="Reason (e.g., Spam, Abuse)"
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-orange-500 text-sm"
-            />
-            <textarea
-              value={formData.details}
-              onChange={e => setFormData({ ...formData, details: e.target.value })}
-              placeholder="Additional details..."
-              rows={3}
-              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-orange-500 text-sm resize-none"
-            />
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-orange-500/20 hover:bg-orange-500/40 border border-orange-500/30 text-orange-400 rounded-lg font-medium text-sm transition-colors disabled:opacity-50"
-              >
-                {isSubmitting ? 'Submitting...' : '✓ Submit Report'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/10 text-white/70 rounded-lg font-medium text-sm transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        )}
-
         {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+          <div className="py-8">
+            <div className="animate-pulse space-y-2">
+              <div className="h-3 bg-white/10 rounded w-24" />
+              <div className="h-3 bg-white/10 rounded w-28" />
+              <div className="h-3 bg-white/10 rounded w-20" />
+            </div>
           </div>
         ) : reports.length === 0 ? (
           <div className="text-center py-8 text-white/30">No reports yet</div>
@@ -1298,7 +1012,7 @@ function ReportsTab({ guildId }: { guildId: string }) {
               <div key={i} className="px-4 py-3 rounded-lg bg-white/5 border border-white/10">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-white font-mono text-sm">User: {report.user_id}</p>
+                    <p className="text-white font-mono text-sm">User: {report.reported_id}</p>
                     <p className="text-white/60 text-xs mt-1">{report.reason || 'No reason provided'}</p>
                     {report.details && <p className="text-white/40 text-xs mt-1">{report.details}</p>}
                   </div>
@@ -1501,8 +1215,12 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
   };
 
   if (loading) return (
-    <div className="flex items-center justify-center py-16">
-      <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    <div className="py-16">
+      <div className="animate-pulse space-y-3 max-w-xl mx-auto">
+        <div className="h-5 bg-white/10 rounded w-40" />
+        <div className="h-5 bg-white/10 rounded w-52" />
+        <div className="h-5 bg-white/10 rounded w-36" />
+      </div>
     </div>
   );
 
@@ -1568,7 +1286,7 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
             disabled={redeemLoading || !redeemCode.trim()}
             className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm whitespace-nowrap"
           >
-            {redeemLoading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : '✓'}
+            {redeemLoading ? <div className="w-4 h-4 rounded-full bg-white/30 animate-pulse" /> : '✓'}
             Redeem
           </button>
         </div>
@@ -1699,7 +1417,7 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
             disabled={saving}
             className="w-full sm:w-auto px-5 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
           >
-            {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : '💾'}
+            {saving ? <div className="w-4 h-4 rounded-full bg-white/30 animate-pulse" /> : '💾'}
             Save Settings
           </button>
           <button
@@ -1924,10 +1642,61 @@ export default function GuildDashboardPage() {
 
   if (loadState === 'checking' || loadState === 'loading') {
     return (
-      <div className="bg-black text-white min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-white/60">{loadState === 'checking' ? 'Verifying access…' : 'Loading dashboard…'}</p>
+      <div className="bg-black text-white min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {/* header skeleton */}
+          <div className="space-y-4 animate-pulse">
+            <div className="h-4 rounded-full bg-white/10 w-32" />
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-white/10" />
+                <div className="space-y-2">
+                  <div className="h-5 rounded bg-white/10 w-48" />
+                  <div className="h-3 rounded bg-white/10 w-40" />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-left">
+                <div className="w-10 h-10 rounded-full bg-white/10" />
+                <div className="space-y-1">
+                  <div className="h-4 rounded bg-white/10 w-24" />
+                  <div className="h-3 rounded bg-white/10 w-32" />
+                </div>
+                <div className="h-8 rounded-lg bg-white/10 w-20" />
+              </div>
+            </div>
+
+            {/* tabs skeleton */}
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {[...Array(7)].map((_, idx) => (
+                <div key={idx} className="h-9 rounded-lg bg-white/10 w-24" />
+              ))}
+            </div>
+          </div>
+
+          {/* content skeleton */}
+          <div className="mt-6 animate-pulse">
+            <div className="h-8 rounded bg-white/10 w-56 mb-4" />
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {[...Array(4)].map((_, idx) => (
+                <div key={idx} className="h-28 rounded-xl bg-white/10" />
+              ))}
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="h-56 rounded-xl bg-white/10" />
+              <div className="h-56 rounded-xl bg-white/10" />
+            </div>
+
+            <div className="mt-6 h-6 rounded bg-white/10 w-48" />
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[...Array(3)].map((_, idx) => (
+                <div key={idx} className="h-20 rounded-lg bg-white/10" />
+              ))}
+            </div>
+
+            <p className="mt-6 text-white/60">{loadState === 'checking' ? 'Verifying access…' : 'Loading dashboard…'}</p>
+          </div>
         </div>
       </div>
     );
@@ -2001,7 +1770,6 @@ export default function GuildDashboardPage() {
     { id: 'verse_scripts', label: 'Verse Scripts', icon: '📦' },
     { id: 'trackers',      label: 'Trackers',      icon: '⏱️' },
     { id: 'island_tools',  label: 'Island Tools',  icon: '🏝️' },
-    { id: 'files',         label: 'File Manager',  icon: '📁' },
     { id: 'reports',       label: 'Reports',       icon: '🚩' },
     { id: 'config',        label: 'Server Config', icon: '⚙️' },
     // { id: 'editor',        label: 'Editor',        icon: '⚡', soon: true },
@@ -2012,7 +1780,6 @@ export default function GuildDashboardPage() {
   function renderTabContent() {
     if (activeTab === 'editor') return <EditorSoon />;
     if (activeTab === 'island_tools') return <IslandToolsTab guildId={guildId} />;
-    if (activeTab === 'files') return <FileManagerTab guildId={guildId} />;
     if (activeTab === 'reports') return <ReportsTab guildId={guildId} />;
     if (activeTab === 'config') return <ServerConfigTab guildId={guildId} />;
 
@@ -2040,19 +1807,15 @@ export default function GuildDashboardPage() {
                   <div className="max-h-[180px] overflow-y-auto p-3 space-y-1">
                     {logsPreview && logsPreview.length > 0 ? (
                       logsPreview.map((row, i) => {
-                        const timestamp = row.created_at ? new Date(String(row.created_at)) : new Date();
+                        const timestamp = row.timestamp ? new Date(String(row.timestamp)) : new Date();
                         const timeStr = timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                        const isSuccess = String(row.status ?? 'success') === 'success';
-                        const statusIcon = isSuccess ? '✓' : '✗';
-                        const statusColor = isSuccess ? 'text-green-400' : 'text-red-400';
+                        const commandName = String(row.command_name ?? 'unknown');
 
                         return (
                           <div key={i} className="text-white/80 hover:bg-white/5 px-1 transition-colors">
-                            <span className={`${statusColor} font-bold`}>[{statusIcon}]</span>
-                            {' '}
                             <span className="text-white/50">{timeStr}</span>
                             {' '}
-                            <span className="text-cyan-400">{String(row.command_name ?? 'unknown')}</span>
+                            <span className="text-cyan-400 font-semibold">{commandName}</span>
                           </div>
                         );
                       })
@@ -2136,8 +1899,13 @@ export default function GuildDashboardPage() {
               className="text-white/40 hover:text-white text-xs px-2 py-1 rounded hover:bg-white/10 transition-colors">↻ Refresh</button>
           </div>
           {isLoading || !rows ? (
-            <div className="flex items-center justify-center py-16">
-              <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="py-16">
+              <div className="animate-pulse space-y-3 max-w-xl mx-auto">
+                <div className="h-4 bg-white/10 rounded w-40" />
+                <div className="h-10 bg-white/10 rounded" />
+                <div className="h-10 bg-white/10 rounded" />
+                <div className="h-10 bg-white/10 rounded" />
+              </div>
             </div>
           ) : rows.length === 0 ? (
             <div className="text-center py-16 text-white/30">No customers yet</div>
@@ -2159,11 +1927,16 @@ export default function GuildDashboardPage() {
               className="text-white/40 hover:text-white text-xs transition-colors">↻ Refresh</button>
           </div>
           <div className="text-white/50 text-xs mb-4 p-3 rounded-lg bg-white/5 border border-white/10">
-            📖 Real-time command execution logs from your Discord server.
+            📖 Real-time command execution logs from your Discord bot. Shows every command run by users in your server (automatically cleaned up after 12 hours).
           </div>
           {isLoading || !rows ? (
-            <div className="flex items-center justify-center py-16">
-              <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="py-16">
+              <div className="animate-pulse space-y-3">
+                <div className="h-4 bg-white/10 rounded w-56" />
+                <div className="h-4 bg-white/10 rounded w-48" />
+                <div className="h-4 bg-white/10 rounded w-40" />
+                <div className="h-40 bg-white/10 rounded" />
+              </div>
             </div>
           ) : (
             <div className="bg-black border border-white/10 rounded-lg overflow-hidden font-mono text-sm">
@@ -2175,22 +1948,20 @@ export default function GuildDashboardPage() {
                 {rows && rows.length > 0 ? (
                   <div className="p-4 space-y-0">
                     {rows.map((row, i) => {
-                      const timestamp = row.created_at ? new Date(String(row.created_at)) : new Date();
+                      const timestamp = row.timestamp ? new Date(String(row.timestamp)) : new Date();
                       const timeStr = timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                      const isSuccess = String(row.status ?? 'success') === 'success';
-                      const statusIcon = isSuccess ? '✓' : '✗';
-                      const statusColor = isSuccess ? 'text-green-400' : 'text-red-400';
+                      const commandName = String(row.command_name ?? 'unknown');
+                      const userId = String(row.user_id ?? '?');
+                      const args = row.args ? String(row.args) : '';
 
                       return (
                         <div key={i} className="text-white/80 hover:bg-white/5 px-2 py-1 transition-colors">
-                          <span className={`${statusColor} font-bold`}>[{statusIcon}]</span>
-                          {' '}
                           <span className="text-white/50">{timeStr}</span>
                           {' '}
-                          <span className="text-cyan-400">{String(row.command_name ?? 'unknown')}</span>
+                          <span className="text-cyan-400 font-semibold">{commandName}</span>
                           {' '}
-                          <span className="text-white/40">@{String(row.user_id ?? '?')}</span>
-                          {row.details && <span className="text-white/30"> - {String(row.details).substring(0, 80)}</span>}
+                          <span className="text-white/40">@{userId}</span>
+                          {args && <span className="text-white/30"> {args}</span>}
                         </div>
                       );
                     })}

@@ -91,10 +91,20 @@ export default function DashboardPage() {
 
   if (loadState === 'loading') {
     return (
-      <div className="bg-black text-white min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-white/60">Loading your servers...</p>
+      <div className="bg-black text-white min-h-screen p-8">
+        <div className="mx-auto w-full max-w-6xl animate-pulse">
+          <div className="h-6 bg-white/10 rounded mb-8 w-2/5" />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, idx) => (
+              <div key={idx} className="h-28 rounded-xl bg-white/10" />
+            ))}
+          </div>
+          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(3)].map((_, idx) => (
+              <div key={idx} className="h-44 rounded-xl bg-white/10" />
+            ))}
+          </div>
+          <p className="mt-6 text-white/60">Loading your servers…</p>
         </div>
       </div>
     );

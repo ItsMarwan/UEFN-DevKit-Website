@@ -72,7 +72,7 @@ function ServerConfigContent() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="animate-pulse h-12 w-12 rounded-full bg-white/10" />
       </div>
     );
   }
@@ -226,7 +226,7 @@ export default function ServerConfigPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Suspense fallback={
           <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="animate-pulse h-8 w-8 rounded-full bg-white/10" />
           </div>
         }>
           <ServerConfigContent />

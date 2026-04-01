@@ -272,7 +272,7 @@ export default function ContactPage() {
               >
                 {status === 'loading' ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-5 h-5 rounded-full bg-white/30 animate-pulse" />
                     Sending...
                   </>
                 ) : (

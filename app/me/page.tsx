@@ -101,9 +101,24 @@ export default function MePage() {
   if (loadState === 'loading') {
     return (
       <div className="bg-black text-white min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-white/60">Loading your profile...</p>
+        <div className="animate-pulse max-w-4xl w-full p-6 rounded-xl border border-white/10 bg-black/40">
+          <div className="h-6 rounded bg-white/10 w-48 mb-4" />
+          <div className="h-4 rounded bg-white/10 w-64 mb-6" />
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="h-28 w-28 rounded-full bg-white/10" />
+            <div className="flex-1 space-y-2">
+              <div className="h-5 rounded bg-white/10 w-40" />
+              <div className="h-4 rounded bg-white/10 w-56" />
+              <div className="h-4 rounded bg-white/10 w-52" />
+              <div className="h-4 rounded bg-white/10 w-28" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-20 rounded-xl bg-white/10" />
+            ))}
+          </div>
+          <p className="text-white/60 mt-4">Loading your profile...</p>
         </div>
       </div>
     );

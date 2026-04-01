@@ -203,10 +203,61 @@ function PatreonPageContent() {
 
   if (pageState === 'loading') {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-white/50 text-sm">Loading…</p>
+      <div className="min-h-screen bg-black flex items-center justify-center px-4 py-20">
+        <div className="max-w-md w-full">
+
+          {/* Guild card skeleton */}
+          <div className="flex items-center gap-4 p-5 rounded-2xl border border-white/10 bg-white/3 mb-6">
+            <div className="w-14 h-14 rounded-xl bg-white/10 animate-pulse flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <div className="h-3 bg-white/10 rounded animate-pulse mb-1 w-20" />
+              <div className="h-5 bg-white/10 rounded animate-pulse mb-1 w-32" />
+              <div className="h-3 bg-white/10 rounded animate-pulse w-24" />
+            </div>
+          </div>
+
+          {/* Tier role list skeleton */}
+          <div className="mb-6 p-4 rounded-xl border border-white/10 bg-white/3">
+            <div className="h-3 bg-white/10 rounded animate-pulse mb-3 w-16" />
+            <div className="space-y-2">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white/10 animate-pulse flex-shrink-0" />
+                    <div className="h-3 bg-white/10 rounded animate-pulse flex-1" />
+                  </div>
+                  <div className="h-3 bg-white/10 rounded animate-pulse w-16 flex-shrink-0" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Main auth card skeleton */}
+          <div className="p-6 rounded-2xl border border-white/10 bg-white/3 mb-4">
+            <div className="h-6 bg-white/10 rounded animate-pulse mb-2 w-48" />
+            <div className="space-y-1.5 mb-5">
+              <div className="h-3 bg-white/10 rounded animate-pulse w-full" />
+              <div className="h-3 bg-white/10 rounded animate-pulse w-3/4" />
+            </div>
+
+            {/* Warning skeleton */}
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10 mb-5">
+              <div className="flex gap-2.5">
+                <div className="w-4 h-4 rounded bg-white/10 animate-pulse flex-shrink-0 mt-0.5" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="h-3 bg-white/10 rounded animate-pulse w-full" />
+                  <div className="h-3 bg-white/10 rounded animate-pulse w-5/6" />
+                </div>
+              </div>
+            </div>
+
+            {/* Auth button skeleton */}
+            <div className="w-full h-12 bg-white/10 rounded-xl animate-pulse" />
+          </div>
+
+          <div className="text-center">
+            <div className="h-3 bg-white/10 rounded animate-pulse w-48 mx-auto" />
+          </div>
         </div>
       </div>
     );
@@ -331,10 +382,12 @@ function PatreonPageContent() {
   if (pageState === 'granting') {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-white font-semibold mb-1">Verifying your subscription…</p>
-          <p className="text-white/40 text-sm">Checking Patreon data &amp; granting roles</p>
+        <div className="animate-pulse w-full max-w-md p-6 text-center bg-white/5 rounded-xl border border-white/10">
+          <div className="h-4 bg-white/10 rounded w-60 mx-auto mb-4" />
+          <div className="h-3 bg-white/10 rounded w-52 mx-auto mb-3" />
+          <div className="h-3 bg-white/10 rounded w-40 mx-auto" />
+          <p className="text-white/40 text-sm mt-4">Verifying your subscription…</p>
+          <p className="text-white/40 text-sm">Checking Patreon data & granting roles</p>
         </div>
       </div>
     );
@@ -639,7 +692,11 @@ export default function PatreonPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-black flex items-center justify-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-full max-w-md p-6 animate-pulse bg-white/5 rounded-xl border border-white/10">
+            <div className="h-4 bg-white/10 rounded w-40 mb-3" />
+            <div className="h-4 bg-white/10 rounded w-56 mb-3" />
+            <div className="h-4 bg-white/10 rounded w-32" />
+          </div>
         </div>
       }
     >

@@ -220,4 +220,19 @@ export const apiEndpoints: Record<string, ApiEndpoint> = {
     examples: ['GET /api/v1/admin/logs'],
     relatedEndpoints: [],
   },
+  'command-logs': {
+    path: '/api/command-logs',
+    method: 'GET',
+    description: 'Retrieve command execution logs',
+    category: 'Admin',
+    auth: true,
+    premium: false,
+    details: 'Get recent command logs from the Discord bot. Logs are automatically cleaned up after 12 hours.',
+    examples: [
+      'GET /api/command-logs',
+      'GET /api/command-logs?limit=50',
+      'GET /api/command-logs?guild_id=123456789&limit=100'
+    ],
+    relatedEndpoints: ['admin'],
+  },
 };

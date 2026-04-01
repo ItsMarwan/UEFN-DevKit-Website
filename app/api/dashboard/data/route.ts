@@ -118,9 +118,9 @@ export async function GET(req: NextRequest) {
       const baseUrl = `${protocol}://${host}`;
       
       try {
-        const logsRes = await fetchWithTimeout(`${baseUrl}/api/dashboard/command-logs?guild_id=${guildId}&limit=${limit}&offset=${offset}`, {
+        const logsRes = await fetchWithTimeout(`${baseUrl}/api/command-logs?guild_id=${guildId}&limit=${limit}`, {
           headers: {
-            'X-Dashboard-Bypass-Token': ENTERPRISE_API_TOKEN,
+            'Authorization': `Bearer ${ENTERPRISE_API_TOKEN}`,
           },
           cache: 'no-store',
         }, FLASK_TIMEOUT);
@@ -131,7 +131,7 @@ export async function GET(req: NextRequest) {
         const logsJson = await logsRes.json();
         return NextResponse.json({
           success: true,
-          data: logsJson?.data ?? [],
+          data: logsJson?.logs ?? [],
         });
       } catch (e) {
         console.warn(`[data] logs endpoint error:`, e);

@@ -137,9 +137,9 @@ export default function PremiumPage() {
                 <span className="text-white/60 ml-2">pricing</span>
               </div>
 
-              <button className="w-full py-3 rounded-lg font-bold border-2 border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white transition-all mb-8">
+              <Link href="/contact" className="w-full inline-flex justify-center py-3 rounded-lg font-bold border-2 border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white transition-all mb-8">
                 Contact Sales
-              </button>
+              </Link>
 
               <ul className="space-y-4">
                 <li className="flex items-start">

@@ -93,15 +93,15 @@ export async function GET(req: NextRequest) {
       (async () => {
         // Fetch command logs count from the command-logs API
         try {
-          const res = await fetch(`${baseUrl}/api/dashboard/command-logs?guild_id=${guildId}&limit=1&offset=0`, {
+          const res = await fetch(`${baseUrl}/api/command-logs?guild_id=${guildId}&limit=1`, {
             headers: {
-              'X-Dashboard-Bypass-Token': ENTERPRISE_API_TOKEN,
+              'Authorization': `Bearer ${ENTERPRISE_API_TOKEN}`,
             },
             cache: 'no-store',
           });
           if (!res.ok) return { count: 0, ok: false };
           const json = await res.json();
-          const count = json?.pagination?.total ?? 0;
+          const count = json?.logs?.length ?? 0; // Since we don't have pagination in the new API, just count the returned logs
           return { count, ok: true };
         } catch (e) {
           console.warn(`[stats] command_logs fetch error:`, e);

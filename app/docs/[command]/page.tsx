@@ -55,7 +55,14 @@ export default function CommandDocPage({ params }: PageProps) {
   if (loading || !command) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-full max-w-4xl animate-pulse space-y-4 p-6">
+          <div className="h-6 rounded bg-white/10 w-48" />
+          <div className="h-6 rounded bg-white/10 w-24" />
+          <div className="h-56 rounded-lg bg-white/10" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {[...Array(4)].map((_, i) => <div key={i} className="h-20 rounded-lg bg-white/10" />)}
+          </div>
+        </div>
       </div>
     );
   }

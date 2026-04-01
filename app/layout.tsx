@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getMetadataForPage } from '@/lib/metadata';
 import { Navigation } from '@/components/Navigation';
 import { Footer } from '@/components/Footer';
 import { LegalProvider } from '@/components/LegalProvider';
@@ -9,67 +10,7 @@ import './globals.css';
 
 const BASE_URL = 'https://uefndevkit.rweb.site';
 
-export const metadata: Metadata = {
-  metadataBase: new URL(BASE_URL),
-  title: {
-    default: 'UEFN DevKit – #1 Discord Bot for Fortnite Island Builders',
-    template: '%s | UEFN DevKit',
-  },
-  description:
-    'UEFN DevKit: Discord bot for Fortnite island builders. Manage customers, analytics & more. Free & premium tiers.',
-  keywords: [
-    'UEFN DevKit', 'UEFN Discord bot', 'Fortnite island bot', 'UEFN bot',
-    'Discord bot for UEFN', 'Fortnite creative Discord bot', 'island analytics bot',
-    'UEFN customer management', 'UEFN session system', 'Verse script bot',
-    'Fortnite island builder tools', 'UEFN seller profiles', 'Discord bot',
-    'UEFN moderation bot', 'Fortnite UEFN', 'island tracker Discord', 'UEFN premium bot',
-  ],
-  authors: [{ name: 'UEFN DevKit', url: BASE_URL }],
-  creator: 'UEFN DevKit',
-  publisher: 'UEFN DevKit',
-  category: 'Technology',
-  classification: 'Discord Bot',
-  icons: {
-    icon: [{ url: '/icon.png', type: 'image/png' }],
-    shortcut: '/icon.png',
-    apple: '/icon.png',
-    other: [{ rel: 'apple-touch-icon-precomposed', url: '/icon.png' }],
-  },
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: BASE_URL,
-    siteName: 'UEFN DevKit',
-    title: 'UEFN DevKit – #1 Discord Bot for Fortnite Island Builders',
-    description: 'Customer management, session channels, Verse script uploads, live island analytics, seller directory & more.',
-    images: [
-      {
-        url: `${BASE_URL}/images/banner.png`,
-        secureUrl: `${BASE_URL}/images/banner.png`,
-        width: 1200,
-        height: 630,
-        alt: 'UEFN DevKit – Discord Bot for Fortnite Island Builders',
-        type: 'image/png',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    site: '@uefndevkit',
-    creator: '@uefndevkit',
-    title: 'UEFN DevKit – #1 Discord Bot for Fortnite Island Builders',
-    description: 'Customer management, session channels, Verse scripts, island analytics & more.',
-    images: [`${BASE_URL}/images/banner.png`],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true, 'max-video-preview': -1, 'max-image-preview': 'large', 'max-snippet': -1 },
-  },
-  alternates: { canonical: BASE_URL },
-  formatDetection: { email: false, telephone: false, address: false },
-  referrer: 'origin-when-cross-origin',
-};
+export const metadata: Metadata = getMetadataForPage('home');
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

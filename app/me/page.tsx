@@ -20,6 +20,14 @@ interface Guild {
   hasPerms: boolean;
 }
 
+interface AuthenticatedServer {
+  guild_id: string;
+  guild_name: string;
+  guild_icon: string | null;
+  role_names: string[];
+  patreon_setup: boolean;
+}
+
 interface User {
   id: string;
   username: string;
@@ -28,6 +36,7 @@ interface User {
 }
 
 type LoadState = 'loading' | 'ready' | 'error';
+type Tab = 'servers' | 'authenticated';
 
 export default function MePage() {
   const router = useRouter();
@@ -35,8 +44,10 @@ export default function MePage() {
   const botHealth = useBotHealth();
   const [user, setUser] = useState<User | null>(null);
   const [guilds, setGuilds] = useState<Guild[]>([]);
+  const [authenticatedServers, setAuthenticatedServers] = useState<AuthenticatedServer[]>([]);
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [errorMsg, setErrorMsg] = useState('');
+  const [activeTab, setActiveTab] = useState<Tab>('servers');
   // Prevent double-fetch from React StrictMode double-invoking effects
   const fetched = useRef(false);
 
@@ -67,6 +78,25 @@ export default function MePage() {
         setUser(data.user);
         setGuilds(data.guilds || []);
         setLoadState('ready');
+
+        // Fetch authenticated servers
+        if (data.user?.id) {
+          try {
+            const authRes = await fetch('/api/me/authenticated-servers', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ discord_user_id: data.user.id }),
+            });
+
+            if (authRes.ok) {
+              const authData = await authRes.json();
+              setAuthenticatedServers(authData.servers || []);
+            }
+          } catch (error) {
+            // Fail silently for authenticated servers fetch
+            console.debug('Failed to fetch authenticated servers');
+          }
+        }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         setErrorMsg('Failed to load session.');
@@ -83,8 +113,8 @@ export default function MePage() {
       ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png`
       : `https://cdn.discordapp.com/embed/avatars/${parseInt(u.id) % 5}.png`;
 
-  const getGuildIcon = (g: Guild) =>
-    g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null;
+  const getGuildIcon = (icon: string | null, id: string) =>
+    icon ? `https://cdn.discordapp.com/icons/${id}/${icon}.png` : null;
 
   const getRoleText = (guild: Guild) => {
     if (guild.owner) return 'Owner';
@@ -140,6 +170,10 @@ export default function MePage() {
     );
   }
 
+  const guildIcon = (guild: Guild) => getGuildIcon(guild.icon, guild.id);
+  const authServerIcon = (server: AuthenticatedServer) => 
+    getGuildIcon(server.guild_icon, server.guild_id);
+
   return (
     <div className="bg-black text-white min-h-screen">
       <OfflineBanner health={botHealth} />
@@ -187,74 +221,166 @@ export default function MePage() {
         </div>
       </section>
 
-      {/* Servers Section */}
-      <section className="py-12">
+      {/* Tabs */}
+      <section className="py-6 border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-white mb-6">
-            Your Servers ({guilds.length})
-          </h2>
-
-          {guilds.length === 0 ? (
-            <div className="text-center py-20">
-              <div className="text-6xl mb-4">🏝️</div>
-              <h3 className="text-xl font-bold text-white mb-2">No servers found</h3>
-              <p className="text-white/60 mb-6">
-                UEFN DevKit isn&apos;t in any of your servers yet.
-              </p>
-              <a
-                href="/invite"
-                className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg font-semibold text-white hover:shadow-lg hover:shadow-blue-500/30 transition-all"
-              >
-                Invite UEFN DevKit
-              </a>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {guilds.map((guild) => (
-                <div
-                  key={guild.id}
-                  className="p-5 rounded-xl border border-white/10 bg-black/40 hover:border-blue-500/30 transition-all"
-                >
-                  <div className="flex items-center gap-4">
-                    {getGuildIcon(guild) ? (
-                      <Image
-                        src={getGuildIcon(guild)!}
-                        alt={guild.name}
-                        width={48}
-                        height={48}
-                        className="w-12 h-12 rounded-xl flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center flex-shrink-0">
-                        <span className="text-white font-bold text-lg">{guild.name.charAt(0)}</span>
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-white truncate">{guild.name}</h3>
-                      <p className="text-sm text-white/60">Server ID: {guild.id}</p>
-                    </div>
-                    <div className="text-right">
-                      <span className={`text-sm font-medium ${getRoleColor(guild)}`}>
-                        {getRoleText(guild)}
-                      </span>
-                      {guild.hasPerms && (
-                        <div className="mt-1">
-                          <Link
-                            href={`/dashboard/${guild.id}`}
-                            className="text-xs px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors"
-                          >
-                            Manage
-                          </Link>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="flex gap-4">
+            <button
+              onClick={() => setActiveTab('servers')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                activeTab === 'servers'
+                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
+                  : 'text-white/60 hover:text-white border border-transparent'
+              }`}
+            >
+              Your Servers ({guilds.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('authenticated')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                activeTab === 'authenticated'
+                  ? 'bg-green-500/20 text-green-400 border border-green-500/50'
+                  : 'text-white/60 hover:text-white border border-transparent'
+              }`}
+            >
+              Authenticated Servers ({authenticatedServers.length})
+            </button>
+          </div>
         </div>
       </section>
+
+      {/* Servers Tab */}
+      {activeTab === 'servers' && (
+        <section className="py-12">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Your Servers ({guilds.length})
+            </h2>
+
+            {guilds.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="text-6xl mb-4">🏝️</div>
+                <h3 className="text-xl font-bold text-white mb-2">No servers found</h3>
+                <p className="text-white/60 mb-6">
+                  UEFN DevKit isn&apos;t in any of your servers yet.
+                </p>
+                <a
+                  href="/invite"
+                  className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg font-semibold text-white hover:shadow-lg hover:shadow-blue-500/30 transition-all"
+                >
+                  Invite UEFN DevKit
+                </a>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {guilds.map((guild) => (
+                  <div
+                    key={guild.id}
+                    className="p-5 rounded-xl border border-white/10 bg-black/40 hover:border-blue-500/30 transition-all"
+                  >
+                    <div className="flex items-center gap-4">
+                      {guildIcon(guild) ? (
+                        <Image
+                          src={guildIcon(guild)!}
+                          alt={guild.name}
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 rounded-xl flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-bold text-lg">{guild.name.charAt(0)}</span>
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-white truncate">{guild.name}</h3>
+                        <p className="text-sm text-white/60">Server ID: {guild.id}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className={`text-sm font-medium ${getRoleColor(guild)}`}>
+                          {getRoleText(guild)}
+                        </span>
+                        {guild.hasPerms && (
+                          <div className="mt-1">
+                            <Link
+                              href={`/dashboard/${guild.id}`}
+                              className="text-xs px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors"
+                            >
+                              Manage
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Authenticated Servers Tab */}
+      {activeTab === 'authenticated' && (
+        <section className="py-12">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Authenticated Servers ({authenticatedServers.length})
+            </h2>
+
+            {authenticatedServers.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="text-6xl mb-4">🔐</div>
+                <h3 className="text-xl font-bold text-white mb-2">No authenticated servers</h3>
+                <p className="text-white/60 mb-6">
+                  You haven&apos;t authenticated with any servers yet. Visit a server&apos;s Patreon verification page to get started.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {authenticatedServers.map((server) => (
+                  <div
+                    key={server.guild_id}
+                    className="p-5 rounded-xl border border-white/10 bg-black/40 hover:border-green-500/30 transition-all"
+                  >
+                    <div className="flex items-center gap-4">
+                      {authServerIcon(server) ? (
+                        <Image
+                          src={authServerIcon(server)!}
+                          alt={server.guild_name}
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 rounded-xl flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-white/10 flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-bold text-lg">{server.guild_name.charAt(0)}</span>
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-white truncate">{server.guild_name}</h3>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {server.role_names.map((role, idx) => (
+                            <span
+                              key={idx}
+                              className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded border border-green-500/30"
+                            >
+                              {role}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="text-sm font-medium text-green-400">✓ Verified</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

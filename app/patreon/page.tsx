@@ -50,6 +50,7 @@ function PatreonPageContent() {
   const [errorMsg, setErrorMsg] = useState('');
   const [grantedRoles, setGrantedRoles] = useState<string[]>([]);
   const [patronName, setPatronName] = useState('');
+  const [alreadyAuthenticated, setAlreadyAuthenticated] = useState(false);
 
   const grantRoles = useCallback(async () => {
     if (!serverId) return;
@@ -88,9 +89,19 @@ function PatreonPageContent() {
         }
         return;
       }
-      setGrantedRoles(data.grantedRoles || []);
-      setPatronName(data.patronName || '');
-      setPageState('success');
+      // Check if user was already authenticated
+      if (data.already_authenticated) {
+        setGrantedRoles(data.grantedRoles || []);
+        setPatronName(data.patronName || '');
+        setAlreadyAuthenticated(true);
+        // Show the success state but with "already authenticated" message
+        setPageState('success');
+      } else {
+        setGrantedRoles(data.grantedRoles || []);
+        setPatronName(data.patronName || '');
+        setAlreadyAuthenticated(false);
+        setPageState('success');
+      }
     } catch {
       setErrorMsg('Connection error. Please try again.');
       setPageState('error');
@@ -411,14 +422,25 @@ function PatreonPageContent() {
             <span className="text-4xl">✅</span>
           </div>
 
-          <h1 className="text-3xl font-bold text-white mb-2">You're all set!</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            {alreadyAuthenticated ? 'Already Verified ✓' : 'You\'re all set!'}
+          </h1>
           <p className="text-white/60 mb-2">
-            {patronName && <span className="text-white">Hey {patronName}! </span>}
-            Your Patreon subscription has been verified.
+            {alreadyAuthenticated ? (
+              <>
+                <span className="text-white">Hey {patronName}! </span>
+                You already have the Patreon roles in this server.
+              </>
+            ) : (
+              <>
+                {patronName && <span className="text-white">Hey {patronName}! </span>}
+                Your Patreon subscription has been verified.
+              </>
+            )}
           </p>
           {guild && (
             <p className="text-white/60 mb-8">
-              Roles granted in{' '}
+              {alreadyAuthenticated ? 'Your roles in ' : 'Roles granted in '}
               {icon ? (
                 <span className="inline-flex items-center gap-1.5">
                   <Image src={icon} alt={guild.name} width={18} height={18} className="rounded-full" />
@@ -434,7 +456,7 @@ function PatreonPageContent() {
           {grantedRoles.length > 0 && (
             <div className="mb-8 p-4 rounded-xl border border-green-500/20 bg-green-500/5 text-left">
               <p className="text-green-400 text-xs font-semibold uppercase tracking-wide mb-3">
-                ✓ Roles granted
+                ✓ {alreadyAuthenticated ? 'Current roles' : 'Roles granted'}
               </p>
               <div className="space-y-2">
                 {grantedRoles.map((role, i) => (
@@ -466,7 +488,9 @@ function PatreonPageContent() {
           )}
 
           <p className="text-white/30 text-xs">
-            Roles may take a few seconds to appear in Discord. You may need to refresh your member list.
+            {alreadyAuthenticated
+              ? 'Your roles should be visible in Discord. Refresh if needed.'
+              : 'Roles may take a few seconds to appear in Discord. You may need to refresh your member list.'}
           </p>
         </div>
       </div>

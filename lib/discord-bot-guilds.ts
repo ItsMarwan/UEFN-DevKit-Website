@@ -6,6 +6,16 @@
 const DISCORD_API = 'https://discord.com/api/v10';
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 
+/**
+ * Validates that a guildId is a valid Discord guild ID
+ * Discord guild IDs are 17-19 digit snowflakes (numeric strings)
+ * @param guildId The guild ID to validate
+ * @returns true if valid, false otherwise
+ */
+function isValidGuildId(guildId: unknown): guildId is string {
+  return typeof guildId === 'string' && /^\d{17,19}$/.test(guildId);
+}
+
 interface BotGuildCache {
   ids: Set<string>;
   fetchedAt: number;
@@ -80,6 +90,12 @@ export async function fetchBotGuildIds(): Promise<Set<string> | null> {
 export async function isBotInGuild(guildId: string): Promise<boolean> {
   if (!BOT_TOKEN) {
     console.error('DISCORD_BOT_TOKEN not set in environment');
+    return false;
+  }
+
+  // Validate guildId to prevent SSRF attacks
+  if (!isValidGuildId(guildId)) {
+    console.error(`Invalid guild ID format: ${guildId}`);
     return false;
   }
 

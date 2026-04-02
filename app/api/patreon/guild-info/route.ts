@@ -20,12 +20,25 @@ function getSupabase() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
+/**
+ * Validates that a guildId is a valid Discord guild ID
+ * Discord guild IDs are 17-19 digit snowflakes (numeric strings)
+ */
+function isValidGuildId(guildId: unknown): guildId is string {
+  return typeof guildId === 'string' && /^\d{17,19}$/.test(guildId);
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const guildId = searchParams.get('guildId');
 
   if (!guildId) {
     return NextResponse.json({ error: 'Missing guildId' }, { status: 400 });
+  }
+
+  // Validate guildId to prevent SSRF attacks
+  if (!isValidGuildId(guildId)) {
+    return NextResponse.json({ error: 'Invalid guildId format' }, { status: 400 });
   }
 
   // 1. Verify bot is in guild

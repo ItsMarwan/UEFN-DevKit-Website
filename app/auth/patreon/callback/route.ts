@@ -39,5 +39,24 @@ export async function GET(req: NextRequest) {
     ? `${APP_URL}/patreon?${redirectParams.toString()}`
     : `/patreon?${redirectParams.toString()}`;
 
-  return NextResponse.redirect(redirectUrl);
+  const response = NextResponse.redirect(redirectUrl);
+
+  // Store Patreon OAuth data in cookie (similar to dashboard_session)
+  if (result.authenticated) {
+    const cookiePayload = JSON.stringify({
+      patreon_authenticated: true,
+      guild_id: guildId,
+      timestamp: Date.now(),
+    });
+
+    response.cookies.set('patreon_session', cookiePayload, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 3600, // 1 hour
+      path: '/',
+    });
+  }
+
+  return response;
 }

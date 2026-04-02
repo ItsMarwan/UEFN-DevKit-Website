@@ -119,7 +119,6 @@ function PatreonPageContent() {
     try {
       setPatreonStatus('verifying');
       setPatreonError('');
-      setVerificationCountdown(5);
 
       // Call Next.js API route which forwards to Flask
       const response = await fetch(
@@ -233,17 +232,6 @@ function PatreonPageContent() {
     init();
   }, [serverId]);
 
-  // Countdown timer for Patreon verification
-  useEffect(() => {
-    if (verificationCountdown > 0) {
-      const timer = setTimeout(() => setVerificationCountdown(verificationCountdown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-    if (verificationCountdown === 0 && patreonStatus === 'verifying' && verificationCountdown > -1) {
-      verifyPatreonMembership();
-    }
-  }, [verificationCountdown, patreonStatus, verifyPatreonMembership]);
-
   // Handle return from Discord OAuth
   useEffect(() => {
     const discordAuth = searchParams.get('discord_auth');
@@ -281,9 +269,9 @@ function PatreonPageContent() {
     if (!patreonAuth || pageState !== 'ready' || !sessionUser) return;
 
     if (patreonAuth === 'success') {
-      // Start countdown and verification
+      // Start verification immediately
       setPatreonStatus('verifying');
-      setVerificationCountdown(3);
+      setVerificationCountdown(0);
     } else if (patreonAuth === 'error') {
       setPatreonError('Patreon authentication failed. Please try again.');
       setPatreonStatus('not_linked');

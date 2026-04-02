@@ -2,9 +2,57 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, Suspense } from 'react';
+import { useEffect, Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useLegal } from '@/components/LegalProvider';
+
+// Stats Display Component
+function StatsDisplay() {
+  const [stats, setStats] = useState<{ users: number; guilds: number } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('/api/v1/stats');
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  const formatNumber = (num: number) => {
+    return num.toLocaleString();
+  };
+
+  if (loading) {
+    return (
+      <div className="animate-pulse">
+        <div className="h-8 bg-white/10 rounded mb-2 w-64 mx-auto"></div>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return null; // Don't show anything if stats fail to load
+  }
+
+  return (
+    <p className="text-xl text-white/80">
+      Trusted by over <span className="font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+        {formatNumber(stats.users)} users
+      </span>
+    </p>
+  );
+}
 
 // Separated into its own component because useSearchParams requires Suspense
 function LegalParamHandler() {
@@ -105,6 +153,13 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-16 bg-black/30">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <StatsDisplay />
         </div>
       </section>
 

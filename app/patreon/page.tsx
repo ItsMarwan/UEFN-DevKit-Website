@@ -269,14 +269,14 @@ function PatreonPageContent() {
     if (!patreonAuth || pageState !== 'ready' || !sessionUser) return;
 
     if (patreonAuth === 'success') {
-      // Start verification immediately
+      // Start verification immediately (don't wait for timer)
       setPatreonStatus('verifying');
-      setVerificationCountdown(0);
+      verifyPatreonMembership();
     } else if (patreonAuth === 'error') {
       setPatreonError('Patreon authentication failed. Please try again.');
       setPatreonStatus('not_linked');
     }
-  }, [pageState, searchParams, sessionUser]);
+  }, [pageState, searchParams, sessionUser, verifyPatreonMembership]);
 
   function handleAuthenticate() {
     if (sessionUser) {

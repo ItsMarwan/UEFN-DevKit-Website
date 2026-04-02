@@ -114,6 +114,7 @@ function PatreonPageContent() {
 
   const startPatreonOAuth = useCallback(async () => {
     if (!serverId || !sessionUser) return;
+    if (patreonStatus === 'verifying') return; // Prevent duplicate clicks while already in progress
 
     try {
       setPatreonStatus('verifying');
@@ -717,7 +718,7 @@ function PatreonPageContent() {
             {/* Patreon button */}
             <button
               onClick={startPatreonOAuth}
-              disabled={false}
+              disabled={patreonStatus !== 'not_linked'}
               className="w-full flex items-center justify-center gap-3 py-3.5 px-5 bg-black hover:bg-gray-900 disabled:opacity-50 text-white font-semibold rounded-xl transition-all border border-white/20 hover:border-white/40 active:scale-[0.98]"
             >
               <svg width="20" height="20" viewBox="0 0 640 640" fill="none" className="flex-shrink-0">

@@ -718,17 +718,10 @@ function PatreonPageContent() {
             <button
               onClick={startPatreonOAuth}
               disabled={false}
-              className="w-full flex items-center justify-center gap-3 py-3.5 px-5 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:opacity-50 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-orange-500/30 active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-3 py-3.5 px-5 bg-black hover:bg-gray-900 disabled:opacity-50 text-white font-semibold rounded-xl transition-all border border-white/20 hover:border-white/40 active:scale-[0.98]"
             >
-              <svg width="20" height="20" viewBox="0 0 200 211" fill="none" className="flex-shrink-0">
-                <path
-                  d="M75.5 94.7c0 8.2-6.6 14.9-14.7 14.9-8.2 0-14.9-6.6-14.9-14.9 0-8.2 6.6-14.9 14.9-14.9 8.1 0 14.7 6.6 14.7 14.9zM154.5 94.7c0 8.2-6.6 14.9-14.7 14.9-8.2 0-14.9-6.6-14.9-14.9 0-8.2 6.6-14.9 14.9-14.9 8.1 0 14.7 6.6 14.7 14.9z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M55.4 154.5c-11.1 8.4-30.6 19.1-55.4 19.1v20.8c29.9 0 47.6-13.4 59.6-24.7l-4.2-15.2zm89.2 0l-4.2 15.2c12 11.3 29.7 24.7 59.6 24.7v-20.8c-24.8 0-44.3-10.7-55.4-19.1zm-60-30.1c-.1-1.4.1-2.8.5-4.1L49.1 70.3c-3.1-7.2-4.9-14.9-5.2-22.9 0-30.6 28.3-55.3 63.3-55.3s63.3 24.7 63.3 55.3c-.3 8-2.1 15.7-5.2 22.9L199 120.3c.4 1.3.6 2.7.5 4.1H144.6v-2.5c0-8.2-6.6-14.9-14.7-14.9H70.1c-8.1 0-14.7 6.6-14.7 14.9v2.5H84.6z"
-                  fill="currentColor"
-                />
+              <svg width="20" height="20" viewBox="0 0 640 640" fill="none" className="flex-shrink-0">
+                <path fill="white" d="M554 217.8C553.9 152.4 503 98.8 443.3 79.5C369.1 55.5 271.3 59 200.4 92.4C114.6 132.9 87.6 221.7 86.6 310.2C85.8 383 93 574.6 201.2 576C281.5 577 293.5 473.5 330.7 423.7C357.1 388.2 391.2 378.2 433.1 367.8C505.1 350 554.2 293.1 554.1 217.8L554 217.8z"/>
               </svg>
               <span>Connect Patreon Account</span>
             </button>

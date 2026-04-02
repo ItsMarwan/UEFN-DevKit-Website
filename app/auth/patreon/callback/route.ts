@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     { method: 'GET' }
   );
 
-  let result = { authenticated: false };
+  let result: { authenticated?: boolean; guild_id?: string | null } = {};
   try {
     result = await flaskRes.json();
   } catch {
@@ -29,7 +29,15 @@ export async function GET(req: NextRequest) {
   }
 
   const status = result.authenticated ? 'success' : 'error';
-  const redirectUrl = APP_URL ? `${APP_URL}/patreon?patreon_auth=${status}` : `/patreon?patreon_auth=${status}`;
+  const guildId = result.guild_id || null;
+
+  const redirectParams = new URLSearchParams();
+  if (guildId) redirectParams.set('s', guildId);
+  redirectParams.set('patreon_auth', status);
+
+  const redirectUrl = APP_URL
+    ? `${APP_URL}/patreon?${redirectParams.toString()}`
+    : `/patreon?${redirectParams.toString()}`;
 
   return NextResponse.redirect(redirectUrl);
 }

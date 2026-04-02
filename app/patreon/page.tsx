@@ -51,6 +51,10 @@ function PatreonPageContent() {
   const [grantedRoles, setGrantedRoles] = useState<string[]>([]);
   const [patronName, setPatronName] = useState('');
   const [alreadyAuthenticated, setAlreadyAuthenticated] = useState(false);
+  const [patreonStatus, setPatreonStatus] = useState<'not_linked' | 'verifying' | 'verified' | null>(null);
+  const [patreonName, setPatreonName] = useState('');
+  const [patreonError, setPatreonError] = useState('');
+  const [verificationCountdown, setVerificationCountdown] = useState(0);
 
   const grantRoles = useCallback(async () => {
     if (!serverId) return;
@@ -108,6 +112,76 @@ function PatreonPageContent() {
     }
   }, [serverId]);
 
+  const startPatreonOAuth = useCallback(async () => {
+    if (!serverId || !sessionUser) return;
+
+    try {
+      setPatreonStatus('verifying');
+      setPatreonError('');
+      setVerificationCountdown(5);
+
+      // Call Next.js API route which forwards to Flask
+      const response = await fetch(
+        `/api/patreon/login?discord_user_id=${sessionUser.id}&guild_id=${serverId}`
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        setPatreonError(error.error || 'Failed to start Patreon OAuth');
+        setPatreonStatus(null);
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!data.auth_url) {
+        setPatreonError('No auth URL returned');
+        setPatreonStatus(null);
+        return;
+      }
+
+      // Redirect to Patreon OAuth
+      window.location.href = data.auth_url;
+    } catch (err) {
+      setPatreonError(err instanceof Error ? err.message : 'Failed to start Patreon OAuth');
+      setPatreonStatus(null);
+    }
+  }, [serverId, sessionUser]);
+
+  const verifyPatreonMembership = useCallback(async () => {
+    if (!serverId || !sessionUser) return;
+
+    try {
+      setPatreonStatus('verifying');
+      setPatreonError('');
+
+      // Call Next.js API route which forwards to Flask
+      const response = await fetch('/api/patreon/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          discord_user_id: sessionUser.id,
+          guild_id: serverId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'verified') {
+        setPatreonStatus('verified');
+        setPatreonName(data.message || 'Verified');
+        // Auto-grant roles after verification
+        grantRoles();
+      } else {
+        setPatreonError(data.error || 'Verification failed');
+        setPatreonStatus('not_linked');
+      }
+    } catch (err) {
+      setPatreonError(err instanceof Error ? err.message : 'Verification error');
+      setPatreonStatus('not_linked');
+    }
+  }, [serverId, sessionUser, grantRoles]);
+
   useEffect(() => {
     if (!serverId) {
       setPageState('no_server');
@@ -158,6 +232,17 @@ function PatreonPageContent() {
     init();
   }, [serverId]);
 
+  // Countdown timer for Patreon verification
+  useEffect(() => {
+    if (verificationCountdown > 0) {
+      const timer = setTimeout(() => setVerificationCountdown(verificationCountdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+    if (verificationCountdown === 0 && patreonStatus === 'verifying' && verificationCountdown > -1) {
+      verifyPatreonMembership();
+    }
+  }, [verificationCountdown, patreonStatus, verifyPatreonMembership]);
+
   // Handle return from Discord OAuth
   useEffect(() => {
     const discordAuth = searchParams.get('discord_auth');
@@ -170,13 +255,13 @@ function PatreonPageContent() {
     }
 
     if (discordAuth === 'success') {
-      // Refresh session then auto-grant
+      // Refresh session then prompt for Patreon auth
       fetch('/api/dashboard/session?lightweight=true')
         .then(r => (r.ok ? r.json() : null))
         .then(data => {
           if (data?.user) {
             setSessionUser(data.user);
-            grantRoles();
+            setPatreonStatus('not_linked');
           } else {
             setErrorMsg('Could not load session after login. Please try again.');
             setPageState('error');
@@ -189,10 +274,25 @@ function PatreonPageContent() {
     }
   }, [pageState, searchParams, grantRoles]);
 
+  // Handle return from Patreon OAuth callback
+  useEffect(() => {
+    const patreonAuth = searchParams.get('patreon_auth');
+    if (!patreonAuth || pageState !== 'ready' || !sessionUser) return;
+
+    if (patreonAuth === 'success') {
+      // Start countdown and verification
+      setPatreonStatus('verifying');
+      setVerificationCountdown(3);
+    } else if (patreonAuth === 'error') {
+      setPatreonError('Patreon authentication failed. Please try again.');
+      setPatreonStatus('not_linked');
+    }
+  }, [pageState, searchParams, sessionUser]);
+
   function handleAuthenticate() {
     if (sessionUser) {
-      // Already logged in — use cookie
-      grantRoles();
+      // Already logged in with Discord — show Patreon link option
+      setPatreonStatus('not_linked');
     } else {
       // Redirect to Discord OAuth
       const returnUrl = encodeURIComponent(`/patreon?s=${serverId}`);
@@ -500,6 +600,186 @@ function PatreonPageContent() {
   // ── Ready state (main page) ────────────────────────────────────────────────
   const totalRoles = (patreonSetup?.roles.length ?? 0) + (patreonSetup?.item_roles.length ?? 0);
   const icon = guild ? guildIcon(guild) : null;
+
+  // If Discord user is logged in but hasn't linked Patreon yet
+  if (pageState === 'ready' && sessionUser && patreonStatus === 'not_linked') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center px-4 py-20">
+        <div className="max-w-md w-full">
+          {/* Guild card */}
+          <div className="flex items-center gap-4 p-5 rounded-2xl border border-white/10 bg-white/3 mb-6">
+            {icon ? (
+              <Image
+                src={icon}
+                alt={guild!.name}
+                width={56}
+                height={56}
+                className="w-14 h-14 rounded-xl flex-shrink-0"
+              />
+            ) : (
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-bold text-xl">{guild?.name?.charAt(0)}</span>
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="text-white/40 text-xs mb-0.5">Patreon Role Sync</p>
+              <h2 className="text-white font-bold text-lg leading-tight truncate">{guild?.name}</h2>
+              {totalRoles > 0 && (
+                <p className="text-white/40 text-xs mt-0.5">
+                  {totalRoles} role mapping{totalRoles !== 1 ? 's' : ''} configured
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Tier role list */}
+          {((patreonSetup?.roles.length ?? 0) > 0 || (patreonSetup?.item_roles.length ?? 0) > 0) && (
+            <div className="mb-6 p-4 rounded-xl border border-white/10 bg-white/3">
+              {(patreonSetup?.roles.length ?? 0) > 0 && (
+                <>
+                  <p className="text-white/40 text-xs font-semibold uppercase tracking-wide mb-3">
+                    Tier Roles
+                  </p>
+                  <div className="space-y-2 mb-4">
+                    {patreonSetup!.roles.map((role, i) => (
+                      <div key={i} className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                          <span className="text-white/80 text-sm truncate">{role.tier_name}</span>
+                        </div>
+                        <span className="text-white/40 text-xs font-mono flex-shrink-0 truncate max-w-[120px]">
+                          → {role.role_name || role.role_id}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+              {(patreonSetup?.item_roles.length ?? 0) > 0 && (
+                <>
+                  <p className="text-white/40 text-xs font-semibold uppercase tracking-wide mb-3">
+                    Item Roles
+                  </p>
+                  <div className="space-y-2">
+                    {patreonSetup!.item_roles.map((role, i) => (
+                      <div key={i} className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0" />
+                          <span className="text-white/80 text-sm truncate">{role.item_name}</span>
+                        </div>
+                        <span className="text-white/40 text-xs font-mono flex-shrink-0 truncate max-w-[120px]">
+                          → {role.role_name || role.role_id}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Patreon linking card */}
+          <div className="p-6 rounded-2xl border border-white/10 bg-white/3 mb-4">
+            <h1 className="text-white font-bold text-xl mb-2">Link Your Patreon Account</h1>
+            <p className="text-white/60 text-sm mb-5 leading-relaxed">
+              You're logged in as{' '}
+              <span className="text-white font-medium">{sessionUser.username}</span>. Now connect your
+              Patreon account to verify your subscription and get your roles.
+            </p>
+
+            {/* Info box */}
+            <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/20 mb-5">
+              <div className="flex gap-2.5">
+                <span className="text-blue-400 flex-shrink-0 mt-0.5">ℹ️</span>
+                <div className="text-xs text-blue-200/80 leading-relaxed">
+                  <p>
+                    <strong className="text-blue-300">We'll verify your Patreon subscription</strong> by
+                    checking your account status on Patreon.
+                  </p>
+                  <p className="mt-1.5">
+                    If you have an active subscription for this creator, your roles will be granted
+                    automatically.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Error message */}
+            {patreonError && (
+              <div className="p-3 rounded-xl bg-red-500/5 border border-red-500/20 mb-5">
+                <div className="flex gap-2.5">
+                  <span className="text-red-400 flex-shrink-0 mt-0.5">❌</span>
+                  <p className="text-xs text-red-200/80">{patreonError}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Patreon button */}
+            <button
+              onClick={startPatreonOAuth}
+              disabled={false}
+              className="w-full flex items-center justify-center gap-3 py-3.5 px-5 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:opacity-50 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-orange-500/30 active:scale-[0.98]"
+            >
+              <svg width="20" height="20" viewBox="0 0 200 211" fill="none" className="flex-shrink-0">
+                <path
+                  d="M75.5 94.7c0 8.2-6.6 14.9-14.7 14.9-8.2 0-14.9-6.6-14.9-14.9 0-8.2 6.6-14.9 14.9-14.9 8.1 0 14.7 6.6 14.7 14.9zM154.5 94.7c0 8.2-6.6 14.9-14.7 14.9-8.2 0-14.9-6.6-14.9-14.9 0-8.2 6.6-14.9 14.9-14.9 8.1 0 14.7 6.6 14.7 14.9z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M55.4 154.5c-11.1 8.4-30.6 19.1-55.4 19.1v20.8c29.9 0 47.6-13.4 59.6-24.7l-4.2-15.2zm89.2 0l-4.2 15.2c12 11.3 29.7 24.7 59.6 24.7v-20.8c-24.8 0-44.3-10.7-55.4-19.1zm-60-30.1c-.1-1.4.1-2.8.5-4.1L49.1 70.3c-3.1-7.2-4.9-14.9-5.2-22.9 0-30.6 28.3-55.3 63.3-55.3s63.3 24.7 63.3 55.3c-.3 8-2.1 15.7-5.2 22.9L199 120.3c.4 1.3.6 2.7.5 4.1H144.6v-2.5c0-8.2-6.6-14.9-14.7-14.9H70.1c-8.1 0-14.7 6.6-14.7 14.9v2.5H84.6z"
+                  fill="currentColor"
+                />
+              </svg>
+              <span>Connect Patreon Account</span>
+            </button>
+
+            {/* Different Discord user hint */}
+            <button
+              onClick={() => {
+                const returnUrl = encodeURIComponent(`/patreon?s=${serverId}`);
+                window.location.href = `/api/patreon/discord-auth?return=${returnUrl}&guildId=${serverId}`;
+              }}
+              className="mt-2 w-full text-xs text-white/30 hover:text-white/60 transition-colors py-1"
+            >
+              Not {sessionUser.username}? Login with a different account →
+            </button>
+          </div>
+
+          <p className="text-center text-white/20 text-xs">
+            Powered by{' '}
+            <a href="/" className="text-white/40 hover:text-white/60 transition-colors">
+              UEFN DevKit
+            </a>{' '}
+            · Your data is used only to verify your subscription
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Patreon verification state
+  if (patreonStatus === 'verifying') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="max-w-md w-full text-center">
+          <div className="mb-6 p-4 text-left bg-blue-500/10 border border-blue-500/30 rounded-xl">
+            <p className="text-sm text-blue-100 font-medium">
+              Logged in as <span className="text-white font-semibold">{sessionUser?.username}</span>
+            </p>
+          </div>
+          <div className="animate-pulse w-full p-6 bg-white/5 rounded-xl border border-white/10 mb-4">
+            <div className="h-4 bg-white/10 rounded w-60 mx-auto mb-4" />
+            <div className="h-3 bg-white/10 rounded w-52 mx-auto mb-3" />
+            <div className="h-3 bg-white/10 rounded w-40 mx-auto" />
+          </div>
+          <p className="text-white/40 text-sm font-medium">Verifying your subscription</p>
+          {verificationCountdown > 0 && (
+            <p className="text-white/60 text-sm mt-3">Checking Patreon in {verificationCountdown}s...</p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-4 py-20">

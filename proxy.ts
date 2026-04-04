@@ -13,7 +13,6 @@ const API_ROUTES = [
   { path: '/api/v1/coupons', title: 'Coupons', requiresAuth: true, description: 'Coupon lookup', docs: '/docs/api' },
   { path: '/api/v1/customers', title: 'Customers', requiresAuth: true, description: 'Customer management', docs: '/docs/api' },
   { path: '/api/v1/island', title: 'Island', requiresAuth: true, description: 'Island lookup/predict', docs: '/docs/api' },
-  { path: '/api/v1/stats', title: 'Stats', requiresAuth: true, description: 'Usage stats', docs: '/docs/api' },
   { path: '/api/v1/quota', title: 'Quota', requiresAuth: true, description: 'Quota status', docs: '/docs/api' },
   { path: '/api/dashboard/session', title: 'Dashboard Session', requiresAuth: true, description: 'Session token', docs: '/docs/api' },
   { path: '/api/dashboard/verify-access', title: 'Verify Access', requiresAuth: true, description: 'Dashboard access validations', docs: '/docs/api' },

@@ -5,52 +5,111 @@ import Image from 'next/image';
 import { useEffect, Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useLegal } from '@/components/LegalProvider';
+import teamConfig from '@/lib/team.json';
 
-// Stats Display Component
+// Static Stats Display Component
 function StatsDisplay() {
-  const [stats, setStats] = useState<{ users: number; guilds: number } | null>(null);
+  const userCount = process.env.NEXT_PUBLIC_USER_COUNT || '10000';
+  const formattedCount = `+${parseInt(userCount).toLocaleString()}`;
+
+  return (
+    <div className="text-center py-8">
+      <p className="text-lg text-white/80 mb-2">Trusted by</p>
+      <p className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">
+        {formattedCount}
+      </p>
+      <p className="text-lg text-white/80">users worldwide</p>
+    </div>
+  );
+}
+
+// Team Member Component
+function TeamMember({ member }: { member: any }) {
+  const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchUser = async () => {
       try {
-        const res = await fetch('/api/v1/stats');
+        const res = await fetch(`/api/discord-user/${member.id}`);
         if (res.ok) {
           const data = await res.json();
-          setStats(data);
+          setUserData(data);
         }
       } catch (error) {
-        console.error('Failed to fetch stats:', error);
+        console.error('Failed to fetch user:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStats();
-  }, []);
-
-  const formatNumber = (num: number) => {
-    return num.toLocaleString();
-  };
+    fetchUser();
+  }, [member.id]);
 
   if (loading) {
     return (
-      <div className="animate-pulse">
-        <div className="h-8 bg-white/10 rounded mb-2 w-64 mx-auto"></div>
+      <div className="text-center animate-pulse">
+        <div className="w-24 h-24 bg-white/10 rounded-full mx-auto mb-4"></div>
+        <div className="h-4 bg-white/10 rounded mb-2 w-32 mx-auto"></div>
+        <div className="h-3 bg-white/10 rounded w-28 mx-auto"></div>
       </div>
     );
   }
 
-  if (!stats) {
-    return null; // Don't show anything if stats fail to load
-  }
+  if (!userData) return null;
 
   return (
-    <p className="text-xl text-white/80">
-      Trusted by over <span className="font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-        {formatNumber(stats.users)} users
-      </span>
-    </p>
+    <div className="text-center">
+      <div className="relative mb-4">
+        <Image
+          src={userData.avatar || '/images/default-avatar.png'}
+          alt={userData.display_name}
+          width={96}
+          height={96}
+          className="rounded-full mx-auto border-2 border-white/20"
+        />
+        <div
+          className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 px-2 py-1 rounded-full text-xs font-bold text-white flex items-center gap-1"
+          style={{ backgroundColor: member.color }}
+        >
+          <Image
+            src={`/svg/${member.icon}`}
+            alt={member.role}
+            width={12}
+            height={12}
+          />
+          {member.role}
+        </div>
+      </div>
+      <h3 className="text-lg font-semibold text-white mb-1">{userData.display_name}</h3>
+      <p className="text-sm text-white/50">@{userData.username}</p>
+    </div>
+  );
+}
+
+// Meet the Team Section
+function MeetTheTeam() {
+  const teamCount = teamConfig.length;
+  return (
+    <section id="team" className="py-20 bg-black">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+          Meet the Team
+        </h2>
+        <div className="flex justify-center">
+          <div 
+            className="grid gap-8 w-full max-w-6xl"
+            style={{
+              gridTemplateColumns: `repeat(${Math.min(teamCount, 3)}, minmax(0, 1fr))`,
+            }}
+          >
+            {teamConfig.map((member, idx) => (
+              <TeamMember key={idx} member={member} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -131,6 +190,13 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Stats Section */}
+      <section className="py-20 bg-black/30">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full">
+          <StatsDisplay />
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-20 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -156,12 +222,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-black/30">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <StatsDisplay />
-        </div>
-      </section>
+      {/* Meet the Team Section */}
+      <MeetTheTeam />
 
       {/* Why UEFN DevKit Section */}
       <section className="py-20 bg-black/50">

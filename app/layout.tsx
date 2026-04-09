@@ -6,6 +6,7 @@ import { LegalProvider } from '@/components/LegalProvider';
 import { ToastProvider } from '@/components/ToastProvider';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import { LayoutWrapper } from '@/components/LayoutWrapper';
+import { RateLimitProvider } from '@/components/RateLimitProvider';
 import './globals.css';
 
 const BASE_URL = 'https://uefndevkit.rweb.site';
@@ -87,13 +88,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-black text-white overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-blue-500">
         <GoogleAnalytics />
         <ToastProvider>
-          <LegalProvider>
-            <LayoutWrapper>
-              <Navigation />
-              <main>{children}</main>
-            </LayoutWrapper>
-            <Footer />
-          </LegalProvider>
+          <RateLimitProvider>
+            <LegalProvider>
+              <LayoutWrapper>
+                <Navigation />
+                <main>{children}</main>
+              </LayoutWrapper>
+            </LegalProvider>
+          </RateLimitProvider>
         </ToastProvider>
       </body>
     </html>

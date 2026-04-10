@@ -35,9 +35,9 @@ export interface RateLimiterResult {
 
 const PRESETS: Record<RateLimiterMode, RateLimiterConfig> = {
   api: {
-    maxRequests: 5,
+    maxRequests: 10,
     windowMs: 2_000,
-    blockDurationMs: 10_000,
+    blockDurationMs: 5_000,
   },
   page: {
     maxRequests: 5,

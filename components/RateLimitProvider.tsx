@@ -22,18 +22,31 @@ import {
 } from '@/lib/rate-limiter';
 import { useToast } from '@/components/ToastProvider';
 
-const API_BLOCK_MS = 10_000;
+const API_BLOCK_MS = 5_000;
 const PAGE_BLOCK_MS = 5_000;
 
 /** Paths/origins to skip rate-limiting (e.g. internal Next.js dev calls) */
 const SKIP_API_PATTERNS: (string | RegExp)[] = [
   '/_next/',
-  /^https?:\/\/[^/]*\/_next\//,
+  '/favicon.ico',
 ];
 
 function shouldSkipUrl(url: string): boolean {
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(url, window.location.origin);
+  } catch {
+    return false;
+  }
+
+  // Only enforce rate limiting for same-origin app requests.
+  // Ignore third-party fetches and internal Next.js asset/data calls.
+  if (parsedUrl.origin !== window.location.origin) {
+    return true;
+  }
+
   return SKIP_API_PATTERNS.some((p) =>
-    typeof p === 'string' ? url.includes(p) : p.test(url)
+    typeof p === 'string' ? parsedUrl.pathname.includes(p) : p.test(parsedUrl.pathname)
   );
 }
 

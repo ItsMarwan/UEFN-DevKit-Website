@@ -29,6 +29,7 @@ const PAGE_BLOCK_MS = 5_000;
 const SKIP_API_PATTERNS: (string | RegExp)[] = [
   '/_next/',
   '/favicon.ico',
+  '/api/health',
 ];
 
 function shouldSkipUrl(url: string): boolean {

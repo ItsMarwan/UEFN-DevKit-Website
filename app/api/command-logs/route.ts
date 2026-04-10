@@ -47,7 +47,9 @@ export async function GET(request: Request) {
 
     const response = await fetch(url, {
       method: "GET",
-      headers,
+      headers: {
+        Authorization: `Bearer ${process.env.ENTERPRISE_API_TOKEN || ''}`,
+      },
       cache: "no-store",
       signal: controller.signal,
     });

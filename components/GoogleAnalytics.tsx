@@ -1,16 +1,15 @@
 'use client';
 
 import Script from 'next/script';
+import { memo } from 'react';
+import { useCookieConsent } from './CookieProvider';
 
-export function GoogleAnalytics() {
+export const GoogleAnalytics = memo(function GoogleAnalytics() {
+  const { consent } = useCookieConsent();
   const gaId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
+  const shouldRender = gaId && consent?.analytics;
 
-  if (!gaId) {
-    console.warn('Google Analytics ID not configured');
-    return null;
-  }
-
-  return (
+  return shouldRender ? (
     <>
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
@@ -27,5 +26,5 @@ export function GoogleAnalytics() {
         `}
       </Script>
     </>
-  );
-}
+  ) : null;
+});

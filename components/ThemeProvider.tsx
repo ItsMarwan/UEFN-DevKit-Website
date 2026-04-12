@@ -29,7 +29,5 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  if (!mounted) return null;
-
-  return <>{children}</>;
+  return mounted ? <>{children}</> : null;
 }

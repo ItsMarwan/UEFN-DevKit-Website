@@ -51,7 +51,9 @@ export function OfflineBanner({ health }: OfflineBannerProps) {
     }
   }, [health.status, isVisible, wasPreviouslyOnline, showToast]);
 
-  if (!isVisible) return null;
+  if (!isVisible) {
+    return null;
+  }
 
   const statusMessage = 'Bot connection lost';
   const statusDescription = 'Attempting to reconnect...';

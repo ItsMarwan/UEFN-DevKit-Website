@@ -6,6 +6,13 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  scrollbar-width: none; /* Firefox */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Webkit */
+  width: 0;
+  height: 0;
 }
 
 html {
@@ -19,6 +26,13 @@ body {
   color: #fff;
   overflow-y: auto;
   max-height: 100vh;
+  scrollbar-width: none;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 /* Scrollbar styling */
@@ -188,7 +202,69 @@ body {
 }
 
 .animate-scaleIn {
-  animation: scaleIn 0.4s ease-out;
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+/* Scale out */
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.animate-scaleOut {
+  animation: scaleOut 0.2s ease-in forwards;
+}
+
+/* Fade out */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-fadeOut {
+  animation: fadeOut 0.2s ease-in forwards;
+}
+
+/* Slide in from bottom */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideInUp {
+  animation: slideInUp 0.25s ease-out forwards;
+}
+
+/* Slide out to bottom */
+@keyframes slideOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+.animate-slideOutDown {
+  animation: slideOutDown 0.2s ease-in forwards;
 }
 
 /* Pulse effect */
@@ -227,4 +303,13 @@ body {
 .scrollbar-thin {
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
   scrollbar-width: thin;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }

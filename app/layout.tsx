@@ -7,6 +7,8 @@ import { ToastProvider } from '@/components/ToastProvider';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import { LayoutWrapper } from '@/components/LayoutWrapper';
 import { RateLimitProvider } from '@/components/RateLimitProvider';
+import { CookieProvider } from '@/components/CookieProvider';
+import { CookieConsentBanner } from '@/components/CookieConsentBanner';
 import './globals.css';
 
 const BASE_URL = 'https://uefndevkit.rweb.site';
@@ -85,18 +87,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="bg-black text-white overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-blue-500">
-        <GoogleAnalytics />
-        <ToastProvider>
-          <RateLimitProvider>
-            <LegalProvider>
-              <LayoutWrapper>
-                <Navigation />
-                <main>{children}</main>
-              </LayoutWrapper>
-            </LegalProvider>
-          </RateLimitProvider>
-        </ToastProvider>
+      <body className="bg-black text-white overflow-y-auto">
+        <CookieProvider>
+          <GoogleAnalytics />
+          <ToastProvider>
+            <RateLimitProvider>
+              <LegalProvider>
+                <LayoutWrapper>
+                  <Navigation />
+                  <main>{children}</main>
+                  <Footer />
+                </LayoutWrapper>
+                <CookieConsentBanner />
+              </LegalProvider>
+            </RateLimitProvider>
+          </ToastProvider>
+        </CookieProvider>
       </body>
     </html>
   );

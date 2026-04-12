@@ -20,45 +20,11 @@ Built with Next.js 16, TypeScript, and Tailwind CSS.
 
 ---
 
-## 📋 Table of Contents
-
-- [About](#-about)
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Getting Started](#-getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Environment Variables](#environment-variables)
-  - [Running Locally](#running-locally)
-- [Project Structure](#-project-structure)
-- [Pages](#-pages)
-- [Contributing](#-contributing)
-- [License](#-license)
-
----
-
 ## 🧩 About
 
 This is the open-source frontend for **UEFN DevKit** — a Discord bot built for Fortnite UEFN (Unreal Editor for Fortnite) island builders. The website documents every bot command, explains pricing tiers, and provides a contact form for support.
 
 The site is fully static-generation-ready, mobile responsive, and dark-mode only. It was designed to be easy to fork, customize, and self-host.
-
----
-
-## ✨ Features
-
-| Feature | Description |
-|---|---|
-| 📚 **Command Docs** | Full documentation for 50+ bot commands, organized by category |
-| 🔍 **Category Filter** | Filter commands by category on the `/commands` page |
-| 💰 **Pricing Page** | Three-tier comparison (Free, Premium, Enterprise) with FAQ |
-| 📬 **Contact Form** | hCaptcha-protected form that sends emails via Resend |
-| 🔒 **Legal Modals** | Privacy policy and Terms of Service open as popups (also accessible via `/privacy` and `/tos`) |
-| 🗺️ **Sitemap + Robots** | Auto-generated sitemap and robots.txt |
-| 📊 **Open Graph** | Full OG + Twitter Card metadata with banner image |
-| 📡 **REST API** | Enterprise and Premium REST API endpoints for server data access |
-| ⚡ **Performance** | Static generation, minimal JS, fast page loads |
-| 📱 **Responsive** | Mobile-first, works on all screen sizes |
 
 ---
 
@@ -82,78 +48,7 @@ Features:
 - Pricing and feature comparison
 - Contact form with hCaptcha protection
 - Open source and self-hostable
-
----
-
-## 📁 Project Structure
-
-```
-├── app/
-│   ├── layout.tsx              # Root layout — Navigation, Footer, LegalProvider
-│   ├── page.tsx                # Home / landing page
-│   ├── globals.css             # Global styles + animations
-│   ├── commands/
-│   │   └── page.tsx            # Commands listing with category filter
-│   ├── docs/
-│   │   ├── page.tsx            # Docs index (expandable categories)
-│   │   └── [command]/
-│   │       └── page.tsx        # Individual command documentation page
-│   ├── invite/
-│   │   └── page.tsx            # invite redirect page
-│   ├── premium/
-│   │   └── page.tsx            # Pricing / premium features page
-│   ├── contact/
-│   │   └── page.tsx            # Contact form with hCaptcha
-│   ├── privacy/
-│   │   └── page.tsx            # Redirects to /?legal=privacy (opens modal)
-│   ├── tos/
-│   │   └── page.tsx            # Redirects to /?legal=tos (opens modal)
-│   ├── api/
-│   │   └── contact/
-│   │       └── route.ts        # Contact form API — hCaptcha verify + Resend
-│   ├── sitemap.ts              # Auto-generated sitemap
-│   └── robots.ts               # robots.txt
-│
-├── components/
-│   ├── Navigation.tsx          # Top nav with mobile hamburger menu
-│   ├── Footer.tsx              # Footer with legal modal triggers
-│   ├── CommandCard.tsx         # Command display card
-│   ├── LegalModal.tsx          # Privacy Policy + ToS modal content
-│   └── LegalProvider.tsx       # Context provider for opening legal modals
-│
-├── lib/
-│   └── commands.ts             # All 50+ command definitions + helper functions
-│
-├── public/
-│   ├── icon.png                # Bot icon / favicon
-│   └── images/
-│       ├── banner.png          # OG banner (1200×630)
-│       └── logo.png            # Bot logo used in hero section
-│
-├── .env.example          # Environment variable template
-├── next.config.js
-├── tailwind.config.js
-├── tsconfig.json
-└── postcss.config.js
-```
-
----
-
-## 📄 Pages
-
-| Route | Description |
-|---|---|
-| `/` | Landing page — hero, features, pricing overview, CTA |
-| `/commands` | All commands in a filterable grid |
-| `/docs` | Docs index — expandable category sections |
-| `/docs/[command]` | Full doc page for a single command |
-| `/api/docs` | REST API documentation and endpoint reference |
-| `/premium` | Pricing tiers + feature comparison + FAQ |
-| `/contact` | hCaptcha-protected contact form |
-| `/privacy` | Redirects home and opens Privacy Policy modal |
-| `/tos` | Redirects home and opens Terms of Service modal |
-| `/invite` | Redirects to the invite link of the bot |
-
+- 
 ---
 
 ## 📡 API Endpoints
@@ -185,34 +80,6 @@ Rate limits: **10 requests/sec** | Monthly quota: **5,000 requests** (Enterprise
 ## 🤝 Contributing
 
 This is an open-source project! We welcome contributions. Whether it's fixing bugs, adding features, or improving documentation.
-
-### Self-Hosting
-
-To run this project locally or self-host it:
-
-1. **Prerequisites:** Node.js `>=18.17.0` and npm `>=9`
-2. **Clone:** Fork and clone the repository
-3. **Install:** `npm install`
-4. **Configure:** Set up your environment variables (see [.env.example](.env.example)):
-   - `NEXT_PUBLIC_HCAPTCHA_SITE_KEY` — hCaptcha public key
-   - `HCAPTCHA_SECRET_KEY` — hCaptcha secret key  
-   - `RESEND_API_KEY` — Resend API key for contact form emails
-   - `CONTACT_TO_EMAIL` — Recipient email for contact submissions
-   - `NEXT_PUBLIC_SUPABASE_URL` — Supabase project URL
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase anonymous key
-   - `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key
-   - `DISCORD_CLIENT_ID` — Discord application client ID
-   - `DISCORD_CLIENT_SECRET` — Discord application client secret
-   - `DISCORD_BOT_TOKEN` — Discord bot token
-   - Additional optional variables for Redis rate limiting and other features
-
-5. **Run:**
-   ```bash
-   npm run dev        # Development (http://localhost:3000)
-   npm run build      # Production build
-   npm start          # Production server
-   npm run lint       # Check code quality
-   ```
 
 ### How to Contribute
 

@@ -1,35 +1,64 @@
-View and Contribute Only License (VCL) v1.0
+Marwan Non-Commercial Contribution License (MNCCL) v1.0
 
-Copyright (c) 2026 ItsMarwan (Marwan)
+Copyright (c) 2026 ItsMarwan
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to
-view, study, and modify the Software solely for the purpose of contributing
-to this repository.
+of this software and associated documentation files (the "Software"), to:
 
-Allowed uses include:
-- Reviewing the source code for transparency and security purposes
-- Forking the repository to propose changes
-- Modifying the code to fix bugs, improve performance, or add features
-- Submitting pull requests or suggestions to the original repository
+- View, study, and learn from the Software
+- Use and run the Software for personal, educational, and non-commercial purposes only
+- Modify the Software
+- Submit contributions (e.g., pull requests, suggestions, improvements)
 
-The following actions are strictly prohibited:
-- Using the Software in any application, product, or service (private or public)
-- Deploying or running the Software outside of this repository
-- Copying or reusing substantial portions of the Software in other projects
-- Redistributing the Software, in whole or in part, modified or unmodified
-- Creating derivative works for independent use
+1. Attribution Requirement
 
-All rights to use the Software are expressly reserved by the copyright holder.
+You must give appropriate credit to "ItsMarwan" as the original author
+in any use, modification, or derivative of the Software.
 
-By contributing to this repository, you agree that your contributions
-become the property of the repository owner, who may use, modify, and
-distribute them without restriction.
+2. Non-Commercial Use Only
+
+You may NOT use the Software, in whole or in part, for:
+
+- Commercial purposes
+- Selling products or services
+- Monetized applications
+- Any revenue-generating activity
+
+3. No Competitive or Clone Use
+
+You may NOT:
+
+- Deploy, distribute, or operate a service, website, or application
+  that is substantially similar to this Software
+- Use the Software to create a competing product or service
+- Replicate the core functionality, structure, or user experience
+  of this project for public or private use
+
+4. No Redistribution
+
+You may NOT:
+
+- Redistribute the Software, modified or unmodified, outside of this repository
+- Publish forks for independent use
+- Reuse substantial portions of the code in other projects
+
+5. Contribution Terms
+
+By submitting a contribution:
+
+- You agree your contribution is licensed under this same license
+- You grant the repository owner the right to use, modify, and distribute your contribution
+- You will be credited in the project's README or contributors list
+
+6. Reservation of Rights
+
+All rights not expressly granted are reserved by the copyright holder.
+
+7. Disclaimer
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.

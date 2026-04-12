@@ -10,7 +10,7 @@ Built with Next.js 16, TypeScript, and Tailwind CSS.
 <br />
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/) [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/) [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
-[![License: VCL](https://img.shields.io/badge/License-VCL-yellow?style=for-the-badge)](LICENSE)
+[![License: MNCCL](https://img.shields.io/badge/License-MNCCL-yellow?style=for-the-badge)](LICENSE)
 
 <br />
 

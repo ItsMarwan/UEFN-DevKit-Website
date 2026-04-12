@@ -10,15 +10,6 @@ Once a fix has been pushed, you will be contacted to let you know and depending 
 
 ## Security Best Practices
 
-### For Self-Hosting
-
-- **Environment Variables**: Never commit `.env.local` or any file containing secrets to version control
-- **API Keys**: Rotate API keys regularly and use the minimum required permissions
-- **HTTPS**: Always deploy with HTTPS enabled
-- **Rate Limiting**: Use the built-in Upstash Redis rate limiting to prevent abuse
-- **Captcha**: Keep hCaptcha enabled on contact forms to prevent spam
-- **Dependencies**: Keep all dependencies updated and audit regularly with `npm audit`
-
 ### Known Security Considerations
 
 - **Client-Side Exposure**: Variables prefixed with `NEXT_PUBLIC_` are exposed to the browser - never put secrets in these

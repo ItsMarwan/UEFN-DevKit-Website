@@ -15,7 +15,6 @@ Thanks for taking the time to contribute! 🎉
 git clone https://github.com/ItsMarwan/UEFN-DevKit-Website.git
 cd UEFN-DevKit-Website
 npm install
-cp .env.example .env.local  # fill in your keys
 npm run dev
 ```
 

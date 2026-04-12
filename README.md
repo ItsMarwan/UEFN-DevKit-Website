@@ -43,14 +43,6 @@ The site is fully static-generation-ready, mobile responsive, and dark-mode only
 
 The UEFN DevKit website is live at **[uefndevkit.rweb.site](https://uefndevkit.rweb.site)**
 
-Features:
-- Full command documentation with searchable categories
-- Pricing and feature comparison
-- Contact form with hCaptcha protection
-- Open source and self-hostable
-- 
----
-
 ## 📡 API Endpoints
 
 The website provides comprehensive REST API documentation at `/api/docs`. Available endpoints include:

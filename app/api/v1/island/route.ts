@@ -10,7 +10,6 @@ import { getClientIp } from "@/lib/get-client-ip";
 export const dynamic = 'force-dynamic';
 
 const FLASK_API_URL = process.env.FLASK_API_URL;
-const DASHBOARD_TOKEN = process.env.DASHBOARD_API_TOKEN;
 
 export async function GET(req: NextRequest) {
   try {
@@ -50,7 +49,6 @@ export async function GET(req: NextRequest) {
         "Content-Type": "application/json",
         Authorization: authHeader,
         "X-Discord-Server-ID": serverIdHeader,
-        "X-Dashboard-Bypass-Token": DASHBOARD_TOKEN || "",
         Origin: originHeader || "",
         "X-Forwarded-For": getClientIp(req),
         "X-Forwarded-Proto": "https",

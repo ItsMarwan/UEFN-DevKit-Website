@@ -36,7 +36,6 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [guilds, setGuilds] = useState<Guild[]>([]);
   const [loadState, setLoadState] = useState<LoadState>('loading');
-  const [errorMsg, setErrorMsg] = useState('');
   // Prevent double-fetch from React StrictMode double-invoking effects
   const fetched = useRef(false);
 
@@ -49,8 +48,9 @@ export default function DashboardPage() {
         const res = await fetch('/api/dashboard/session');
         if (!res.ok) {
           const errorMsg = await extractErrorMessage(res);
-          setErrorMsg(errorMsg);
-          setLoadState('error');
+          setUser(null);
+          setGuilds([]);
+          setLoadState('ready');
           showToast('error', 'Session Failed', errorMsg);
           router.replace('/api/dashboard/login');
           return;
@@ -58,9 +58,11 @@ export default function DashboardPage() {
         const data = await res.json();
         
         if (!data) {
-          setErrorMsg('No session data received from server');
-          setLoadState('error');
+          setUser(null);
+          setGuilds([]);
+          setLoadState('ready');
           showToast('error', 'Session Error', 'Failed to retrieve your session data. Please try logging in again.');
+          router.replace('/api/dashboard/login');
           return;
         }
 
@@ -69,9 +71,11 @@ export default function DashboardPage() {
         setLoadState('ready');
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        setErrorMsg('Failed to load session.');
-        setLoadState('error');
+        setUser(null);
+        setGuilds([]);
+        setLoadState('ready');
         showToast('error', 'Connection Error', `Could not connect to the server: ${errorMessage}`);
+        router.replace('/api/dashboard/login');
       }
     };
 
@@ -85,9 +89,6 @@ export default function DashboardPage() {
 
   const getGuildIcon = (g: Guild) =>
     g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null;
-
-  const manageableGuilds = guilds.filter((g) => g.hasPerms);
-  const viewOnlyGuilds = guilds.filter((g) => !g.hasPerms);
 
   if (loadState === 'loading') {
     return (
@@ -110,21 +111,8 @@ export default function DashboardPage() {
     );
   }
 
-  if (loadState === 'error') {
-    return (
-      <div className="bg-black text-white min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-400 mb-4">{errorMsg}</p>
-          <a
-            href="/api/dashboard/login"
-            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg font-semibold"
-          >
-            Login Again
-          </a>
-        </div>
-      </div>
-    );
-  }
+  const manageableGuilds = guilds.filter((g) => g.hasPerms);
+  const viewOnlyGuilds = guilds.filter((g) => !g.hasPerms);
 
   const GuildCard = ({ guild, disabled }: { guild: Guild; disabled?: boolean }) => {
     const icon = getGuildIcon(guild);
@@ -214,7 +202,21 @@ export default function DashboardPage() {
       {/* Server grid */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {guilds.length === 0 ? (
+          {!user ? (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-4">🔒</div>
+              <h2 className="text-2xl font-bold text-white mb-2">Authentication Required</h2>
+              <p className="text-white/60 mb-6">
+                You are not authenticated. Please log in to access your dashboard.
+              </p>
+              <a
+                href="/api/dashboard/login"
+                className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg font-semibold text-white hover:shadow-lg hover:shadow-blue-500/30 transition-all"
+              >
+                Log In
+              </a>
+            </div>
+          ) : guilds.length === 0 ? (
             <div className="text-center py-20">
               <div className="text-6xl mb-4">🏝️</div>
               <h2 className="text-2xl font-bold text-white mb-2">No servers found</h2>

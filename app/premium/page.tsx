@@ -80,7 +80,7 @@ export default function PremiumPage() {
               <h2 className="text-2xl md:text-3xl font-bold mb-2 text-blue-400">Premium</h2>
               <p className="text-white/60 text-xs md:text-sm mb-6">For growing communities</p>
               <div className="mb-8">
-                <span className="text-4xl md:text-5xl font-bold text-white">€9.99</span>
+                <span className="text-4xl md:text-5xl font-bold text-white">€5.99</span>
                 <span className="text-white/60 ml-2">/month</span>
               </div>
 
@@ -137,7 +137,7 @@ export default function PremiumPage() {
                 <span className="text-white/60 ml-2">pricing</span>
               </div>
 
-              <Link href="/contact" className="w-full inline-flex justify-center py-3 rounded-lg font-bold border-2 border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white transition-all mb-8">
+              <Link href="/contact?subject=Enterprise+Quote+Request&message=Hello%2C%0AI+need+an+enterprise+quote.%0A%0APlease+provide+pricing+and+next+steps." className="w-full inline-flex justify-center py-3 rounded-lg font-bold border-2 border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white transition-all mb-8">
                 Contact Sales
               </Link>
 
@@ -250,7 +250,7 @@ export default function PremiumPage() {
               },
               {
                 q: 'Do you offer annual billing discounts?',
-                a: 'Yes! Subscribe for a full year and get 30% off (€83.916/year instead of €119.88/year).',
+                a: 'Yes! Subscribe for a full year and get 29% off (€84.99/year instead of €119.88/year).',
               },
               {
                 q: 'What payment methods do you accept?',

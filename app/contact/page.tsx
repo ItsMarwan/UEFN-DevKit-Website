@@ -19,12 +19,19 @@ export default function ContactPage() {
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [duration, setDuration] = useState('');
+  const [budget, setBudget] = useState('');
+  const [serverSize, setServerSize] = useState('');
+  const [serverId, setServerId] = useState('');
+  const [inviteUrl, setInviteUrl] = useState('');
   const [status, setStatus] = useState<Status>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [captchaToken, setCaptchaToken] = useState('');
   const [captchaReady, setCaptchaReady] = useState(false);
   const widgetRef = useRef<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const isTemplateSubject = subject === 'Custom Payment Method' || subject === 'Enterprise Quote Request';
 
   // hCaptcha site key — require in production
   const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;
@@ -76,6 +83,31 @@ export default function ContactPage() {
     };
   }, [renderCaptcha]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const searchParams = new URLSearchParams(window.location.search);
+    const presetName = searchParams.get('name') || '';
+    const presetEmail = searchParams.get('email') || '';
+    const presetSubject = searchParams.get('subject') || '';
+    const presetDuration = searchParams.get('duration') || '';
+    const presetBudget = searchParams.get('budget') || '';
+    const presetServerSize = searchParams.get('serverSize') || '';
+    const presetServerId = searchParams.get('serverId') || '';
+    const presetInviteUrl = searchParams.get('inviteUrl') || '';
+    const presetMessage = searchParams.get('message') || '';
+
+    setName(presetName);
+    setEmail(presetEmail);
+    setSubject(presetSubject);
+    setDuration(presetDuration);
+    setBudget(presetBudget);
+    setServerSize(presetServerSize);
+    setServerId(presetServerId);
+    setInviteUrl(presetInviteUrl);
+
+    setMessage(presetMessage);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -92,13 +124,21 @@ export default function ContactPage() {
       return;
     }
 
+    if (isTemplateSubject && (!duration.trim() || !budget.trim() || !serverSize.trim() || !serverId.trim() || !inviteUrl.trim())) {
+      setErrorMsg('Please fill in the quote details for duration, budget, server size, server ID, and invite URL.');
+      showToast('error', 'Missing Details', 'Please fill in the required quote details.');
+      return;
+    }
+
+    const finalMessage = message.trim();
+
     setStatus('loading');
 
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, subject, message, captchaToken }),
+        body: JSON.stringify({ name, email, subject, message: finalMessage, captchaToken }),
       });
 
       const data = await res.json();
@@ -208,6 +248,8 @@ export default function ContactPage() {
                   <option value="General Question">General Question</option>
                   <option value="Technical Support">Technical Support</option>
                   <option value="Premium / Billing">Premium / Billing</option>
+                  <option value="Custom Payment Method">Custom Payment Method</option>
+                  <option value="Enterprise Quote Request">Enterprise Quote Request</option>
                   <option value="Bug Report">Bug Report</option>
                   <option value="Feature Request">Feature Request</option>
                   <option value="Privacy / Data Request">Privacy / Data Request</option>
@@ -225,12 +267,87 @@ export default function ContactPage() {
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Describe your question or issue in detail..."
                   rows={7}
-                  className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 transition-colors resize-none"
+                  className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 transition-colors resize-y"
                   required
                   disabled={status === 'loading'}
                 />
                 <p className="text-white/30 text-xs mt-1 text-right">{message.length}/2000</p>
               </div>
+
+              {isTemplateSubject && (
+                <div className="grid grid-cols-1 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-white/70 mb-2">
+                      Duration <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={duration}
+                      onChange={(e) => setDuration(e.target.value)}
+                      placeholder="e.g. 6 Months"
+                      className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 transition-colors"
+                      required
+                      disabled={status === 'loading'}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-white/70 mb-2">
+                      Budget <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={budget}
+                      onChange={(e) => setBudget(e.target.value)}
+                      placeholder="e.g. €500"
+                      className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 transition-colors"
+                      required
+                      disabled={status === 'loading'}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-white/70 mb-2">
+                      Server Size <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={serverSize}
+                      onChange={(e) => setServerSize(e.target.value)}
+                      placeholder="e.g. Medium / Large"
+                      className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 transition-colors"
+                      required
+                      disabled={status === 'loading'}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-white/70 mb-2">
+                      Server ID <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={serverId}
+                      onChange={(e) => setServerId(e.target.value)}
+                      placeholder="Discord Server ID"
+                      className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 transition-colors"
+                      required
+                      disabled={status === 'loading'}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-white/70 mb-2">
+                      Invite URL <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="url"
+                      value={inviteUrl}
+                      onChange={(e) => setInviteUrl(e.target.value)}
+                      placeholder="https://discord.gg/your-invite"
+                      className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-blue-500 transition-colors"
+                      required
+                      disabled={status === 'loading'}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* hCaptcha */}
               <div>

@@ -1,7 +1,14 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
+  allowedDevOrigins: ['192.168.1.3'],
+
+  turbopack: {
+    root: __dirname,
+  },
+
   reactStrictMode: true,
+
   images: {
     remotePatterns: [
       {
@@ -10,6 +17,7 @@ const nextConfig = {
       },
     ],
   },
+
   async headers() {
     return [
       {
@@ -37,7 +45,8 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()',
+            value:
+              'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()',
           },
         ],
       },

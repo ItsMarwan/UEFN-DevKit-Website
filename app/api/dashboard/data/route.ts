@@ -61,7 +61,7 @@ async function flaskFetch(endpoint: string, guildId: string, parameters: Record<
   }
 }
 
-const ALLOWED_ENDPOINTS = ['customers', 'verse_scripts', 'members', 'trackers', 'guild_settings', 'logs', 'files', 'reports', 'statistics', 'subscriptions', 'patreon_setup', 'patreon_verify_email', 'island_tools'];
+const ALLOWED_ENDPOINTS = ['customers', 'verse_scripts', 'members', 'trackers', 'guild_settings', 'logs', 'files', 'reports', 'statistics', 'subscriptions', 'patreon_setup', 'patreon_verify_email'];
 const DISCORD_API = 'https://discord.com/api/v10';
 
 export async function GET(req: NextRequest) {
@@ -83,11 +83,6 @@ export async function GET(req: NextRequest) {
     if (!guildId) return NextResponse.json({ error: 'Missing guildId' }, { status: 400 });
     if (!endpoint || !ALLOWED_ENDPOINTS.includes(endpoint))
       return NextResponse.json({ error: 'Invalid endpoint' }, { status: 400 });
-
-    if (endpoint === 'island_tools') {
-      // Island Tools tab is purely client-served (no row data required), keep data call harmless
-      return NextResponse.json({ success: true, data: [] });
-    }
 
     // Verify guild permission via Discord — can't be spoofed, uses their real token
     const guildsRes = await fetchWithTimeout(`${DISCORD_API}/users/@me/guilds?limit=200`, {

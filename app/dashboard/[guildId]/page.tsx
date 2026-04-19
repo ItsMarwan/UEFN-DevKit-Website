@@ -30,10 +30,10 @@ interface GuildConfig {
   updated_at?: string;
 }
 
-type TabId = 'overview' | 'customers' | 'logs' | 'members' | 'verse_scripts' | 'trackers' | 'config' | 'island_tools' | 'reports' | 'editor' | 'profile';
+type TabId = 'overview' | 'customers' | 'logs' | 'members' | 'verse_scripts' | 'trackers' | 'config' | 'reports' | 'editor' | 'profile';
 type LoadState = 'checking' | 'loading' | 'ready' | 'forbidden' | 'error';
 
-const VALID_TABS: TabId[] = ['overview', 'customers', 'logs', 'members', 'verse_scripts', 'trackers', 'config', 'island_tools', 'reports', 'editor', 'profile'];
+const VALID_TABS: TabId[] = ['overview', 'customers', 'logs', 'members', 'verse_scripts', 'trackers', 'config', 'reports', 'editor', 'profile'];
 
 function getTabFromPath(): TabId {
   if (typeof window === 'undefined') return 'overview';
@@ -1008,20 +1008,23 @@ function ReportsTab({ guildId }: { guildId: string }) {
           <div className="text-center py-8 text-white/30">No reports yet</div>
         ) : (
           <div className="space-y-2 max-h-96 overflow-y-auto">
-            {reports.map((report, i) => (
-              <div key={i} className="px-4 py-3 rounded-lg bg-white/5 border border-white/10">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-white font-mono text-sm">User: {report.reported_id}</p>
-                    <p className="text-white/60 text-xs mt-1">{report.reason || 'No reason provided'}</p>
-                    {report.details && <p className="text-white/40 text-xs mt-1">{report.details}</p>}
+            {reports.map((report, i) => {
+              const reportedUserId = String(report.reported_user_id ?? report.reported_id ?? '—');
+              return (
+                <div key={i} className="px-4 py-3 rounded-lg bg-white/5 border border-white/10">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-white font-mono text-sm">User: {reportedUserId}</p>
+                      <p className="text-white/60 text-xs mt-1">{report.reason || 'No reason provided'}</p>
+                      {report.details && <p className="text-white/40 text-xs mt-1">{report.details}</p>}
+                    </div>
+                    <span className="text-white/30 text-xs whitespace-nowrap ml-2">
+                      {report.created_at ? new Date(report.created_at).toLocaleDateString() : '—'}
+                    </span>
                   </div>
-                  <span className="text-white/30 text-xs whitespace-nowrap ml-2">
-                    {report.created_at ? new Date(report.created_at).toLocaleDateString() : '—'}
-                  </span>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -1565,7 +1568,7 @@ export default function GuildDashboardPage() {
   }, [guildId, router, showToast, health.status]);
 
   const fetchTabData = useCallback(async (tab: TabId) => {
-    if (tab === 'overview' || tab === 'editor' || tab === 'config' || tab === 'island_tools') return;
+    if (tab === 'overview' || tab === 'editor' || tab === 'config') return;
     if (tabData[tab] !== undefined) return;
 
     // Ensure user session is loaded before making API calls
@@ -1766,7 +1769,6 @@ export default function GuildDashboardPage() {
     { id: 'members',       label: 'Members',       icon: '👥' },
     { id: 'verse_scripts', label: 'Verse Scripts', icon: '📦' },
     { id: 'trackers',      label: 'Trackers',      icon: '⏱️' },
-    { id: 'island_tools',  label: 'Island Tools',  icon: '🏝️' },
     { id: 'reports',       label: 'Reports',       icon: '🚩' },
     { id: 'config',        label: 'Server Config', icon: '⚙️' },
     // { id: 'editor',        label: 'Editor',        icon: '⚡', soon: true },
@@ -1776,7 +1778,6 @@ export default function GuildDashboardPage() {
 
   function renderTabContent() {
     if (activeTab === 'editor') return <EditorSoon />;
-    if (activeTab === 'island_tools') return <IslandToolsTab guildId={guildId} />;
     if (activeTab === 'reports') return <ReportsTab guildId={guildId} />;
     if (activeTab === 'config') return <ServerConfigTab guildId={guildId} />;
 

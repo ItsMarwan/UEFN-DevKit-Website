@@ -44,7 +44,7 @@ const PRIVACY_CONTENT = (
         <li>Reports filed via <code className="text-cyan-400">/report</code> — details field</li>
         <li>Fortnite island analytics and tracking data</li>
         <li>Session data for service delivery</li>
-        <li>Premium subscription and Patreon integration data</li>
+        <li>Premium subscription and Patreon account linking data</li>
       </ul>
       <p className="text-white/60 mt-3 text-sm">
         We do <strong className="text-white">not</strong> collect your messages, voice activity, IP addresses,
@@ -62,7 +62,7 @@ const PRIVACY_CONTENT = (
         <li>Email address from Discord OAuth (used for account verification and communications)</li>
         <li>Guild/server membership data to verify access permissions</li>
         <li>Session cookies for maintaining login state and security</li>
-        <li>Patreon account data when linking for premium features</li>
+        <li>Patreon account data when linking for premium features and tier verification</li>
       </ul>
       <p className="text-white/70 mb-3">
         Additionally, with your consent, we use Google Analytics to collect anonymous usage data such as page views,
@@ -215,7 +215,7 @@ const TOS_CONTENT = (
         <li>Creating and managing redeem codes for features and grants</li>
         <li>Providing bulk import and export operations for data management</li>
         <li>Admin configuration including encryption settings and role management</li>
-        <li>Premium subscription management and Patreon integration</li>
+        <li>Premium subscription management and Patreon account tier verification</li>
         <li>API access for advanced integrations</li>
         <li>File management and data export for personal record-keeping</li>
         <li>Using the companion website for dashboard access, authentication, and premium features</li>

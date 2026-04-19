@@ -84,9 +84,9 @@ export default function PremiumPage() {
                 <span className="text-white/60 ml-2">/month</span>
               </div>
 
-              <Link href="/buy" className="w-full inline-flex justify-center py-3 rounded-lg font-bold bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:shadow-lg hover:shadow-blue-500/50 transition-all mb-8">
-                Upgrade Now
-              </Link>
+              <button disabled className="w-full inline-flex justify-center py-3 rounded-lg font-bold bg-gradient-to-r from-blue-500/50 to-cyan-500/50 text-white/50 cursor-not-allowed mb-8">
+                Payment System Disabled
+              </button>
 
               <ul className="space-y-4">
                 <li className="flex items-start">
@@ -253,8 +253,8 @@ export default function PremiumPage() {
                 a: 'Yes! Subscribe for a full year and get 29% off (€84.99/year instead of €119.88/year).',
               },
               {
-                q: 'What payment methods do you accept?',
-                a: 'We accept all major credit cards, PayPal through our payment processor (soon to be patreon).',
+                q: 'How can I get Premium?',
+                a: 'Premium subscriptions are currently managed through our Discord community. Please contact our support team via Discord for details on how to access Premium features.',
               },
               {
                 q: 'How do I contact support?',

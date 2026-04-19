@@ -152,10 +152,4 @@ export const pageMetadata = {
     path: '/me',
     keywords: ['profile', 'account', 'settings', 'user profile'],
   },
-  buy: {
-    title: 'Buy – UEFN DevKit',
-    description: 'Purchase UEFN DevKit premium subscriptions and exclusive features.',
-    path: '/buy',
-    keywords: ['buy', 'purchase', 'premium subscription'],
-  },
 };

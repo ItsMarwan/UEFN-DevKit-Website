@@ -636,10 +636,10 @@ function EditorSoon() {
             Run bot commands, manage data, and edit server settings directly from the dashboard — no Discord required.
             This is a <span className="text-blue-400 font-semibold">Premium</span> feature.
           </p>
-          <Link href="/buy" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-semibold text-sm hover:shadow-lg hover:shadow-blue-500/30 transition-all">
-            ⭐ Upgrade to Premium
-          </Link>
-          <p className="text-white/30 text-xs mt-3">Unlock early access + all future dashboard features</p>
+          <button disabled className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500/50 to-cyan-500/50 text-white/50 rounded-lg font-semibold text-sm cursor-not-allowed">
+            ⭐ Premium Features Disabled
+          </button>
+          <p className="text-white/30 text-xs mt-3">Contact support for more information</p>
         </div>
       </div>
       <div className="rounded-xl border border-white/10 bg-black/40 p-5 select-none pointer-events-none" aria-hidden>
@@ -1296,10 +1296,7 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
           </div>
         )}
         <p className="text-white/30 text-xs mt-3">
-          Don&apos;t have a code?{' '}
-          <Link href="/buy" className="text-blue-400 hover:text-blue-300 transition-colors">
-            Upgrade to Premium →
-          </Link>
+          Premium redeem codes are currently unavailable.
         </p>
       </div>
 

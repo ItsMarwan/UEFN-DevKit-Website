@@ -10,7 +10,8 @@ import { getClientIp } from "@/lib/get-client-ip";
 
 export const dynamic = 'force-dynamic';
 
-const FLASK_API_URL = process.env.FLASK_API_URL || "http://localhost:5000/api/";
+const FLASK_API_URL = process.env.FLASK_API_URL || "http://localhost:5000";
+const PREMIUM_FETCH_URL = new URL("/api/v1/premium/fetch", FLASK_API_URL).toString();
 
 export async function GET(req: NextRequest) {
   try {
@@ -65,7 +66,7 @@ export async function GET(req: NextRequest) {
     };
 
     // Forward to Flask backend
-    const response = await fetch(`${FLASK_API_URL}v1/premium/fetch`, {
+    const response = await fetch(PREMIUM_FETCH_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

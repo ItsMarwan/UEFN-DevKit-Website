@@ -12,6 +12,3 @@ Allow: /
 
 # Sitemap
 Sitemap: https://uefndevkit.rweb.site/sitemap.xml
-
-# Crawl delay
-Crawl-delay: 1

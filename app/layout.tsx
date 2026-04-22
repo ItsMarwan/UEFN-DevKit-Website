@@ -9,6 +9,7 @@ import { LayoutWrapper } from '@/components/LayoutWrapper';
 import { RateLimitProvider } from '@/components/RateLimitProvider';
 import { CookieProvider } from '@/components/CookieProvider';
 import { CookieConsentBanner } from '@/components/CookieConsentBanner';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 
 const BASE_URL = 'https://uefndevkit.rweb.site';
@@ -103,6 +104,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </RateLimitProvider>
           </ToastProvider>
         </CookieProvider>
+        <Analytics />
       </body>
     </html>
   );

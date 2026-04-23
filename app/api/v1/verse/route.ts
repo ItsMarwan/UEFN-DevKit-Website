@@ -5,11 +5,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getClientIp } from "@/lib/get-client-ip";
+import { proxyFlaskFetch } from "@/lib/flask-api-proxy";
 
 export const dynamic = 'force-dynamic';
-
-const FLASK_API_URL = process.env.FLASK_API_URL;
 
 export async function GET(req: NextRequest) {
   try {
@@ -27,32 +25,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ status: "denied", message: "Missing X-Discord-Server-ID header" }, { status: 401 });
     }
 
-    const originHeader = req.headers.get("Origin");
-
-    const body = {
+    const { status, data } = await proxyFlaskFetch(req, {
       endpoint: "verse_list",
       parameters: {
         limit: parseInt(limit),
         offset: parseInt(offset),
       },
-    };
-
-    const response = await fetch(`${FLASK_API_URL}/api/v1/fetch`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader,
-        "X-Discord-Server-ID": serverIdHeader,
-        Origin: originHeader || "",
-        "X-Forwarded-For": getClientIp(req),
-        "X-Forwarded-Proto": "https",
-      },
-      body: JSON.stringify(body),
-      cache: "no-store",
     });
 
-    const data = await response.json();
-    return NextResponse.json(data, { status: response.status });
+    return NextResponse.json(data, { status });
   } catch (error) {
     console.error("Verse list endpoint error:", error);
     return NextResponse.json({
@@ -75,30 +56,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ status: "denied", message: "Missing X-Discord-Server-ID header" }, { status: 401 });
     }
 
-    const originHeader = req.headers.get("Origin");
     const reqBody = await req.json();
 
-    const body = {
+    const { status, data } = await proxyFlaskFetch(req, {
       endpoint: "verse_upload",
       parameters: reqBody,
-    };
-
-    const response = await fetch(`${FLASK_API_URL}/api/v1/fetch`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader,
-        "X-Discord-Server-ID": serverIdHeader,
-        Origin: originHeader || "",
-        "X-Forwarded-For": getClientIp(req),
-        "X-Forwarded-Proto": "https",
-      },
-      body: JSON.stringify(body),
-      cache: "no-store",
     });
 
-    const data = await response.json();
-    return NextResponse.json(data, { status: response.status });
+    return NextResponse.json(data, { status });
   } catch (error) {
     console.error("Verse upload endpoint error:", error);
     return NextResponse.json({

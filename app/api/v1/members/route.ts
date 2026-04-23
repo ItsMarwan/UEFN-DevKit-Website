@@ -6,11 +6,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getClientIp } from "@/lib/get-client-ip";
+import { proxyFlaskFetch } from "@/lib/flask-api-proxy";
 
 export const dynamic = 'force-dynamic';
-
-const FLASK_API_URL = process.env.FLASK_API_URL;
 
 export async function GET(req: NextRequest) {
   try {
@@ -29,27 +27,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ status: "denied", message: "Missing X-Discord-Server-ID header", timestamp: new Date().toISOString() }, { status: 401 });
     }
 
-    const originHeader = req.headers.get("Origin");
-
-    const response = await fetch(`${FLASK_API_URL}/api/v1/fetch`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader,
-        "X-Discord-Server-ID": serverIdHeader,
-        Origin: originHeader || "",
-        "X-Forwarded-For": getClientIp(req),
-        "X-Forwarded-Proto": "https",
-      },
-      body: JSON.stringify({
-        endpoint: "members",
-        parameters: { limit: parseInt(limit), offset: parseInt(offset), role },
-      }),
-      cache: "no-store",
+    const { status, data } = await proxyFlaskFetch(req, {
+      endpoint: "members",
+      parameters: { limit: parseInt(limit), offset: parseInt(offset), role },
     });
 
-    const data = await response.json();
-    return NextResponse.json(data, { status: response.status });
+    return NextResponse.json(data, { status });
   } catch (error) {
     console.error("Members endpoint error:", error);
     return NextResponse.json({ status: "error", message: "Failed to fetch members", error: error instanceof Error ? error.message : "Unknown error", timestamp: new Date().toISOString() }, { status: 500 });

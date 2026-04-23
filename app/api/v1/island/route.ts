@@ -5,11 +5,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getClientIp } from "@/lib/get-client-ip";
+import { proxyFlaskFetch } from "@/lib/flask-api-proxy";
 
 export const dynamic = 'force-dynamic';
-
-const FLASK_API_URL = process.env.FLASK_API_URL;
 
 export async function GET(req: NextRequest) {
   try {
@@ -34,31 +32,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ status: "denied", message: "Missing X-Discord-Server-ID header" }, { status: 401 });
     }
 
-    const originHeader = req.headers.get("Origin");
-
-    const endpoint = action === "predict" ? "island_predict" : "island_lookup";
-    const body = {
-      endpoint,
+    const { status, data } = await proxyFlaskFetch(req, {
+      endpoint: action === "predict" ? "island_predict" : "island_lookup",
       parameters: { island_code: code.trim() },
-    };
-
-    // Use /api/v1/premium/fetch for premium endpoints
-    const response = await fetch(`${FLASK_API_URL}/api/v1/premium/fetch`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader,
-        "X-Discord-Server-ID": serverIdHeader,
-        Origin: originHeader || "",
-        "X-Forwarded-For": getClientIp(req),
-        "X-Forwarded-Proto": "https",
-      },
-      body: JSON.stringify(body),
-      cache: "no-store",
     });
 
-    const data = await response.json();
-    return NextResponse.json(data, { status: response.status });
+    return NextResponse.json(data, { status });
   } catch (error) {
     console.error("Island endpoint error:", error);
     return NextResponse.json({

@@ -6,11 +6,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getClientIp } from "@/lib/get-client-ip";
+import { proxyFlaskFetch } from "@/lib/flask-api-proxy";
 
 export const dynamic = 'force-dynamic';
-
-const FLASK_API_URL = process.env.FLASK_API_URL;
 
 export async function GET(req: NextRequest) {
   try {
@@ -57,25 +55,10 @@ export async function GET(req: NextRequest) {
       },
     };
 
-    // Forward to Flask backend
-    const response = await fetch(`${FLASK_API_URL}/api/v1/fetch`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader,
-        "X-Discord-Server-ID": serverIdHeader,
-        Origin: originHeader || "",
-        "X-Forwarded-For": getClientIp(req),
-        "X-Forwarded-Proto": "https",
-      },
-      body: JSON.stringify(body),
-      cache: "no-store",
-    });
-
-    const data = await response.json();
+    const { status, data } = await proxyFlaskFetch(req, body);
 
     return NextResponse.json(data, {
-      status: response.status,
+      status,
       headers: {
         "Cache-Control": "no-cache",
         "Content-Type": "application/json",

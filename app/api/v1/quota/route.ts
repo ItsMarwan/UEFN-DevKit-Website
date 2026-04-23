@@ -7,9 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getClientIp } from "@/lib/get-client-ip";
-
-const FLASK_API_URL = process.env.FLASK_API_URL;
+import { proxyFlaskQuota } from "@/lib/flask-api-proxy";
 
 export async function GET(req: NextRequest) {
   try {
@@ -39,27 +37,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Get Origin header (for domain whitelisting)
-    const originHeader = req.headers.get("Origin");
-
-    // Forward to Flask backend with auth headers
-    const response = await fetch(`${FLASK_API_URL}/api/v1/quota`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader,
-        "X-Discord-Server-ID": serverIdHeader,
-        Origin: originHeader,
-        "X-Forwarded-For": getClientIp(req),
-        "X-Forwarded-Proto": "https",
-      },
-      cache: "no-store",
-    });
-
-    const data = await response.json();
+    const { status, data } = await proxyFlaskQuota(req);
 
     return NextResponse.json(data, {
-      status: response.status,
+      status,
       headers: {
         "Cache-Control": "no-cache",
         "Content-Type": "application/json",

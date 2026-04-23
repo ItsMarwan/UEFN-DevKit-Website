@@ -5,16 +5,21 @@ const FLASK_API_URL = process.env.FLASK_API_URL;
 
 function buildHeaders(req: NextRequest, authHeader: string, serverIdHeader: string) {
   const originHeader = req.headers.get("Origin") || "";
-  const dashboardBypassToken = process.env.DASHBOARD_API_TOKEN || "";
-  return {
+  const bypassHeader = req.headers.get("X-Dashboard-Bypass-Token") || "";
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Authorization: authHeader,
     "X-Discord-Server-ID": serverIdHeader,
-    "X-Dashboard-Bypass-Token": dashboardBypassToken,
     Origin: originHeader,
     "X-Forwarded-For": getClientIp(req),
     "X-Forwarded-Proto": "https",
   };
+
+  if (bypassHeader) {
+    headers["X-Dashboard-Bypass-Token"] = bypassHeader;
+  }
+
+  return headers;
 }
 
 async function fetchFlask(url: string, headers: Record<string, string>, body?: unknown) {

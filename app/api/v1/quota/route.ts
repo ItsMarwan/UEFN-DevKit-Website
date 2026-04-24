@@ -9,6 +9,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { proxyFlaskQuota } from "@/lib/flask-api-proxy";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
     // Get authorization header

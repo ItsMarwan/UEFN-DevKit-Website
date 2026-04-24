@@ -1,15 +1,31 @@
 /**
- * Enterprise API - Guild Settings Endpoint
- * GET /api/v1/guild-settings
+ * Enterprise API - Command Logs Endpoint
+ * GET /api/v1/command-logs
+ *
+ * Forwards auth headers and query params to Flask.
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { proxyFlaskFetch } from "@/lib/flask-api-proxy";
+import { proxyFlaskCommandLogs } from "@/lib/flask-api-proxy";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const guildId = searchParams.get("guild_id");
+
+    if (!guildId) {
+      return NextResponse.json(
+        {
+          status: "error",
+          message: "Missing guild_id parameter",
+          timestamp: new Date().toISOString(),
+        },
+        { status: 400 }
+      );
+    }
+
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return NextResponse.json(
@@ -34,12 +50,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const body = {
-      endpoint: "guild_settings",
-      parameters: {},
-    };
+    const { status, data } = await proxyFlaskCommandLogs(req);
 
-    const { status, data } = await proxyFlaskFetch(req, body);
     return NextResponse.json(data, {
       status,
       headers: {
@@ -48,11 +60,11 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Guild settings endpoint error:", error);
+    console.error("Command logs endpoint error:", error);
     return NextResponse.json(
       {
         status: "error",
-        message: "Failed to fetch guild settings",
+        message: "Failed to fetch command logs",
         error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },

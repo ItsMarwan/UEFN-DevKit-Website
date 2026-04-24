@@ -1,15 +1,22 @@
 /**
- * Enterprise API - Guild Settings Endpoint
- * GET /api/v1/guild-settings
+ * Enterprise API - Files Endpoint
+ * GET /api/v1/files
+ *
+ * Fetches records from Supabase through the Flask fetch proxy.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { proxyFlaskFetch } from "@/lib/flask-api-proxy";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const what = searchParams.get("what") || "";
+    const limit = parseInt(searchParams.get("limit") || "100", 10);
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return NextResponse.json(
@@ -34,12 +41,15 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const body = {
-      endpoint: "guild_settings",
-      parameters: {},
-    };
+    const { status, data } = await proxyFlaskFetch(req, {
+      endpoint: "files",
+      parameters: {
+        what,
+        limit,
+        offset,
+      },
+    });
 
-    const { status, data } = await proxyFlaskFetch(req, body);
     return NextResponse.json(data, {
       status,
       headers: {
@@ -48,11 +58,11 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Guild settings endpoint error:", error);
+    console.error("Files endpoint error:", error);
     return NextResponse.json(
       {
         status: "error",
-        message: "Failed to fetch guild settings",
+        message: "Failed to fetch files",
         error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },

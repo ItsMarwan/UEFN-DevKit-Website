@@ -46,6 +46,7 @@ async function flaskFetch(endpoint: string, guildId: string, parameters: Record<
         'Content-Type': 'application/json',
         Authorization: generateAuthHeader(ENTERPRISE_API_TOKEN, bodyStr),
         'X-Discord-Server-ID': guildId,
+        'X-Internal-API-Key': process.env.FLASK_INTERNAL_API_KEY || '',
         'X-Dashboard-Bypass-Token': ENTERPRISE_API_TOKEN,
         Origin: ENTERPRISE_ORIGIN,
       },

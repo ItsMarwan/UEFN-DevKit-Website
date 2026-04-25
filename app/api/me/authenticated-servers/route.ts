@@ -18,7 +18,10 @@ export async function POST(req: NextRequest) {
     // Call Flask endpoint
     const flaskRes = await fetch(`${FLASK_API_URL}/api/v1/authenticated-servers`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Internal-API-Key': process.env.FLASK_INTERNAL_API_KEY || '',
+      },
       body: JSON.stringify({ discord_user_id }),
     });
 

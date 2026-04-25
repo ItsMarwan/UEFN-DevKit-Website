@@ -121,7 +121,10 @@ async function flaskPost(guildId: string, parameters: Record<string, unknown>) {
   const bodyStr = JSON.stringify(body);
   try {
     const res = await fetch(`${FLASK_API_URL}/api/v1/fetch`, {
-      method: 'POST', headers: makeHeaders(guildId, bodyStr), body: bodyStr, cache: 'no-store',
+      method: 'POST', headers: {
+        ...makeHeaders(guildId, bodyStr),
+        'X-Internal-API-Key': process.env.FLASK_INTERNAL_API_KEY || '',
+      }, body: bodyStr, cache: 'no-store',
       signal: AbortSignal.timeout(10000),  // 10 second timeout
     });
     return { ok: res.ok, status: res.status, data: await res.json() };
@@ -134,7 +137,10 @@ async function flaskPatch(guildId: string, fields: Record<string, unknown>) {
   const bodyStr = JSON.stringify(body);
   try {
     const res = await fetch(`${FLASK_API_URL}/api/v1/config`, {
-      method: 'PATCH', headers: makeHeaders(guildId, bodyStr), body: bodyStr, cache: 'no-store',
+      method: 'PATCH', headers: {
+        ...makeHeaders(guildId, bodyStr),
+        'X-Internal-API-Key': process.env.FLASK_INTERNAL_API_KEY || '',
+      }, body: bodyStr, cache: 'no-store',
       signal: AbortSignal.timeout(10000),  // 10 second timeout
     });
     return { ok: res.ok, status: res.status, data: await res.json() };

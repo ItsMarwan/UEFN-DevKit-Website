@@ -75,6 +75,7 @@ export async function POST(req: NextRequest) {
         'Content-Type': 'application/json',
         'Authorization': generateAuthHeader(ENTERPRISE_API_TOKEN, bodyStr),
         'X-Discord-Server-ID': guildId,
+        'X-Internal-API-Key': process.env.FLASK_INTERNAL_API_KEY || '',
         'Origin': ENTERPRISE_ORIGIN,
         'X-Dashboard-Bypass-Token': ENTERPRISE_API_TOKEN,
       },

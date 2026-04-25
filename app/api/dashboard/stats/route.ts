@@ -37,6 +37,7 @@ async function tryFetchCount(
         'Content-Type': 'application/json',
         Authorization: auth,
         'X-Discord-Server-ID': guildId,
+        'X-Internal-API-Key': process.env.FLASK_INTERNAL_API_KEY || '',
         'X-Dashboard-Bypass-Token': ENTERPRISE_API_TOKEN,
         Origin: ENTERPRISE_ORIGIN,
       },

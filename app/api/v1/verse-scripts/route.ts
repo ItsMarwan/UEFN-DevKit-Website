@@ -6,37 +6,49 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { getSessionToken, getGuildIdFromUrl, verifyGuildAccess } from "@/lib/dashboard-auth";
 import { proxyFlaskVerseScripts } from "@/lib/flask-api-proxy";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    const guildId = getGuildIdFromUrl(req);
+    if (!guildId) {
+      return NextResponse.json(
+        {
+          status: "error",
+          message: "Missing or invalid guild_id parameter",
+          timestamp: new Date().toISOString(),
+        },
+        { status: 400 }
+      );
+    }
+
+    const accessToken = getSessionToken(req);
+    if (!accessToken) {
       return NextResponse.json(
         {
           status: "denied",
-          message: "Missing Authorization header",
+          message: "Unauthorized",
           timestamp: new Date().toISOString(),
         },
         { status: 401 }
       );
     }
 
-    const serverIdHeader = req.headers.get("X-Discord-Server-ID");
-    if (!serverIdHeader) {
+    if (!(await verifyGuildAccess(accessToken, guildId))) {
       return NextResponse.json(
         {
           status: "denied",
-          message: "Missing X-Discord-Server-ID header",
+          message: "Forbidden",
           timestamp: new Date().toISOString(),
         },
-        { status: 401 }
+        { status: 403 }
       );
     }
 
-    const { status, data } = await proxyFlaskVerseScripts(req);
+    const { status, data } = await proxyFlaskVerseScripts(req, guildId);
 
     return NextResponse.json(data, {
       status,
@@ -66,7 +78,7 @@ export async function OPTIONS() {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Discord-Server-ID",
+        "Access-Control-Allow-Headers": "Content-Type",
       },
     }
   );

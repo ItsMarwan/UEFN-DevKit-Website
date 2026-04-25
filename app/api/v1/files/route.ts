@@ -6,40 +6,52 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { getSessionToken, getGuildIdFromUrl, verifyGuildAccess } from "@/lib/dashboard-auth";
 import { proxyFlaskFetch } from "@/lib/flask-api-proxy";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
+    const guildId = getGuildIdFromUrl(req);
+    if (!guildId) {
+      return NextResponse.json(
+        {
+          status: "error",
+          message: "Missing or invalid guild_id parameter",
+          timestamp: new Date().toISOString(),
+        },
+        { status: 400 }
+      );
+    }
+
+    const accessToken = getSessionToken(req);
+    if (!accessToken) {
+      return NextResponse.json(
+        {
+          status: "denied",
+          message: "Unauthorized",
+          timestamp: new Date().toISOString(),
+        },
+        { status: 401 }
+      );
+    }
+
+    if (!(await verifyGuildAccess(accessToken, guildId))) {
+      return NextResponse.json(
+        {
+          status: "denied",
+          message: "Forbidden",
+          timestamp: new Date().toISOString(),
+        },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const what = searchParams.get("what") || "";
     const limit = parseInt(searchParams.get("limit") || "100", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
-
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return NextResponse.json(
-        {
-          status: "denied",
-          message: "Missing Authorization header",
-          timestamp: new Date().toISOString(),
-        },
-        { status: 401 }
-      );
-    }
-
-    const serverIdHeader = req.headers.get("X-Discord-Server-ID");
-    if (!serverIdHeader) {
-      return NextResponse.json(
-        {
-          status: "denied",
-          message: "Missing X-Discord-Server-ID header",
-          timestamp: new Date().toISOString(),
-        },
-        { status: 401 }
-      );
-    }
 
     const { status, data } = await proxyFlaskFetch(req, {
       endpoint: "files",
@@ -48,7 +60,7 @@ export async function GET(req: NextRequest) {
         limit,
         offset,
       },
-    });
+    }, guildId);
 
     return NextResponse.json(data, {
       status,
@@ -78,7 +90,7 @@ export async function OPTIONS() {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Discord-Server-ID",
+        "Access-Control-Allow-Headers": "Content-Type",
       },
     }
   );

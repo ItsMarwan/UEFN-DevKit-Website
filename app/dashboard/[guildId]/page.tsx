@@ -23,6 +23,9 @@ interface GuildConfig {
   encryption_enabled: boolean;
   key_stored_on_server: boolean;
   server_encryption_key: string | null;
+  api_token?: string;
+  api_token_created_at?: string;
+  api_whitelisted_domains?: string[];
   admin_allowed_roles: string[];
   // read-only display fields
   settings?: string;
@@ -30,10 +33,10 @@ interface GuildConfig {
   updated_at?: string;
 }
 
-type TabId = 'overview' | 'customers' | 'logs' | 'members' | 'verse_scripts' | 'trackers' | 'config' | 'reports' | 'editor' | 'profile';
+type TabId = 'overview' | 'customers' | 'logs' | 'members' | 'verse_scripts' | 'trackers' | 'config' | 'api' | 'reports' | 'editor' | 'profile';
 type LoadState = 'checking' | 'loading' | 'ready' | 'forbidden' | 'error';
 
-const VALID_TABS: TabId[] = ['overview', 'customers', 'logs', 'members', 'verse_scripts', 'trackers', 'config', 'reports', 'editor', 'profile'];
+const VALID_TABS: TabId[] = ['overview', 'customers', 'logs', 'members', 'verse_scripts', 'trackers', 'config', 'api', 'reports', 'editor', 'profile'];
 
 function getTabFromPath(): TabId {
   if (typeof window === 'undefined') return 'overview';
@@ -352,10 +355,8 @@ function VerseScriptsUploadForm({ guildId, onUploadSuccess }: { guildId: string;
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Discord-Server-ID': guildId,
-          'Authorization': 'Bearer placeholder',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ guild_id: guildId, ...formData }),
       });
 
       if (!res.ok) {
@@ -659,6 +660,345 @@ function EditorSoon() {
   );
 }
 
+function ApiDenied() {
+  return (
+    <div className="relative">
+      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl bg-black/70 backdrop-blur-sm">
+        <div className="text-center px-6 max-w-md">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500/20 to-pink-500/20 border border-red-500/30 flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">🔒</span>
+          </div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-300 text-xs font-semibold mb-3">
+            DENIED
+          </div>
+          <h3 className="text-white font-bold text-xl mb-2">API Access Locked</h3>
+          <p className="text-white/60 text-sm leading-relaxed mb-5">
+            Your server must be on Premium or Enterprise to manage API tokens, health, and domain whitelisting.
+            Upgrade now to unlock this feature.
+          </p>
+          <Link href="/premium" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg font-semibold text-sm">
+            Buy Premium
+          </Link>
+          <p className="text-white/30 text-xs mt-3">Once upgraded, refresh this tab to access API management.</p>
+        </div>
+      </div>
+      <div className="rounded-xl border border-white/10 bg-black/40 p-5 select-none pointer-events-none" aria-hidden>
+        <div className="mb-4 flex gap-2 flex-wrap">
+          {['Token Create', 'Domain Add', 'Health Check'].map(label => (
+            <div key={label} className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white/20 text-xs font-medium">{label}</div>
+          ))}
+        </div>
+        <div className="h-10 bg-white/5 border border-white/10 rounded-lg mb-3" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="h-24 bg-white/5 border border-white/10 rounded-lg" />
+          <div className="h-24 bg-white/5 border border-white/10 rounded-lg" />
+          <div className="h-24 bg-white/5 border border-white/10 rounded-lg" />
+        </div>
+        <div className="mt-3 h-10 bg-red-500/10 border border-red-500/20 rounded-lg" />
+      </div>
+    </div>
+  );
+}
+
+function ApiTab({ guildId }: { guildId: string }) {
+  const { showToast } = useToast();
+  const [config, setConfig] = useState<GuildConfig | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [health, setHealth] = useState<{ status?: string; version?: string; responseTimeMs?: number; error?: string } | null>(null);
+  const [domainInput, setDomainInput] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [tokenVisible, setTokenVisible] = useState(false);
+  const [newToken, setNewToken] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const tier = extractTier(config ?? { server_tier: 'free', settings: undefined, log_channel_id: null, default_customer_role_id: null, encryption_enabled: false, key_stored_on_server: false, server_encryption_key: null, admin_allowed_roles: [] });
+  const isAllowed = tier === 'premium' || tier === 'enterprise';
+
+  const fetchHealth = useCallback(async () => {
+    setHealth(null);
+    try {
+      const start = performance.now();
+      const res = await fetch('/api/health', { cache: 'no-store' });
+      const elapsed = Math.round(performance.now() - start);
+      const data = await res.json();
+      setHealth({
+        status: res.ok ? 'online' : 'offline',
+        version: data?.version || data?.message || 'Unknown',
+        responseTimeMs: elapsed,
+        error: res.ok ? undefined : data?.message || 'Health check failed',
+      });
+    } catch (error) {
+      setHealth({ status: 'offline', responseTimeMs: undefined, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  }, []);
+
+  const fetchConfig = useCallback(async () => {
+    setLoading(true);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/dashboard/server-config?guildId=${encodeURIComponent(guildId)}`);
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.error || 'Failed to load API settings');
+      }
+      const json = await res.json();
+      let raw: GuildConfig;
+      if (json?.data?.endpoint === 'guild_settings' && json?.data?.data) {
+        raw = json.data.data as GuildConfig;
+      } else if (json?.data?.data && typeof json.data.data === 'object' && !Array.isArray(json.data.data)) {
+        raw = json.data.data as GuildConfig;
+      } else if (json?.data?.[0]) {
+        raw = json.data[0] as GuildConfig;
+      } else if (json?.data && typeof json.data === 'object') {
+        raw = json.data as GuildConfig;
+      } else {
+        raw = json as GuildConfig;
+      }
+      setConfig(raw);
+    } catch (error: unknown) {
+      setConfig(null);
+      setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Unknown error' });
+      showToast('error', 'API Load Failed', error instanceof Error ? error.message : 'Failed to load API settings');
+    } finally {
+      setLoading(false);
+    }
+  }, [guildId, showToast, refreshKey]);
+
+  useEffect(() => {
+    fetchConfig();
+    fetchHealth();
+  }, [fetchConfig, fetchHealth, refreshKey]);
+
+  const updateSettings = async (fields: Record<string, unknown>) => {
+    setSaving(true);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/dashboard/server-config?guildId=${encodeURIComponent(guildId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fields),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || 'Unable to update API settings');
+      }
+      setRefreshKey((key) => key + 1);
+      setMessage({ type: 'success', text: 'Updated successfully.' });
+      return json;
+    } catch (error: unknown) {
+      const errorText = error instanceof Error ? error.message : 'Unknown error';
+      setMessage({ type: 'error', text: errorText });
+      showToast('error', 'Update Failed', errorText);
+      throw error;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAddDomain = async () => {
+    if (!domainInput.trim()) {
+      setMessage({ type: 'error', text: 'Enter a domain to add.' });
+      return;
+    }
+    const domain = domainInput.trim().toLowerCase();
+    if (!domain.includes('.') || domain.length > 253) {
+      setMessage({ type: 'error', text: 'Provide a valid domain like api.example.com.' });
+      return;
+    }
+    const domains = Array.isArray(config?.api_whitelisted_domains) ? config?.api_whitelisted_domains : [];
+    if (domains.includes(domain)) {
+      setMessage({ type: 'error', text: `${domain} is already whitelisted.` });
+      return;
+    }
+    await updateSettings({ api_whitelisted_domains: [...domains, domain] });
+    setDomainInput('');
+  };
+
+  const handleRemoveDomain = async (domain: string) => {
+    const domains = Array.isArray(config?.api_whitelisted_domains) ? config.api_whitelisted_domains : [];
+    await updateSettings({ api_whitelisted_domains: domains.filter((item) => item !== domain) });
+  };
+
+  const handleRevealToken = () => {
+    if (!config?.api_token_created_at) {
+      setMessage({ type: 'error', text: 'No token exists yet.' });
+      return;
+    }
+    const created = new Date(config.api_token_created_at);
+    if (Date.now() - created.getTime() > 3 * 24 * 60 * 60 * 1000) {
+      window.location.href = '/api/dashboard/login';
+      return;
+    }
+    setTokenVisible(true);
+  };
+
+  const handleGenerateToken = async () => {
+    setSaving(true);
+    setMessage(null);
+    try {
+      const token = Array.from(window.crypto.getRandomValues(new Uint8Array(24)))
+        .map((b) => b.toString(16).padStart(2, '0')).join('');
+      const createdAt = new Date().toISOString();
+      await updateSettings({ api_token: token, api_token_created_at: createdAt });
+      setNewToken(token);
+      setTokenVisible(true);
+      setMessage({ type: 'success', text: 'Token generated successfully. Store it now.' });
+    } catch (error: unknown) {
+      const errorText = error instanceof Error ? error.message : 'Unknown error';
+      setMessage({ type: 'error', text: errorText });
+      showToast('error', 'Token Failed', errorText);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const token = config?.api_token;
+  const createdAt = config?.api_token_created_at ? new Date(config.api_token_created_at) : null;
+  const tokenAgeMs = createdAt ? Date.now() - createdAt.getTime() : Infinity;
+  const tokenTooOld = createdAt ? tokenAgeMs > 3 * 24 * 60 * 60 * 1000 : false;
+  const tokenAgeLabel = createdAt ? `${Math.floor(tokenAgeMs / (24 * 60 * 60 * 1000))} day(s) ago` : 'Not created yet';
+  const domains = Array.isArray(config?.api_whitelisted_domains) ? config.api_whitelisted_domains : [];
+
+  if (loading || !config) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse h-8 bg-white/10 rounded-lg w-48" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {[...Array(2)].map((_, idx) => (
+            <div key={idx} className="h-40 rounded-3xl bg-white/5 border border-white/10" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAllowed) {
+    return <ApiDenied />;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-3xl border border-white/10 bg-black/40 p-6">
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <div>
+              <p className="text-white/40 uppercase tracking-wide text-xs">Flask API Health</p>
+              <h2 className="text-xl font-semibold text-white">{health?.status === 'online' ? 'Online' : 'Offline'}</h2>
+            </div>
+            <div className="text-right">
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${health?.status === 'online' ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-red-500/20 text-red-300 border border-red-500/30'}`}>
+                {health?.status === 'online' ? 'Online' : 'Offline'}
+              </span>
+            </div>
+          </div>
+          <div className="space-y-2 text-sm text-white/60">
+            <p>Version: <span className="text-white">{health?.version ?? 'Unknown'}</span></p>
+            <p>Response time: <span className="text-white">{health?.responseTimeMs != null ? `${health.responseTimeMs}ms` : 'N/A'}</span></p>
+            {health?.error && <p className="text-red-300">{health.error}</p>}
+          </div>
+          <button onClick={fetchHealth} className="mt-5 px-4 py-2 rounded-xl bg-white/5 text-white text-sm hover:bg-white/10 transition">
+            Refresh Health
+          </button>
+        </div>
+
+        <div className="rounded-3xl border border-white/10 bg-black/40 p-6">
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <div>
+              <p className="text-white/40 uppercase tracking-wide text-xs">API Token</p>
+              <h2 className="text-xl font-semibold text-white">Manage token</h2>
+            </div>
+            <span className="text-white/50 text-xs">Created {tokenAgeLabel}</span>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <p className="text-white/60 text-xs uppercase tracking-wide mb-2">Current Token</p>
+            <div className="font-mono text-sm text-white/80 break-all">
+              {tokenVisible ? (token ?? 'No token configured') : token ? `****${token.slice(-4)}` : 'No token configured'}
+            </div>
+          </div>
+          <div className="mt-4 flex flex-col gap-2">
+            <button
+              onClick={handleGenerateToken}
+              disabled={saving}
+              className="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-2 text-sm font-semibold text-white hover:shadow-lg hover:shadow-cyan-500/30 transition disabled:opacity-50"
+            >
+              {token ? 'Regenerate Token' : 'Create Token'}
+            </button>
+            {token && (
+              <button
+                onClick={handleRevealToken}
+                disabled={saving}
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white hover:bg-white/10 transition"
+              >
+                {tokenTooOld ? 'Re-login to Reveal Token' : tokenVisible ? 'Token Visible' : 'Reveal Token'}
+              </button>
+            )}
+          </div>
+          {tokenTooOld && (
+            <p className="mt-3 text-red-300 text-sm">
+              Token is older than 3 days. Re-login to view the full token for security.
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-3xl border border-white/10 bg-black/40 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-white/40 uppercase tracking-wide text-xs">Domain Whitelist</p>
+            <h2 className="text-xl font-semibold text-white">Allowed domains</h2>
+          </div>
+          <span className="text-white/50 text-xs">{domains.length} whitelisted</span>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+          <div className="space-y-3">
+            <label className="block text-white/40 text-xs uppercase tracking-wide mb-2">Add a domain</label>
+            <div className="flex gap-2">
+              <input
+                value={domainInput}
+                onChange={(event) => setDomainInput(event.target.value)}
+                placeholder="api.example.com"
+                className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-white/30 focus:border-cyan-500 focus:outline-none"
+              />
+              <button
+                onClick={handleAddDomain}
+                disabled={saving}
+                className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-400 transition disabled:opacity-50"
+              >Add</button>
+            </div>
+            <p className="text-white/50 text-sm">Only requests from whitelisted domains will be accepted by the API server.</p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <p className="text-white/40 uppercase tracking-wide text-xs mb-3">Whitelisted domains</p>
+            {domains.length === 0 ? (
+              <p className="text-white/50 text-sm">No domains whitelisted yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {domains.map((domain) => (
+                  <div key={domain} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                    <span className="text-white/80 font-mono text-sm">{domain}</span>
+                    <button
+                      onClick={() => handleRemoveDomain(domain)}
+                      disabled={saving}
+                      className="text-red-300 text-xs hover:text-red-100"
+                    >Remove</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {message && (
+        <div className={`rounded-xl border px-4 py-3 text-sm ${message.type === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-200' : 'bg-red-500/10 border-red-500/20 text-red-200'}`}>
+          {message.text}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function IslandToolsTab({ guildId }: { guildId: string }) {
   const { showToast } = useToast();
@@ -676,12 +1016,7 @@ function IslandToolsTab({ guildId }: { guildId: string }) {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/island/lookup?island_code=${encodeURIComponent(islandCode.trim())}`, {
-        headers: {
-          'X-Discord-Server-ID': guildId,
-          'Authorization': 'Bearer placeholder',
-        },
-      });
+      const res = await fetch(`/api/v1/island/lookup?guild_id=${encodeURIComponent(guildId)}&island_code=${encodeURIComponent(islandCode.trim())}`);
 
       if (!res.ok) {
         const error = await res.json();
@@ -715,12 +1050,7 @@ function IslandToolsTab({ guildId }: { guildId: string }) {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/island/predict?island_code=${encodeURIComponent(islandCode.trim())}`, {
-        headers: {
-          'X-Discord-Server-ID': guildId,
-          'Authorization': 'Bearer placeholder',
-        },
-      });
+      const res = await fetch(`/api/v1/island/predict?guild_id=${encodeURIComponent(guildId)}&island_code=${encodeURIComponent(islandCode.trim())}`);
 
       if (!res.ok) {
         const error = await res.json();
@@ -960,12 +1290,7 @@ function ReportsTab({ guildId }: { guildId: string }) {
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/v1/reports', {
-        headers: {
-          'X-Discord-Server-ID': guildId,
-          'Authorization': 'Bearer placeholder',
-        },
-      });
+      const res = await fetch(`/api/v1/reports?guild_id=${encodeURIComponent(guildId)}`);
 
       if (!res.ok) {
         showToast('error', 'Failed to Load Reports', 'Could not fetch reports');
@@ -1568,7 +1893,7 @@ export default function GuildDashboardPage() {
   }, [guildId, router, showToast, health.status]);
 
   const fetchTabData = useCallback(async (tab: TabId) => {
-    if (tab === 'overview' || tab === 'editor' || tab === 'config') return;
+if (tab === 'overview' || tab === 'editor' || tab === 'config' || tab === 'api') return;
     if (tabData[tab] !== undefined) return;
 
     // Ensure user session is loaded before making API calls
@@ -1769,6 +2094,7 @@ export default function GuildDashboardPage() {
     { id: 'members',       label: 'Members',       icon: '👥' },
     { id: 'verse_scripts', label: 'Verse Scripts', icon: '📦' },
     { id: 'trackers',      label: 'Trackers',      icon: '⏱️' },
+    { id: 'api',           label: 'API',           icon: '🔐' },
     { id: 'reports',       label: 'Reports',       icon: '🚩' },
     { id: 'config',        label: 'Server Config', icon: '⚙️' },
     // { id: 'editor',        label: 'Editor',        icon: '⚡', soon: true },
@@ -1780,6 +2106,7 @@ export default function GuildDashboardPage() {
     if (activeTab === 'editor') return <EditorSoon />;
     if (activeTab === 'reports') return <ReportsTab guildId={guildId} />;
     if (activeTab === 'config') return <ServerConfigTab guildId={guildId} />;
+    if (activeTab === 'api') return <ApiTab guildId={guildId} />;
 
     if (activeTab === 'overview') {
       return (

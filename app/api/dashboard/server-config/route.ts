@@ -16,6 +16,9 @@ const EDITABLE_FIELDS: Record<string, { type: 'boolean' | 'string' | 'array' }> 
   key_stored_on_server:     { type: 'boolean' },
   server_encryption_key:    { type: 'string' },
   admin_allowed_roles:      { type: 'array' },
+  api_token:                { type: 'string' },
+  api_token_created_at:     { type: 'string' },
+  api_whitelisted_domains:  { type: 'array' },
 };
 
 const IMMUTABLE_FIELDS = new Set([

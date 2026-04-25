@@ -1,25 +1,34 @@
+import crypto from "crypto";
 import { NextRequest } from "next/server";
-import { getClientIp } from "./get-client-ip";
 
 const FLASK_API_URL = process.env.FLASK_API_URL;
+const ENTERPRISE_API_TOKEN = process.env.ENTERPRISE_API_TOKEN;
+const FLASK_INTERNAL_API_KEY = process.env.FLASK_INTERNAL_API_KEY;
+const ENTERPRISE_API_ORIGIN = process.env.ENTERPRISE_API_ORIGIN ?? process.env.NEXT_PUBLIC_APP_URL ?? "";
 
-function buildHeaders(req: NextRequest, authHeader: string, serverIdHeader: string) {
-  const originHeader = req.headers.get("Origin") || "";
-  const bypassHeader = req.headers.get("X-Dashboard-Bypass-Token") || "";
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    Authorization: authHeader,
-    "X-Discord-Server-ID": serverIdHeader,
-    Origin: originHeader,
-    "X-Forwarded-For": getClientIp(req),
-    "X-Forwarded-Proto": "https",
-  };
-
-  if (bypassHeader) {
-    headers["X-Dashboard-Bypass-Token"] = bypassHeader;
+function requireEnv(value: string | undefined, name: string) {
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
   }
+  return value;
+}
 
-  return headers;
+function createSignature(body: string) {
+  const token = requireEnv(ENTERPRISE_API_TOKEN, "ENTERPRISE_API_TOKEN");
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const signature = crypto.createHmac("sha256", token).update(`${timestamp}.${body}`).digest("hex");
+  return `Bearer ${timestamp}.${signature}`;
+}
+
+function buildHeaders(guildId: string, body: string) {
+  const internalKey = requireEnv(FLASK_INTERNAL_API_KEY, "FLASK_INTERNAL_API_KEY");
+  return {
+    "Content-Type": "application/json",
+    Authorization: createSignature(body),
+    "X-Discord-Server-ID": guildId,
+    "X-Internal-API-Key": internalKey,
+    Origin: ENTERPRISE_API_ORIGIN,
+  };
 }
 
 async function fetchFlask(url: string, headers: Record<string, string>, body?: unknown) {
@@ -31,20 +40,26 @@ async function fetchFlask(url: string, headers: Record<string, string>, body?: u
   });
 }
 
-export async function proxyFlaskFetch(req: NextRequest, body: unknown) {
+function buildErrorResponse(message: string) {
+  return {
+    status: 500,
+    data: {
+      status: "error",
+      message,
+    },
+  };
+}
+
+export async function proxyFlaskFetch(req: NextRequest, body: unknown, guildId: string) {
   if (!FLASK_API_URL) {
-    return {
-      status: 500,
-      data: {
-        status: "error",
-        message: "Flask API URL is not configured",
-      },
-    };
+    return buildErrorResponse("Flask API URL is not configured");
+  }
+  if (!guildId) {
+    return buildErrorResponse("Missing guild ID for internal request");
   }
 
-  const authHeader = req.headers.get("Authorization") || "";
-  const serverIdHeader = req.headers.get("X-Discord-Server-ID") || "";
-  const headers = buildHeaders(req, authHeader, serverIdHeader);
+  const bodyStr = JSON.stringify(body || {});
+  const headers = buildHeaders(guildId, bodyStr);
 
   const enterpriseResponse = await fetchFlask(`${FLASK_API_URL}/api/v1/fetch`, headers, body);
   let data = await enterpriseResponse.json();
@@ -59,21 +74,15 @@ export async function proxyFlaskFetch(req: NextRequest, body: unknown) {
   return { status, data };
 }
 
-export async function proxyFlaskQuota(req: NextRequest) {
+export async function proxyFlaskQuota(req: NextRequest, guildId: string) {
   if (!FLASK_API_URL) {
-    return {
-      status: 500,
-      data: {
-        status: "error",
-        message: "Flask API URL is not configured",
-      },
-    };
+    return buildErrorResponse("Flask API URL is not configured");
+  }
+  if (!guildId) {
+    return buildErrorResponse("Missing guild ID for internal request");
   }
 
-  const authHeader = req.headers.get("Authorization") || "";
-  const serverIdHeader = req.headers.get("X-Discord-Server-ID") || "";
-  const headers = buildHeaders(req, authHeader, serverIdHeader);
-
+  const headers = buildHeaders(guildId, "");
   const enterpriseResponse = await fetchFlask(`${FLASK_API_URL}/api/v1/quota`, headers);
   let data = await enterpriseResponse.json();
   let status = enterpriseResponse.status;
@@ -87,7 +96,7 @@ export async function proxyFlaskQuota(req: NextRequest) {
   return { status, data };
 }
 
-export async function proxyFlaskCommandLogs(req: NextRequest) {
+export async function proxyFlaskCommandLogs(req: NextRequest, guildId: string) {
   if (!FLASK_API_URL) {
     return {
       status: 500,
@@ -98,9 +107,7 @@ export async function proxyFlaskCommandLogs(req: NextRequest) {
     };
   }
 
-  const authHeader = req.headers.get("Authorization") || "";
-  const serverIdHeader = req.headers.get("X-Discord-Server-ID") || "";
-  const headers = buildHeaders(req, authHeader, serverIdHeader);
+  const headers = buildHeaders(guildId, "");
   const { searchParams } = new URL(req.url);
   const qs = searchParams.toString() ? `?${searchParams.toString()}` : "";
 
@@ -128,7 +135,7 @@ export async function proxyFlaskCommandLogs(req: NextRequest) {
  * Tries enterprise endpoint first, falls back to premium on 403.
  * Forwards any ?file_id= query param from the original request.
  */
-export async function proxyFlaskVerseScripts(req: NextRequest) {
+export async function proxyFlaskVerseScripts(req: NextRequest, guildId: string) {
   if (!FLASK_API_URL) {
     return {
       status: 500,
@@ -139,9 +146,7 @@ export async function proxyFlaskVerseScripts(req: NextRequest) {
     };
   }
 
-  const authHeader = req.headers.get("Authorization") || "";
-  const serverIdHeader = req.headers.get("X-Discord-Server-ID") || "";
-  const headers = buildHeaders(req, authHeader, serverIdHeader);
+  const headers = buildHeaders(guildId, "");
 
   // Preserve any query params (e.g. ?file_id=xxx) from the incoming request.
   const { searchParams } = new URL(req.url);

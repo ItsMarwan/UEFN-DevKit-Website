@@ -4,7 +4,7 @@ import { useState, memo, useCallback, useEffect } from 'react';
 import { useCookieConsent } from './CookieProvider';
 
 export const CookieConsentBanner = memo(function CookieConsentBanner() {
-  const { setConsent, hasConsented } = useCookieConsent();
+  const { setConsent, hasConsented, loaded } = useCookieConsent();
   const [showDetails, setShowDetails] = useState(false);
   
   // Initialize visibility based on whether they've already consented
@@ -13,6 +13,8 @@ export const CookieConsentBanner = memo(function CookieConsentBanner() {
 
   // Sync visibility with consent state on mount and when hasConsented changes
   useEffect(() => {
+    if (!loaded) return;
+
     if (!hasConsented) {
       setIsVisible(true);
       setIsClosing(false);
@@ -24,7 +26,7 @@ export const CookieConsentBanner = memo(function CookieConsentBanner() {
       }, 200);
       return () => window.clearTimeout(timeout);
     }
-  }, [hasConsented, isVisible]);
+  }, [hasConsented, isVisible, loaded]);
 
   const handleAcceptAll = useCallback(() => {
     setConsent({ analytics: true, essential: true });

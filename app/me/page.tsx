@@ -63,7 +63,7 @@ export default function MePage() {
           setErrorMsg(errorMsg);
           setLoadState('error');
           showToast('error', 'Session Failed', errorMsg);
-          router.replace('/api/dashboard/login');
+          router.replace('/api/login?next=/me');
           return;
         }
         const data = await res.json();
@@ -160,7 +160,7 @@ export default function MePage() {
         <div className="text-center">
           <p className="text-red-400 mb-4">{errorMsg}</p>
           <a
-            href="/api/dashboard/login"
+            href="/api/login?next=/me"
             className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg font-semibold"
           >
             Login Again

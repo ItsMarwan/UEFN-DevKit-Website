@@ -52,7 +52,7 @@ export default function DashboardPage() {
           setGuilds([]);
           setLoadState('ready');
           showToast('error', 'Session Failed', errorMsg);
-          router.replace('/api/dashboard/login');
+          router.replace('/api/login?next=/dashboard');
           return;
         }
         const data = await res.json();
@@ -62,7 +62,7 @@ export default function DashboardPage() {
           setGuilds([]);
           setLoadState('ready');
           showToast('error', 'Session Error', 'Failed to retrieve your session data. Please try logging in again.');
-          router.replace('/api/dashboard/login');
+          router.replace('/api/login?next=/dashboard');
           return;
         }
 
@@ -75,7 +75,7 @@ export default function DashboardPage() {
         setGuilds([]);
         setLoadState('ready');
         showToast('error', 'Connection Error', `Could not connect to the server: ${errorMessage}`);
-        router.replace('/api/dashboard/login');
+        router.replace('/api/login?next=/dashboard');
       }
     };
 
@@ -210,7 +210,7 @@ export default function DashboardPage() {
                 You are not authenticated. Please log in to access your dashboard.
               </p>
               <a
-                href="/api/dashboard/login"
+                href="/api/login?next=/dashboard"
                 className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg font-semibold text-white hover:shadow-lg hover:shadow-blue-500/30 transition-all"
               >
                 Log In

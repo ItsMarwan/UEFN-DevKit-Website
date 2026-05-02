@@ -2,7 +2,7 @@
 // Fetches endpoint data for the dashboard tabs. Session-cookie authenticated only.
 // GitHub readers cannot call this — no valid session = 401.
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,8 +62,25 @@ async function flaskFetch(endpoint: string, guildId: string, parameters: Record<
   }
 }
 
-const ALLOWED_ENDPOINTS = ['customers', 'verse_scripts', 'members', 'trackers', 'guild_settings', 'logs', 'files', 'reports', 'statistics', 'subscriptions', 'patreon_setup', 'patreon_verify_email'];
+const ALLOWED_ENDPOINTS = ['customers', 'verse_scripts', 'members', 'trackers', 'assets', 'guild_settings', 'logs', 'files', 'reports', 'statistics', 'subscriptions', 'patreon_setup', 'patreon_verify_email'];
 const DISCORD_API = 'https://discord.com/api/v10';
+
+function extractAssetConfig(raw: Record<string, unknown> | null | undefined) {
+  const requiredHours = typeof raw?.required_hours === 'number'
+    ? raw.required_hours
+    : typeof raw?.required_days === 'number'
+      ? raw.required_days * 24
+      : 72;
+
+  return {
+    asset_channel_id: raw?.asset_channel_id ?? null,
+    info_channel_id: raw?.info_channel_id ?? null,
+    required_role_id: raw?.required_role_id ?? null,
+    required_hours: requiredHours,
+    cooldown_hours: typeof raw?.cooldown_hours === 'number' ? raw.cooldown_hours : 24,
+    enabled: typeof raw?.enabled === 'boolean' ? raw.enabled : false,
+  };
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -85,20 +102,24 @@ export async function GET(req: NextRequest) {
     if (!endpoint || !ALLOWED_ENDPOINTS.includes(endpoint))
       return NextResponse.json({ error: 'Invalid endpoint' }, { status: 400 });
 
-    // Verify guild permission via Discord — can't be spoofed, uses their real token
-    const guildsRes = await fetchWithTimeout(`${DISCORD_API}/users/@me/guilds?limit=200`, {
-      headers: { Authorization: `Bearer ${session.access_token}` },
-      cache: 'no-store',
-    }, 8000);
-    if (!guildsRes.ok) return NextResponse.json({ error: 'Could not verify guild access' }, { status: 401 });
+    const isAssetEndpoint = endpoint === 'assets';
 
-    const userGuilds: Array<{ id: string; owner: boolean; permissions: number }> = await guildsRes.json();
-    const guild = userGuilds.find(g => g.id === guildId);
-    if (!guild) return NextResponse.json({ error: 'Not in this server' }, { status: 403 });
+    if (!isAssetEndpoint) {
+      // Verify guild permission via Discord — can't be spoofed, uses their real token
+      const guildsRes = await fetchWithTimeout(`${DISCORD_API}/users/@me/guilds?limit=200`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        cache: 'no-store',
+      }, 8000);
+      if (!guildsRes.ok) return NextResponse.json({ error: 'Could not verify guild access' }, { status: 401 });
 
-    const perms = typeof guild.permissions === 'string' ? parseInt(guild.permissions) : guild.permissions;
-    if (!guild.owner && (perms & 0x8) === 0 && (perms & 0x20) === 0)
-      return NextResponse.json({ error: 'No manage permission' }, { status: 403 });
+      const userGuilds: Array<{ id: string; owner: boolean; permissions: number }> = await guildsRes.json();
+      const guild = userGuilds.find(g => g.id === guildId);
+      if (!guild) return NextResponse.json({ error: 'Not in this server' }, { status: 403 });
+
+      const perms = typeof guild.permissions === 'string' ? parseInt(guild.permissions) : guild.permissions;
+      if (!guild.owner && (perms & 0x8) === 0 && (perms & 0x20) === 0)
+        return NextResponse.json({ error: 'No manage permission' }, { status: 403 });
+    }
 
     // Build parameters per endpoint
     const params: Record<string, unknown> = { limit, offset };
@@ -106,6 +127,8 @@ export async function GET(req: NextRequest) {
     if (endpoint === 'verse_scripts') params.search = searchParams.get('search') ?? '';
     if (endpoint === 'trackers') params.type = searchParams.get('type') ?? '';
     if (endpoint === 'members') params.role = searchParams.get('role') ?? '';
+
+    const backendEndpoint = endpoint === 'assets' ? 'guild_settings' : endpoint;
 
     // Special handling for logs endpoint — fetch from command-logs API
     if (endpoint === 'logs') {
@@ -135,7 +158,14 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const result = await flaskFetch(endpoint, guildId, params);
+    const result = await flaskFetch(backendEndpoint, guildId, params);
+    if (endpoint === 'assets') {
+      const raw = result.data?.data ?? result.data ?? null;
+      return NextResponse.json({
+        success: result.success,
+        data: raw ? extractAssetConfig(raw as Record<string, unknown>) : null,
+      });
+    }
     return NextResponse.json(result);
   } catch (err) {
     console.error('[data]', err);

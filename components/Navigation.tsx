@@ -41,7 +41,7 @@ export const Navigation = memo(function Navigation() {
   }, [consent?.essential]);
 
   const handleAuthProceed = useCallback(() => {
-    window.location.href = '/api/dashboard/login';
+    window.location.href = `/api/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
   }, []);
 
   const handleMobileLoginClick = useCallback(() => {

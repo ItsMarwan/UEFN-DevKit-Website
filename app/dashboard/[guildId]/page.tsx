@@ -10,6 +10,8 @@ import { useBotHealth } from '@/hooks/useBotHealth';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import MaskedEmail from '@/components/MaskedEmail';
 import { extractErrorMessage } from '@/lib/api-error';
+import { DASHBOARD_TABS as tabs, TabId, VALID_TABS } from '@/lib/dashboard-tabs';
+import AssetAccessTab from './AssetAccessTab';
 
 interface User { id: string; username: string; email: string; avatar: string | null; patreon_verified?: boolean; patreon_guild_id?: string }
 interface GuildInfo { id: string; name: string; icon: string | null }
@@ -27,16 +29,20 @@ interface GuildConfig {
   api_token_created_at?: string;
   api_whitelisted_domains?: string[];
   admin_allowed_roles: string[];
+  asset_channel_id?: string | null;
+  info_channel_id?: string | null;
+  required_role_id?: string | null;
+  required_days?: number | string;
+  required_hours?: number | string;
+  cooldown_hours?: number | string;
+  enabled?: boolean;
   // read-only display fields
   settings?: string;
   server_tier?: string;
   updated_at?: string;
 }
 
-type TabId = 'overview' | 'customers' | 'logs' | 'members' | 'verse_scripts' | 'trackers' | 'config' | 'api' | 'reports' | 'editor' | 'profile';
 type LoadState = 'checking' | 'loading' | 'ready' | 'forbidden' | 'error';
-
-const VALID_TABS: TabId[] = ['overview', 'customers', 'logs', 'members', 'verse_scripts', 'trackers', 'config', 'api', 'reports', 'editor', 'profile'];
 
 function getTabFromPath(): TabId {
   if (typeof window === 'undefined') return 'overview';
@@ -78,6 +84,147 @@ function StatCard({ icon, label, value, color }: { icon: string; label: string; 
       <div className="text-2xl mb-2">{icon}</div>
       <div className="text-2xl font-bold text-white tabular-nums">{fmt(value)}</div>
       <div className="text-white/50 text-xs mt-1">{label}</div>
+    </div>
+  );
+}
+
+function TableSkeleton({ columns = 5, rows = 5 }: { columns?: number; rows?: number }) {
+  return (
+    <div className="overflow-x-auto rounded-xl border border-white/10">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-white/10 bg-white/5">
+            {Array.from({ length: columns }).map((_, index) => (
+              <th key={index} className="px-4 py-3 text-left">
+                <div className="h-4 w-24 rounded-full bg-white/10" />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="animate-pulse">
+          {Array.from({ length: rows }).map((_, rowIndex) => (
+            <tr key={rowIndex} className="border-b border-white/5">
+              {Array.from({ length: columns }).map((_, colIndex) => (
+                <td key={colIndex} className="px-4 py-3">
+                  <div className="h-4 rounded bg-white/10 w-full" />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function CustomerListSkeleton() {
+  return (
+    <div className="space-y-3 max-w-2xl mx-auto animate-pulse">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div key={index} className="flex items-center gap-3 p-4 rounded-3xl bg-white/5 border border-white/10">
+          <div className="w-11 h-11 rounded-full bg-white/10" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 rounded bg-white/10 w-2/5" />
+            <div className="h-3 rounded bg-white/10 w-1/3" />
+            <div className="h-3 rounded bg-white/10 w-1/4" />
+          </div>
+          <div className="space-y-2">
+            <div className="h-5 rounded-full bg-white/10 w-20" />
+            <div className="h-3 rounded bg-white/10 w-16" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LogsConsoleSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-white/10 bg-black/40 overflow-hidden">
+        <div className="bg-white/5 border-b border-white/10 p-4">
+          <div className="h-4 w-1/2 rounded-full bg-white/10 animate-pulse" />
+        </div>
+        <div className="space-y-3 p-4 animate-pulse">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="h-4 rounded bg-white/10 w-full" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VerseScriptsSkeleton() {
+  return (
+    <div className="space-y-5">
+      <div className="rounded-xl border border-white/10 bg-white/5 p-4 animate-pulse space-y-3">
+        <div className="h-5 w-1/4 rounded-full bg-white/10" />
+        <div className="h-3 w-3/5 rounded-full bg-white/10" />
+        <div className="h-3 w-1/2 rounded-full bg-white/10" />
+      </div>
+      <div className="rounded-xl border border-white/10 bg-black/40">
+        <div className="p-4 border-b border-white/10">
+          <div className="h-4 w-1/3 rounded-full bg-white/10 animate-pulse" />
+        </div>
+        <div className="p-4 space-y-3 animate-pulse">
+          {Array.from({ length: 4 }).map((_, idx) => (
+            <div key={idx} className="grid grid-cols-[2fr_1fr_1fr_0.8fr] gap-3">
+              <div className="h-4 rounded bg-white/10" />
+              <div className="h-4 rounded bg-white/10" />
+              <div className="h-4 rounded bg-white/10" />
+              <div className="h-4 rounded bg-white/10" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ReportsSkeleton() {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: 3 }).map((_, index) => (
+        <div key={index} className="rounded-xl border border-white/10 bg-black/40 p-4 animate-pulse space-y-3">
+          <div className="h-4 w-32 rounded-full bg-white/10" />
+          <div className="h-3 w-1/2 rounded-full bg-white/10" />
+          <div className="h-3 w-2/3 rounded-full bg-white/10" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ServerConfigSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      <div className="rounded-xl border border-white/10 bg-black/40 p-6 space-y-4">
+        <div className="h-5 w-40 rounded-full bg-white/10" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="h-20 rounded-2xl bg-white/10" />
+          <div className="h-20 rounded-2xl bg-white/10" />
+        </div>
+      </div>
+      <div className="rounded-xl border border-white/10 bg-black/40 p-6 space-y-4">
+        <div className="h-5 w-36 rounded-full bg-white/10" />
+        <div className="grid gap-4 md:grid-cols-2">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <div key={idx} className="space-y-3">
+              <div className="h-4 w-2/3 rounded-full bg-white/10" />
+              <div className="h-10 rounded-2xl bg-white/10" />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="rounded-xl border border-white/10 bg-black/40 p-6 space-y-4">
+        <div className="h-5 w-32 rounded-full bg-white/10" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <div key={idx} className="h-24 rounded-2xl bg-white/10" />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -471,16 +618,7 @@ function VerseScriptsTable({ data, loading, guildId }: { data: Record<string, un
     setViewingScript(null);
   };
 
-  if (loading) return (
-    <div className="py-16">
-      <div className="animate-pulse space-y-3">
-        <div className="h-4 bg-white/10 rounded w-3/4 mx-auto" />
-        <div className="h-4 bg-white/10 rounded w-1/2 mx-auto" />
-        <div className="h-4 bg-white/10 rounded w-1/3 mx-auto" />
-        <div className="h-40 rounded-xl bg-white/10 mx-auto" />
-      </div>
-    </div>
-  );
+  if (loading) return <VerseScriptsSkeleton />;
   if (!data || data.length === 0) return (
     <div className="text-center py-16 text-white/30">No scripts found</div>
   );
@@ -542,16 +680,7 @@ function VerseScriptsTable({ data, loading, guildId }: { data: Record<string, un
 }
 
 function DataTable({ data, loading }: { data: Record<string, unknown>[] | null; loading: boolean }) {
-  if (loading) return (
-    <div className="py-12">
-      <div className="animate-pulse space-y-3">
-        <div className="h-5 bg-white/10 rounded w-24" />
-        {[...Array(6)].map((_, idx) => (
-          <div key={idx} className="h-8 bg-white/10 rounded" />
-        ))}
-      </div>
-    </div>
-  );
+  if (loading) return <TableSkeleton columns={5} rows={5} />;
   if (!data || data.length === 0) return (
     <div className="text-center py-16 text-white/30">No records found</div>
   );
@@ -827,7 +956,7 @@ function ApiTab({ guildId }: { guildId: string }) {
     }
     const created = new Date(config.api_token_created_at);
     if (Date.now() - created.getTime() > 3 * 24 * 60 * 60 * 1000) {
-      window.location.href = '/api/dashboard/login';
+      window.location.href = `/api/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
       return;
     }
     setTokenVisible(true);
@@ -1322,13 +1451,7 @@ function ReportsTab({ guildId }: { guildId: string }) {
         </div>
 
         {loading ? (
-          <div className="py-8">
-            <div className="animate-pulse space-y-2">
-              <div className="h-3 bg-white/10 rounded w-24" />
-              <div className="h-3 bg-white/10 rounded w-28" />
-              <div className="h-3 bg-white/10 rounded w-20" />
-            </div>
-          </div>
+          <ReportsSkeleton />
         ) : reports.length === 0 ? (
           <div className="text-center py-8 text-white/30">No reports yet</div>
         ) : (
@@ -1367,6 +1490,11 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
   // Editable local state
   const [logChannel, setLogChannel] = useState('');
   const [defaultRole, setDefaultRole] = useState('');
+  const [assetChannel, setAssetChannel] = useState('');
+  const [assetInfoChannel, setAssetInfoChannel] = useState('');
+  const [assetRole, setAssetRole] = useState('');
+  const [requiredHours, setRequiredHours] = useState(0);
+  const [cooldownHours, setCooldownHours] = useState(24);
   const [encEnabled, setEncEnabled] = useState(false);
   const [keyOnServer, setKeyOnServer] = useState(false);
   const [encKey, setEncKey] = useState('');
@@ -1422,6 +1550,11 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
       setConfig(raw);
       setLogChannel(raw.log_channel_id ?? '');
       setDefaultRole(raw.default_customer_role_id ?? '');
+      setAssetChannel(raw.asset_channel_id ?? '');
+      setAssetInfoChannel(raw.info_channel_id ?? '');
+      setAssetRole(raw.required_role_id ?? '');
+      setRequiredHours(Number(raw.required_hours ?? (raw.required_days ? Number(raw.required_days) * 24 : 0)));
+      setCooldownHours(Number(raw.cooldown_hours ?? 24));
       setEncEnabled(raw.encryption_enabled ?? false);
       setKeyOnServer(raw.key_stored_on_server ?? false);
       setEncKey('');
@@ -1471,6 +1604,11 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
 
     const payload: Record<string, unknown> = {};
 
+    payload.asset_channel_id = assetChannel.trim();
+    payload.info_channel_id = assetInfoChannel.trim();
+    payload.required_role_id = assetRole.trim();
+    if (!Number.isNaN(requiredHours)) payload.required_hours = requiredHours;
+    if (!Number.isNaN(cooldownHours)) payload.cooldown_hours = cooldownHours;
     if (encEnabled !== undefined) payload.encryption_enabled = encEnabled;
     if (keyOnServer !== undefined) payload.key_stored_on_server = keyOnServer;
     if (rolesArr.length > 0) payload.admin_allowed_roles = rolesArr;
@@ -1542,15 +1680,7 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
     setRedeemLoading(false);
   };
 
-  if (loading) return (
-    <div className="py-16">
-      <div className="animate-pulse space-y-3 max-w-xl mx-auto">
-        <div className="h-5 bg-white/10 rounded w-40" />
-        <div className="h-5 bg-white/10 rounded w-52" />
-        <div className="h-5 bg-white/10 rounded w-36" />
-      </div>
-    </div>
-  );
+  if (loading) return <ServerConfigSkeleton />;
 
   const tier = config ? extractTier(config) : 'free';
   const tierColor =
@@ -1651,22 +1781,82 @@ function ServerConfigTab({ guildId }: { guildId: string }) {
             <p className="text-white/30 text-xs mt-1">Bot will send activity logs to this channel.</p>
           </div>
 
-          {/* Default Customer Role */}
-          <div>
-            <label className="block text-white/60 text-xs font-semibold mb-1.5 uppercase tracking-wide">
-              Default Customer Role ID
-            </label>
-            <input
-              type="text"
-              value={defaultRole}
-              onChange={e => setDefaultRole(e.target.value.replace(/\D/g, '').slice(0, 20))}
-              placeholder="Discord role snowflake ID (leave empty to clear)"
-              className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
-            />
-            <p className="text-white/30 text-xs mt-1">Assigned to new customers via <code className="text-cyan-400">/customer add</code>.</p>
+          {/* Asset Access Settings */}
+          <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+            <p className="text-white/60 text-xs font-semibold uppercase tracking-wide mb-3">📁 Asset Access</p>
+            <div className="space-y-4">
+              <div className="grid gap-4">
+                <div>
+                  <label className="block text-white/60 text-xs font-semibold mb-1.5 uppercase tracking-wide">
+                    Asset Channel ID
+                  </label>
+                  <input
+                    type="text"
+                    value={assetChannel}
+                    onChange={e => setAssetChannel(e.target.value.replace(/\D/g, '').slice(0, 20))}
+                    placeholder="Discord channel/forum snowflake ID"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
+                  />
+                  <p className="text-white/30 text-xs mt-1">Channel or forum where verified users gain access.</p>
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs font-semibold mb-1.5 uppercase tracking-wide">
+                    Info Channel ID
+                  </label>
+                  <input
+                    type="text"
+                    value={assetInfoChannel}
+                    onChange={e => setAssetInfoChannel(e.target.value.replace(/\D/g, '').slice(0, 20))}
+                    placeholder="Discord channel snowflake ID"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
+                  />
+                  <p className="text-white/30 text-xs mt-1">Visible channel for users before they gain asset access.</p>
+                </div>
+                <div>
+                  <label className="block text-white/60 text-xs font-semibold mb-1.5 uppercase tracking-wide">
+                    Asset Access Role ID
+                  </label>
+                  <input
+                    type="text"
+                    value={assetRole}
+                    onChange={e => setAssetRole(e.target.value.replace(/\D/g, '').slice(0, 20))}
+                    placeholder="Discord role snowflake ID"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
+                  />
+                  <p className="text-white/30 text-xs mt-1">Role granted when a user passes eligibility.</p>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-white/60 text-xs font-semibold mb-1.5 uppercase tracking-wide">
+                      Required Hours
+                    </label>
+                    <input
+                      type="number"
+                      value={requiredHours}
+                      onChange={e => setRequiredHours(Number(e.target.value))}
+                      min={0}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
+                    />
+                    <p className="text-white/30 text-xs mt-1">Hours a user must be in the server to become eligible.</p>
+                  </div>
+                  <div>
+                    <label className="block text-white/60 text-xs font-semibold mb-1.5 uppercase tracking-wide">
+                      Cooldown Hours
+                    </label>
+                    <input
+                      type="number"
+                      value={cooldownHours}
+                      onChange={e => setCooldownHours(Number(e.target.value))}
+                      min={0}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
+                    />
+                    <p className="text-white/30 text-xs mt-1">Minimum hours between eligibility checks for each user.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Admin Allowed Roles */}
           <div>
             <label className="block text-white/60 text-xs font-semibold mb-1.5 uppercase tracking-wide">
               Admin Allowed Role IDs
@@ -1791,6 +1981,7 @@ export default function GuildDashboardPage() {
   const [logsPreview, setLogsPreview] = useState<Record<string, unknown>[] | null>(null);
 
   const fetched = useRef(false);
+  const statsLoaded = useRef(false);
   const pendingRequests = useRef<Record<string, AbortController>>({});
 
   // Sync URL with activeTab
@@ -1831,8 +2022,16 @@ export default function GuildDashboardPage() {
 
     const load = async () => {
       try {
-        const accessRes = await fetch(`/api/dashboard/verify-access?guildId=${guildId}`);
-        if (accessRes.status === 401) { router.replace('/api/dashboard/login'); return; }
+        const [accessRes, sessionRes] = await Promise.all([
+          fetch(`/api/dashboard/verify-access?guildId=${guildId}`),
+          fetch('/api/dashboard/session?lightweight=true'),
+        ]);
+
+        if (accessRes.status === 401 || sessionRes.status === 401) {
+          router.replace(`/api/login?next=/dashboard/${guildId}`);
+          return;
+        }
+
         if (!accessRes.ok) {
           const err = await accessRes.json();
           const errorText =
@@ -1842,45 +2041,15 @@ export default function GuildDashboardPage() {
             : err.error || 'Access denied.';
           setErrorMsg(errorText);
           showToast('error', 'Access Denied', errorText);
-          setLoadState('forbidden'); return;
+          setLoadState('forbidden');
+          return;
         }
 
         const accessData = await accessRes.json();
-        setGuild(accessData.guild);
-        setLoadState('loading');
-
-        const sessionRes = await fetch('/api/dashboard/session?lightweight=true');
-        if (!sessionRes.ok) {
-          const sessionErr = await extractErrorMessage(sessionRes);
-          showToast('error', 'Session Error', sessionErr);
-          router.replace('/api/dashboard/login');
-          return;
-        }
         const sessionData = await sessionRes.json();
+
+        setGuild(accessData.guild);
         setUser(sessionData.user);
-
-        // Small delay to ensure session is fully propagated
-        await new Promise(resolve => setTimeout(resolve, 50));
-
-        const statsRes = await fetch(`/api/dashboard/stats?guildId=${guildId}`);
-        if (statsRes.ok) setStats(await statsRes.json());
-        else {
-          const statsErr = await extractErrorMessage(statsRes);
-          showToast('warning', 'Stats Failed', statsErr);
-        }
-
-        // Fetch logs preview for the overview section
-        try {
-          const logsRes = await fetch(`/api/dashboard/data?guildId=${guildId}&endpoint=logs&limit=5`);
-          if (logsRes.ok) {
-            const logsJson = await logsRes.json();
-            const rows = logsJson?.data?.data ?? logsJson?.data ?? [];
-            setLogsPreview(Array.isArray(rows) ? rows.slice(0, 5) : []);
-          }
-        } catch {
-          // Silently ignore logs preview errors
-        }
-
         setLoadState('ready');
       } catch (error) {
         const errorText = error instanceof Error ? error.message : 'Failed to load server dashboard.';
@@ -1893,7 +2062,7 @@ export default function GuildDashboardPage() {
   }, [guildId, router, showToast, health.status]);
 
   const fetchTabData = useCallback(async (tab: TabId) => {
-if (tab === 'overview' || tab === 'editor' || tab === 'config' || tab === 'api') return;
+    if (tab === 'overview' || tab === 'editor' || tab === 'config' || tab === 'api' || tab === 'assets') return;
     if (tabData[tab] !== undefined) return;
 
     // Ensure user session is loaded before making API calls
@@ -1960,6 +2129,28 @@ if (tab === 'overview' || tab === 'editor' || tab === 'config' || tab === 'api')
       delete pendingRequests.current[tab];
     }
   }, [guildId, tabData, showToast, user]);
+
+  useEffect(() => {
+    if (loadState !== 'ready' || activeTab !== 'overview' || !guildId || statsLoaded.current) return;
+    statsLoaded.current = true;
+
+    const loadStats = async () => {
+      try {
+        const statsRes = await fetch(`/api/dashboard/stats?guildId=${guildId}`);
+        if (statsRes.ok) {
+          setStats(await statsRes.json());
+        } else {
+          const statsErr = await extractErrorMessage(statsRes);
+          showToast('warning', 'Stats Failed', statsErr);
+        }
+      } catch (error: unknown) {
+        const errorMsg = error instanceof Error ? error.message : 'Unable to load stats.';
+        showToast('warning', 'Stats Failed', errorMsg);
+      }
+    };
+
+    loadStats();
+  }, [activeTab, guildId, loadState, showToast]);
 
   useEffect(() => {
     if (loadState === 'ready' && user) fetchTabData(activeTab);
@@ -2087,13 +2278,14 @@ if (tab === 'overview' || tab === 'editor' || tab === 'config' || tab === 'api')
     );
   }
 
-  const tabs: { id: TabId; label: string; icon: string; soon?: boolean }[] = [
+  const tabs: { id: TabId; label: string; icon: string; soon?: boolean; isNew?: boolean }[] = [
     { id: 'overview',      label: 'Overview',      icon: '📊' },
     { id: 'customers',     label: 'Customers',     icon: '💸' },
     { id: 'logs',          label: 'Command Logs',  icon: '📋' },
     { id: 'members',       label: 'Members',       icon: '👥' },
     { id: 'verse_scripts', label: 'Verse Scripts', icon: '📦' },
     { id: 'trackers',      label: 'Trackers',      icon: '⏱️' },
+    { id: 'assets',        label: 'Asset Access',  icon: '📁', isNew: true },
     { id: 'api',           label: 'API',           icon: '🔐' },
     { id: 'reports',       label: 'Reports',       icon: '🚩' },
     { id: 'config',        label: 'Server Config', icon: '⚙️' },
@@ -2105,6 +2297,7 @@ if (tab === 'overview' || tab === 'editor' || tab === 'config' || tab === 'api')
   function renderTabContent() {
     if (activeTab === 'editor') return <EditorSoon />;
     if (activeTab === 'reports') return <ReportsTab guildId={guildId} />;
+    if (activeTab === 'assets') return <AssetAccessTab guildId={guildId} />;
     if (activeTab === 'config') return <ServerConfigTab guildId={guildId} />;
     if (activeTab === 'api') return <ApiTab guildId={guildId} />;
 
@@ -2166,6 +2359,7 @@ if (tab === 'overview' || tab === 'editor' || tab === 'config' || tab === 'api')
                 { label: 'Customers',  tab: 'customers'     as TabId, icon: '👥', desc: `${fmt(stats?.customers)}` },
                 { label: 'Logs',    tab: 'logs'          as TabId, icon: '📋', desc: `View console` },
                 { label: 'Scripts',   tab: 'verse_scripts' as TabId, icon: '📦', desc: `${fmt(stats?.verse_scripts)}` },
+                { label: 'Asset Access', tab: 'assets'   as TabId, icon: '📁', desc: `Configure access` },
                 { label: 'Config',   tab: 'config'        as TabId, icon: '⚙️', desc: 'Settings' },
               ].map(a => (
                 <button
@@ -2225,12 +2419,7 @@ if (tab === 'overview' || tab === 'editor' || tab === 'config' || tab === 'api')
           </div>
           {isLoading || !rows ? (
             <div className="py-16">
-              <div className="animate-pulse space-y-3 max-w-xl mx-auto">
-                <div className="h-4 bg-white/10 rounded w-40" />
-                <div className="h-10 bg-white/10 rounded" />
-                <div className="h-10 bg-white/10 rounded" />
-                <div className="h-10 bg-white/10 rounded" />
-              </div>
+              <CustomerListSkeleton />
             </div>
           ) : rows.length === 0 ? (
             <div className="text-center py-16 text-white/30">No customers yet</div>
@@ -2256,12 +2445,7 @@ if (tab === 'overview' || tab === 'editor' || tab === 'config' || tab === 'api')
           </div>
           {isLoading || !rows ? (
             <div className="py-16">
-              <div className="animate-pulse space-y-3">
-                <div className="h-4 bg-white/10 rounded w-56" />
-                <div className="h-4 bg-white/10 rounded w-48" />
-                <div className="h-4 bg-white/10 rounded w-40" />
-                <div className="h-40 bg-white/10 rounded" />
-              </div>
+              <LogsConsoleSkeleton />
             </div>
           ) : (
             <div className="bg-black border border-white/10 rounded-lg overflow-hidden font-mono text-sm">
@@ -2381,7 +2565,8 @@ if (tab === 'overview' || tab === 'editor' || tab === 'config' || tab === 'api')
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+                title={tab.isNew ? 'New tab' : undefined}
+                className={`group relative flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
                   activeTab === tab.id
                     ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                     : 'text-white/50 hover:text-white hover:bg-white/5'
@@ -2393,6 +2578,14 @@ if (tab === 'overview' || tab === 'editor' || tab === 'config' || tab === 'api')
                   <span className="px-1.5 py-0.5 rounded text-xs bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 leading-none">
                     Soon
                   </span>
+                )}
+                {tab.isNew && (
+                  <>
+                    <span className="pointer-events-none absolute left-2 top-2 h-1.5 w-1.5 rounded-full bg-red-500 border border-white/10" />
+                    <span className="pointer-events-none absolute left-2 top-2 -translate-y-full mt-1 -translate-x-1/2 opacity-0 transition-opacity duration-200 group-hover:opacity-100 text-[11px] px-2 py-1 rounded-md bg-black border border-white/10 text-white whitespace-nowrap">
+                      New tab
+                    </span>
+                  </>
                 )}
               </button>
             ))}

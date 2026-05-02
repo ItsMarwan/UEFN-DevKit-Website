@@ -93,6 +93,14 @@ export const DiscordAuthPopup = memo(function DiscordAuthPopup({ onClose, onProc
           </label>
         </div>
 
+        <div className="rounded-3xl border border-red-500/20 bg-red-500/10 p-4 mb-4 text-sm text-red-100">
+          {!consent?.essential ? (
+            <p>Please turn cookies on to continue with Discord login.</p>
+          ) : (
+            <p>Essential cookies are enabled. You can continue with Discord login.</p>
+          )}
+        </div>
+
         <div className="flex gap-3">
           <button
             onClick={handleClose}
@@ -102,7 +110,8 @@ export const DiscordAuthPopup = memo(function DiscordAuthPopup({ onClose, onProc
           </button>
           <button
             onClick={handleProceed}
-            className="flex-1 px-4 py-2 bg-[#5865F2] hover:bg-[#4752c4] text-white rounded-lg font-medium transition-colors"
+            disabled={!consent?.essential || !agreed}
+            className="flex-1 px-4 py-2 bg-[#5865F2] hover:bg-[#4752c4] text-white rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60"
           >
             Continue with Discord
           </button>

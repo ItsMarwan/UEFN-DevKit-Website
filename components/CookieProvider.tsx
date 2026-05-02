@@ -11,12 +11,14 @@ interface CookieContextType {
   consent: CookieConsent | null;
   setConsent: (consent: CookieConsent) => void;
   hasConsented: boolean;
+  loaded: boolean;
 }
 
 const CookieContext = createContext<CookieContextType>({
   consent: null,
   setConsent: () => {},
   hasConsented: false,
+  loaded: false,
 });
 
 export function useCookieConsent() {
@@ -25,6 +27,7 @@ export function useCookieConsent() {
 
 export function CookieProvider({ children }: { children: ReactNode }) {
   const [consent, setConsentState] = useState<CookieConsent | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('cookie-consent');
@@ -35,6 +38,7 @@ export function CookieProvider({ children }: { children: ReactNode }) {
         console.error('Failed to parse cookie consent:', e);
       }
     }
+    setLoaded(true);
   }, []);
 
   const setConsent = useCallback((newConsent: CookieConsent) => {
@@ -45,8 +49,8 @@ export function CookieProvider({ children }: { children: ReactNode }) {
   // Memoize the context value so consumers only re-render when consent actually changes,
   // not on every parent render. This is the key fix for cascade re-render lag.
   const value = useMemo<CookieContextType>(
-    () => ({ consent, setConsent, hasConsented: consent !== null }),
-    [consent, setConsent]
+    () => ({ consent, setConsent, hasConsented: consent !== null, loaded }),
+    [consent, setConsent, loaded]
   );
 
   return (

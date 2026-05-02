@@ -9,7 +9,7 @@ const ENTERPRISE_API_TOKEN = process.env.ENTERPRISE_API_TOKEN;
 const ENTERPRISE_ORIGIN = process.env.ENTERPRISE_API_ORIGIN ?? process.env.NEXT_PUBLIC_APP_URL ?? '';
 const DISCORD_API = 'https://discord.com/api/v10';
 
-const EDITABLE_FIELDS: Record<string, { type: 'boolean' | 'string' | 'array' }> = {
+const EDITABLE_FIELDS: Record<string, { type: 'boolean' | 'string' | 'array' | 'number' }> = {
   log_channel_id:           { type: 'string' },
   default_customer_role_id: { type: 'string' },
   encryption_enabled:       { type: 'boolean' },
@@ -19,6 +19,12 @@ const EDITABLE_FIELDS: Record<string, { type: 'boolean' | 'string' | 'array' }> 
   api_token:                { type: 'string' },
   api_token_created_at:     { type: 'string' },
   api_whitelisted_domains:  { type: 'array' },
+  asset_channel_id:         { type: 'string' },
+  info_channel_id:          { type: 'string' },
+  required_role_id:         { type: 'string' },
+  required_hours:           { type: 'number' },
+  cooldown_hours:           { type: 'number' },
+  enabled:                  { type: 'boolean' },
 };
 
 const IMMUTABLE_FIELDS = new Set([
@@ -37,10 +43,16 @@ function validateField(key: string, value: unknown): { ok: boolean; error?: stri
   if (schema.type === 'boolean') {
     if (typeof value !== 'boolean')
       return { ok: false, error: `Field '${key}' must be a boolean, got ${typeof value}` };
+  } else if (schema.type === 'number') {
+    if (typeof value !== 'number' || Number.isNaN(value) || !Number.isFinite(value) || !Number.isInteger(value))
+      return { ok: false, error: `Field '${key}' must be an integer number` };
   } else if (schema.type === 'string') {
     if (typeof value !== 'string')
       return { ok: false, error: `Field '${key}' must be a string, got ${typeof value}` };
-    if ((key === 'log_channel_id' || key === 'default_customer_role_id') && value !== '') {
+    if (
+      (key === 'log_channel_id' || key === 'default_customer_role_id' || key === 'asset_channel_id' || key === 'info_channel_id' || key === 'required_role_id')
+      && value !== ''
+    ) {
       if (!/^\d+$/.test(value))
         return { ok: false, error: `Field '${key}' must be a Discord snowflake ID` };
     }

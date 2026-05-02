@@ -85,7 +85,17 @@ export async function GET(req: NextRequest) {
       console.error('Background upsert error (non-fatal):', e);
     }
 
-    const response = NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard`);
+    const redirectState = searchParams.get('state') || '';
+    const safeNext = (() => {
+      try {
+        const decoded = Buffer.from(decodeURIComponent(redirectState), 'base64url').toString('utf-8');
+        return decoded.startsWith('/') ? decoded : '/dashboard';
+      } catch {
+        return '/dashboard';
+      }
+    })();
+
+    const response = NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}${safeNext}`);
     response.cookies.set('dashboard_session', cookiePayload, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

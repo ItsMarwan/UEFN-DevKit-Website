@@ -683,8 +683,8 @@ export default function AssetAccessTab({ guildId }: { guildId: string }) {
                       <p className="text-sm font-semibold text-white">Hosted file upload</p>
                       <p className="mt-2 text-xs text-white/40">
                         {fileUploadAllowed
-                          ? 'Premium and enterprise servers can upload hosted files directly.'
-                          : 'File uploads require a premium or enterprise server tier.'}
+                          ? 'Premium servers can upload hosted files up to 20MB, enterprise servers up to 50MB.'
+                          : 'File uploads require a premium or enterprise server tier. Premium is limited to 20MB, enterprise to 50MB.'}
                       </p>
                     </div>
 

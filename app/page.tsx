@@ -7,16 +7,41 @@ import { useSearchParams } from 'next/navigation';
 import { useLegal } from '@/components/LegalProvider';
 import teamConfig from '@/lib/team.json';
 
-// Static Stats Display Component
+// Animated Stats Display Component
 function StatsDisplay() {
-  const userCount = process.env.NEXT_PUBLIC_USER_COUNT || '10000';
-  const formattedCount = `+${parseInt(userCount).toLocaleString()}`;
+  const userCount = Number(process.env.NEXT_PUBLIC_USER_COUNT) || 10000;
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const duration = 1800;
+    const intervalMs = 20;
+    const totalSteps = Math.ceil(duration / intervalMs);
+    let currentStep = 0;
+
+    const easeOutQuad = (t: number) => 1 - (1 - t) * (1 - t);
+
+    const intervalId = window.setInterval(() => {
+      currentStep += 1;
+      const progress = Math.min(currentStep / totalSteps, 1);
+      const currentValue = Math.round(userCount * easeOutQuad(progress));
+      setCount(currentValue);
+
+      if (progress >= 1) {
+        window.clearInterval(intervalId);
+      }
+    }, intervalMs);
+
+    return () => window.clearInterval(intervalId);
+  }, [userCount]);
 
   return (
     <div className="text-center py-8">
       <p className="text-lg text-white/80 mb-2">Trusted by</p>
-      <p className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">
-        {formattedCount}
+      <p className="text-4xl md:text-6xl font-bold mb-2">
+        <span className="text-white">+</span>
+        <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+          {count.toLocaleString()}
+        </span>
       </p>
       <p className="text-lg text-white/80">users worldwide</p>
     </div>
@@ -150,17 +175,20 @@ export default function Home() {
             {/* Left – copy */}
             <div className="animate-slideInLeft">
               <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent animate-fadeIn">
-                UEFN Discord Bot for Island Builders
+                UEFN DevKit
+                <div className="text-white/40 text-xl md:text-2xl font-normal mt-2">
+                  The Dashboard for UEFN Creators
+                </div>
               </h1>
               <p className="text-xl text-white/70 mb-8">
-                Streamline your Fortnite island development with powerful tools for customer management, session handling, island analytics, and more. All within Discord.
+                Manage customers, automate sessions, track island analytics, and host assets. all from your Discord server.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <a
                   href="/invite"
                   className="inline-block px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-blue-500/50 transition-all transform hover:scale-105"
                 >
-                  Invite Bot to Discord
+                  Get Started for Free
                 </a>
                 <Link
                   href="/commands"
@@ -201,16 +229,40 @@ export default function Home() {
       <section className="py-20 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-            Packed with Powerful Features
+            Everything You Need to Run Your UEFN Business
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: '👥', title: 'Customer Management', description: 'Track customers, manage roles, and bulk import members with ease.' },
-              { icon: '📦', title: 'Development Tools', description: 'Verse script uploads and management for island developers.' },
-              { icon: '🏝️', title: 'Island Analytics', description: 'Live Fortnite island stats, tracking, and performance monitoring.' },
-              { icon: '🤝', title: 'Session System', description: 'Automated session channels for secure service delivery.' },
-              { icon: '🏪', title: 'Seller Profiles', description: 'Public directory, ratings, and professional seller management.' },
-              { icon: '🎮', title: 'Fortnite Integration', description: 'Tracker support, map code validation, and UEFN utilities.' },
+              {
+                icon: '👥',
+                title: 'Client Management',
+                description: 'Track customers, manage access, and organize your community without spreadsheets.'
+              },
+              {
+                icon: '🤝',
+                title: 'Session Automation',
+                description: 'Automatically create and manage private sessions for secure service delivery.'
+              },
+              {
+                icon: '🏝️',
+                title: 'Island Tracking',
+                description: 'Monitor performance, stats, and growth of your Fortnite islands in real time.'
+              },
+              {
+                icon: '📦',
+                title: 'Assets & Verse Scripts',
+                description: 'Upload, manage, and share scripts or assets with controlled access.'
+              },
+              {
+                icon: '⚙️',
+                title: 'Discord-Native',
+                description: 'Everything runs inside Discord. no complex setup, no extra tools.'
+              },
+              {
+                icon: '🔒',
+                title: 'Secure & Private',
+                description: 'Your data is protected with industry-standard security measures and privacy controls.'
+              }
             ].map((feature, idx) => (
               <div key={idx} className="feature-card p-8 rounded-xl border border-white/10 bg-black/50 hover:border-blue-500/50 transition-all hover:shadow-lg hover:shadow-blue-500/10 animate-scaleIn">
                 <div className="text-4xl mb-4">{feature.icon}</div>
@@ -227,27 +279,49 @@ export default function Home() {
 
       {/* Why UEFN DevKit Section */}
       <section className="py-20 bg-black/50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold mb-8 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          <h2 className="text-4xl font-bold mb-10 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
             Why Choose UEFN DevKit?
           </h2>
-          <div className="space-y-6 text-white/80 text-lg leading-relaxed">
-            <p>
-              UEFN DevKit is the ultimate solution for Fortnite island builders and community managers. Whether you&apos;re running a small creative community or managing a large-scale operation, UEFN DevKit provides the tools you need to streamline workflow, engage customers, and scale your services efficiently. Our Discord bot integrates seamlessly into your existing Discord server, enabling powerful automation without complex setup.
-            </p>
-            <p>
-              The customer management system allows you to organize and track community members with ease. Bulk import features, role management, and customer profiles keep your community organized and accessible. The session system creates dedicated channels for service delivery, ensuring privacy and professionalism when working with clients.
-            </p>
-            <p>
-              For creative developers, UEFN DevKit offers Verse script uploads and version tracking directly in Discord. Island analytics provide real-time insights into your Fortnite creation's performance and player engagement metrics.
-            </p>
-            <p>
-              The seller profile directory helps service providers build credibility and reputation within the Fortnite creative community. Track your professional reputation and manage your services efficiently.
-            </p>
-            <p>
-              Available in both free and premium tiers, UEFN DevKit scales with your needs. Start free with core features, or upgrade to premium for advanced capabilities including higher file upload limits, additional tracker slots, and priority support.
-            </p>
+
+          <div className="grid md:grid-cols-2 gap-6 text-white/80 text-base md:text-lg">
+
+            <div className="p-6 rounded-xl border border-white/10 bg-black/40 hover:border-blue-500/40 transition">
+              <h3 className="text-white font-semibold mb-2">🎛️ All-in-One Dashboard</h3>
+              <p>
+                Manage your UEFN workflow in one place. clients, islands, sessions, and assets without switching tools.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl border border-white/10 bg-black/40 hover:border-blue-500/40 transition">
+              <h3 className="text-white font-semibold mb-2">👥 Client & Session System</h3>
+              <p>
+                Organize members, handle private sessions, and deliver services in a clean structured flow inside Discord + dashboard.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl border border-white/10 bg-black/40 hover:border-blue-500/40 transition">
+              <h3 className="text-white font-semibold mb-2">📦 Verse & Asset Tools</h3>
+              <p>
+                Upload and manage Verse scripts, assets, and versions directly from your dashboard for faster development.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl border border-white/10 bg-black/40 hover:border-blue-500/40 transition">
+              <h3 className="text-white font-semibold mb-2">🏝️ Island Analytics</h3>
+              <p>
+                Track performance, engagement, and activity from your Fortnite islands with real-time insights.
+              </p>
+            </div>
+
           </div>
+
+          {/* Bottom line */}
+          <div className="mt-10 text-center text-white/60 text-base">
+            Whether you're building solo or running a team, UEFN DevKit scales with your workflow.
+          </div>
+
         </div>
       </section>
 
@@ -262,9 +336,9 @@ export default function Home() {
           </p>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: 'Free', price: 'FREE', description: 'Perfect for small communities', features: ['99% of total commands', '256KB Verse File upload limit', '1 Max fortnite tracker', 'Community support', '1000 customers max'] },
-              { name: 'Premium', price: '€9.99', period: '/month', description: 'For growing communities', highlight: true, features: ['5000 customers', '10 Max fortnite trackers', 'Higher Fortnite map pulling rate', '512KB Verse File upload limit', 'Priority support', 'All features'] },
-              { name: 'Enterprise', price: 'Custom', description: 'For large-scale operations', features: ['Unlimited everything', '30 Max fortnite trackers', 'Highest Fortnite map pulling rate', 'Dedicated support', 'Custom integrations', 'API access', 'SLA guarantee'] },
+              { name: 'Free', price: 'FREE', description: 'Perfect for small communities', href: '/invite', cta: 'Invite the Bot', features: ['Core Discord command set', 'Customer and member tracking', 'External asset links', 'Community support', 'Basic island analytics'] },
+              { name: 'Premium', price: '€9.99', period: '/month', description: 'For growing communities', highlight: true, href: '/premium', cta: 'See Premium Details', features: ['Premium asset hosting uploads (20MB)', 'Island Lookup & Discovery Prediction', 'Patreon integration + role sync', 'Premium API access for customers & reports', 'Priority support'] },
+              { name: 'Enterprise', price: 'Custom', description: 'For large-scale operations', href: '/contact?subject=Enterprise+Quote+Request&message=Hello%2C%0AI+need+an+enterprise+quote.%0A%0APlease+provide+pricing+and+next+steps.', cta: 'Contact Sales', features: ['Everything in Premium', 'Custom API access & integrations', 'Higher hosted upload quotas', 'Dedicated support', 'SLA-grade reliability'] },
             ].map((tier, idx) => (
               <div key={idx} className={`rounded-xl transition-all feature-card ${tier.highlight ? 'border-2 border-blue-500 scale-105 shadow-xl shadow-blue-500/20 bg-black/50' : 'border border-white/10 bg-black/30'}`}>
                 <div className="p-8">
@@ -275,9 +349,12 @@ export default function Home() {
                     <span className="text-4xl font-bold text-white">{tier.price}</span>
                     {tier.period && <span className="text-white/60 ml-2">{tier.period}</span>}
                   </div>
-                  <button className={`w-full py-3 rounded-lg font-bold transition-all mb-8 ${tier.highlight ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:shadow-lg hover:shadow-blue-500/50' : 'border-2 border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white'}`}>
-                    Get Started
-                  </button>
+                  <Link
+                    href={tier.href}
+                    className={`w-full inline-flex justify-center py-3 rounded-lg font-bold transition-all mb-8 ${tier.highlight ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:shadow-lg hover:shadow-blue-500/50' : 'border-2 border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white'}`}
+                  >
+                    {tier.cta}
+                  </Link>
                   <ul className="space-y-3">
                     {tier.features.map((f, fi) => (
                       <li key={fi} className="flex items-center text-white/70">

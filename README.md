@@ -121,6 +121,17 @@ See [SECURITY.md](SECURITY.md) for:
 
 ---
 
+## 🇪🇺 GDPR Compliance
+
+This site is built to support GDPR-safe public deployment:
+- Explicit cookie consent for analytics
+- Essential cookies only used for authentication and sessions
+- Clear opt-out for analytics and tracking scripts
+- Privacy Policy with data access, correction, deletion, and portability rights
+- No sale or trade of personal data 
+
+---
+
 ## 📄 License
 
 This project is licensed under the **VCL License** — see the [LICENSE](LICENSE) file for details.

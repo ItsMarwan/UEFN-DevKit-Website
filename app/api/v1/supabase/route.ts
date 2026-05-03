@@ -1,19 +1,3 @@
-// app/api/v1/supabase/route.ts
-/**
- * Supabase Management Endpoint
- * POST /api/v1/supabase
- *
- * All database operations go through here server-side.
- * Requires Authorization: Bearer <SUPABASE_API_TOKEN> (env var, never exposed to client).
- * The client (browser) never calls this directly — only internal server routes do.
- *
- * Supported operations:
- *   - upsert_user
- *   - get_user
- *   - get_user_stats
- *   - get_user_guilds
- */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 

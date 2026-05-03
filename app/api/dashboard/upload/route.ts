@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
   }
 
-  const maxSize = tier === 'enterprise' ? 200 * 1024 * 1024 : 50 * 1024 * 1024;
+  const maxSize = tier === 'enterprise' ? 50 * 1024 * 1024 : 20 * 1024 * 1024;
   if (file.size > maxSize) {
     return NextResponse.json({ error: `Upload exceeds ${Math.round(maxSize / 1024 / 1024)}MB limit` }, { status: 413 });
   }

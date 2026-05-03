@@ -31,6 +31,26 @@ export default function DocsPage() {
           <p className="text-xl text-white/70">
             In-depth guides for every command with examples and tips
           </p>
+          <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-6">
+            <h2 className="text-2xl font-semibold text-white mb-2">Feature Reference</h2>
+            <p className="text-white/70 mb-4">
+              Explore the full UEFN DevKit feature reference for commands, API endpoints, dashboard capabilities, and premium-only tools.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href="/docs/overview"
+                className="inline-flex items-center justify-center rounded-full border border-blue-500 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200 hover:bg-blue-500/15 transition"
+              >
+                View Full Feature Overview
+              </a>
+              <a
+                href="/docs/api"
+                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/70 hover:bg-white/10 transition"
+              >
+                Browse API Documentation
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 

@@ -2,9 +2,6 @@
 
 import Link from 'next/link';
 
-// about the premuim thingy, i made premuim only for server hosting and storage. they cost money to maintain and keep. i wont make a command premuim but limit its useage but
-// ill keep it usable by normal ppl. if you have a big ass server then buy premuim. ;)
-
 export default function PremiumPage() {
   return (
     <div className="bg-black text-white min-h-screen">
@@ -48,22 +45,22 @@ export default function PremiumPage() {
                 <li className="flex items-start">
                   <span className="text-blue-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">Customer Management</p>
-                    <p className="text-xs text-white/50">Up to 1000 customers</p>
+                    <p className="font-semibold text-white">Core community tools</p>
+                    <p className="text-xs text-white/50">Customer, member and island tracking</p>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">Moderation Tools</p>
-                    <p className="text-xs text-white/50">Basic admin commands</p>
+                    <p className="font-semibold text-white">External asset links</p>
+                    <p className="text-xs text-white/50">Publish public asset access pages</p>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-blue-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">Community Support</p>
-                    <p className="text-xs text-white/50">Discord support</p>
+                    <p className="font-semibold text-white">Community support</p>
+                    <p className="text-xs text-white/50">Help and setup guidance in Discord</p>
                   </div>
                 </li>
               </ul>
@@ -80,49 +77,54 @@ export default function PremiumPage() {
               <h2 className="text-2xl md:text-3xl font-bold mb-2 text-blue-400">Premium</h2>
               <p className="text-white/60 text-xs md:text-sm mb-6">For growing communities</p>
               <div className="mb-8">
-                <span className="text-4xl md:text-5xl font-bold text-white">€5.99</span>
+                <span className="text-4xl md:text-5xl font-bold text-white">€9.99</span>
                 <span className="text-white/60 ml-2">/month</span>
               </div>
 
-              <button disabled className="w-full inline-flex justify-center py-3 rounded-lg font-bold bg-gradient-to-r from-blue-500/50 to-cyan-500/50 text-white/50 cursor-not-allowed mb-8">
-                Payment System Disabled
-              </button>
+              <Link
+                href="/discord"
+                className="w-full inline-flex justify-center py-3 rounded-lg font-bold bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:shadow-lg hover:shadow-blue-500/50 mb-8 transition-all"
+              >
+                Join Discord to Subscribe
+              </Link>
+
+              <p className="text-white/70 text-sm mb-6">
+                Premium access is currently managed through our Discord community. Join the server to activate your subscription, manage your plan, and get priority support.
+              </p>
 
               <ul className="space-y-4">
                 <li className="flex items-start">
                   <span className="text-cyan-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">5000 customers</p>
+                    <p className="font-semibold text-white">Premium asset host uploads</p>
+                    <p className="text-xs text-white/50">Upload hosted files directly in the dashboard</p>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-cyan-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">10 Max fortnite trackers</p>
+                    <p className="font-semibold text-white">Island Lookup & Discovery Prediction</p>
+                    <p className="text-xs text-white/50">Premium analytics for Fortnite islands</p>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-cyan-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">Higher Fortnite map pulling rate</p>
+                    <p className="font-semibold text-white">Patreon sync & premium role management</p>
+                    <p className="text-xs text-white/50">Automatic member tier and role assignments</p>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-cyan-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">512KB Verse File upload limit</p>
+                    <p className="font-semibold text-white">Premium API access</p>
+                    <p className="text-xs text-white/50">Customers, reports, coupons and island tools</p>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-cyan-400 mr-3 mt-1">✓</span>
                   <div>
                     <p className="font-semibold text-white">Priority support</p>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-cyan-400 mr-3 mt-1">✓</span>
-                  <div>
-                    <p className="font-semibold text-white">All features</p>
                   </div>
                 </li>
               </ul>
@@ -145,29 +147,29 @@ export default function PremiumPage() {
                 <li className="flex items-start">
                   <span className="text-purple-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">Everything Premium</p>
-                    <p className="text-xs text-white/50">All features included</p>
+                    <p className="font-semibold text-white">Everything in Premium</p>
+                    <p className="text-xs text-white/50">Full access to premium features</p>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-purple-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">API Access</p>
-                    <p className="text-xs text-white/50">Custom integrations</p>
+                    <p className="font-semibold text-white">Custom API access</p>
+                    <p className="text-xs text-white/50">Enterprise endpoint and integration support</p>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-purple-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">Custom Features</p>
-                    <p className="text-xs text-white/50">Tailored solutions</p>
+                    <p className="font-semibold text-white">Higher hosted upload quota</p>
+                    <p className="text-xs text-white/50">Larger asset uploads for enterprise servers</p>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <span className="text-purple-400 mr-3 mt-1">✓</span>
                   <div>
-                    <p className="font-semibold text-white">99.9% Uptime SLA</p>
-                    <p className="text-xs text-white/50">Guaranteed reliability</p>
+                    <p className="font-semibold text-white">Dedicated enterprise support</p>
+                    <p className="text-xs text-white/50">Priority setup and service assistance</p>
                   </div>
                 </li>
               </ul>
@@ -185,11 +187,11 @@ export default function PremiumPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { title: '👥 5000 Customers', desc: 'Manage as many customers as you need without limits' },
-              { title: '⚡ Priority Support', desc: 'Get help instantly with our priority support team' },
-              { title: '📦 512KB Verse File upload', desc: 'Upload larger Verse files for your maps and assets' },
-              { title: '📈 Higher Map Pulling Rate', desc: 'Faster map pulling for Fortnite tracking' },
-              { title: '🏝️ 10 Max Fortnite Trackers', desc: 'Track more Fortnite maps simultaneously with higher limits' },
+              { title: '☁️ 20MB Hosted File Uploads', desc: 'Upload asset files directly in the dashboard (Premium only)' },
+              { title: '🔍 Premium Island Tools', desc: 'Island lookup, discovery prediction, and analytics' },
+              { title: '🤝 Patreon Integration', desc: 'Automatic tier sync and premium role management' },
+              { title: '🔐 Premium API Access', desc: 'Customers, reports, coupons, and island tools' },
+              { title: '⚡ Priority Support', desc: 'Faster help and dedicated premium assistance' },
             ].map((feature, idx) => (
               <div
                 key={idx}
@@ -241,8 +243,8 @@ export default function PremiumPage() {
                 a: 'Yes! We offer a 30-day free trial when doing giveaways. No credit card required. Experience all Premium features risk-free!',
               },
               {
-                q: 'Is there any way i can get premuim for free?',
-                a: 'Yes! We often run giveaways on our Discord server where you can win free Premium subscriptions. Join our community for a chance to win and stay updated on the latest news and offers, We also have a section in the site INSERT HYPERLINK HERE where you can make a post/video about uefn helper to earn free premuim.',
+                q: 'Is there any way I can get Premium for free?',
+                a: 'Yes! We often run giveaways on our Discord server where you can win free Premium subscriptions. Join our community for a chance to win and stay updated on the latest news and offers.',
               },
               {
                 q: 'What happens if I downgrade?',
@@ -258,7 +260,7 @@ export default function PremiumPage() {
               },
               {
                 q: 'How do I contact support?',
-                a: 'Premium members get priority support via ticket from our Discord server. while free users can get help in our community channels. We also have a docs section with guides about how to use the bot and its features. If you have any questions or need assistance, feel free to reach out to our support team!',
+                a: 'Premium members get priority support via ticket from our Discord server, while free users can get help in community channels. We also have a docs section with guides about how to use the bot and its features. If you have any questions or need assistance, feel free to reach out to our support team.',
               },
             ].map((faq, idx) => (
               <details

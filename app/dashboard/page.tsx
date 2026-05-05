@@ -52,6 +52,10 @@ export default function DashboardPage() {
           setGuilds([]);
           setLoadState('ready');
           showToast('error', 'Session Failed', errorMsg);
+          // If it's a 403 (permission denied), likely due to missing email
+          if (res.status === 403) {
+            showToast('info', 'Email Required', 'Please re-authenticate with a verified email address.');
+          }
           router.replace('/api/login?next=/dashboard');
           return;
         }

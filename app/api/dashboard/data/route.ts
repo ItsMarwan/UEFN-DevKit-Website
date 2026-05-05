@@ -2,6 +2,7 @@
 // Fetches endpoint data for the dashboard tabs. Session-cookie authenticated only.
 // GitHub readers cannot call this — no valid session = 401.
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWebsiteOnlyRequest } from '@/lib/website-only';
 import * as crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
@@ -83,6 +84,9 @@ function extractAssetConfig(raw: Record<string, unknown> | null | undefined) {
 }
 
 export async function GET(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   try {
     // Auth: httpOnly session cookie — cannot be faked from browser JS or GitHub readers
     const raw = req.cookies.get('dashboard_session')?.value;

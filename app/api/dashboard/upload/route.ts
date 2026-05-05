@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWebsiteOnlyRequest } from '@/lib/website-only';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
@@ -62,6 +63,9 @@ function createSupabaseAdmin() {
 }
 
 export async function POST(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   const guildId = new URL(req.url).searchParams.get('guildId');
   if (!guildId) {
     return NextResponse.json({ error: 'Missing guildId' }, { status: 400 });

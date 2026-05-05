@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWebsiteOnlyRequest } from '@/lib/website-only';
 
 export const dynamic = 'force-dynamic';
 const DISCORD_API = 'https://discord.com/api/v10';
 
 function getSessionToken(req: NextRequest): string | null {
-  const raw = req.cookies.get('dashboard_session')?.value;
+  // Try asset_session first (no email required), then fall back to dashboard_session
+  const raw = req.cookies.get('asset_session')?.value || req.cookies.get('dashboard_session')?.value;
   if (!raw) return null;
   try {
     const session = JSON.parse(raw) as { access_token: string; expires_at: number };
@@ -54,6 +56,9 @@ interface AssetCheckResult {
 }
 
 export async function POST(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   const sessionToken = getSessionToken(req);
   if (!sessionToken) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });

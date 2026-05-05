@@ -1,9 +1,13 @@
 // app/api/me/authenticated-servers/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWebsiteOnlyRequest } from '@/lib/website-only';
 
 const FLASK_API_URL = process.env.FLASK_API_URL || 'http://localhost:5000';
 
 export async function POST(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   try {
     const body = await req.json();
     const { discord_user_id } = body;

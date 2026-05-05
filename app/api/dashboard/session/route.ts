@@ -1,6 +1,7 @@
 // app/api/dashboard/session/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { isBotInGuild, fetchBotGuildIds } from '@/lib/discord-bot-guilds';
+import { requireWebsiteOnlyRequest } from '@/lib/website-only';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,8 +36,12 @@ interface TaggedGuild extends Guild {
 }
 
 export async function GET(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   try {
-    const raw = req.cookies.get('dashboard_session')?.value;
+    // Check for either dashboard_session (with email) or asset_session (without email)
+    const raw = req.cookies.get('dashboard_session')?.value || req.cookies.get('asset_session')?.value;
     if (!raw) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
     let session: { access_token: string; expires_at: number };
@@ -67,6 +72,14 @@ export async function GET(req: NextRequest) {
     }
 
     const user = await userRes.json();
+
+    // Check if user has a verified email - required for dashboard access
+    if (!user.email || !user.verified) {
+      return NextResponse.json(
+        { error: 'You must have a verified email address to access the dashboard. Please re-authenticate and ensure your Discord email is verified.' },
+        { status: 403 }
+      );
+    }
 
     if (isLightweight) {
       // Return only user info for lightweight requests

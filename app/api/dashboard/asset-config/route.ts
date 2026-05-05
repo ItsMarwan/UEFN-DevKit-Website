@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWebsiteOnlyRequest } from '@/lib/website-only';
 import * as crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
@@ -121,6 +122,9 @@ async function flaskPatchConfig(guildId: string, fields: Record<string, unknown>
 }
 
 export async function GET(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   const accessToken = getSessionToken(req);
   if (!accessToken) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   const guildId = new URL(req.url).searchParams.get('guildId');
@@ -134,6 +138,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   const accessToken = getSessionToken(req);
   if (!accessToken) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   const guildId = new URL(req.url).searchParams.get('guildId');

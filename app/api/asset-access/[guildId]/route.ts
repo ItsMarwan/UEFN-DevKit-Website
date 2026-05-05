@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPublicDiscoverableAssets } from '@/lib/asset-access';
+import { requireWebsiteOnlyRequest } from '@/lib/website-only';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,6 +8,9 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ guildId: string }> }
 ) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   const { guildId } = await params;
 
   if (!guildId) {

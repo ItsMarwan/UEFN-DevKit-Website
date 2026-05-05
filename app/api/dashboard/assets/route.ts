@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWebsiteOnlyRequest } from '@/lib/website-only';
 import { createClient } from '@supabase/supabase-js';
 import * as crypto from 'crypto';
 import path from 'path';
@@ -203,6 +204,9 @@ async function flaskDeleteAsset(guildId: string, assetId: string) {
 }
 
 export async function GET(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   const url = new URL(req.url);
   const guildId = url.searchParams.get('guildId');
   const assetId = url.searchParams.get('assetId');
@@ -246,6 +250,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   const accessToken = getSessionToken(req);
   if (!accessToken) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   
@@ -280,6 +287,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   const accessToken = getSessionToken(req);
   if (!accessToken) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   
@@ -309,6 +319,9 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   const accessToken = getSessionToken(req);
   if (!accessToken) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 

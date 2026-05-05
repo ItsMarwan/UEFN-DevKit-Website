@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWebsiteOnlyRequest } from '@/lib/website-only';
 import * as crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
@@ -76,6 +77,9 @@ async function flaskSendInfoMessage(guildId: string, parameters: Record<string, 
 }
 
 export async function POST(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   const accessToken = getSessionToken(req);
   if (!accessToken) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   const body = await req.json();

@@ -279,7 +279,7 @@ export default function AssetAccessLinkClient({ guildId, assetId }: { guildId: s
       setShowCookiePopup(true);
       return;
     }
-    window.location.href = `/api/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+    window.location.href = `/api/asset-login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
   };
 
   const handleEnableCookies = () => {

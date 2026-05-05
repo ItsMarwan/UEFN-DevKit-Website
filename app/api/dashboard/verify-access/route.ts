@@ -3,12 +3,16 @@
 // Also verifies that the bot is in the guild.
 // Called before loading the guild dashboard to prevent URL-guessing attacks.
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWebsiteOnlyRequest } from '@/lib/website-only';
 import { isBotInGuild } from '@/lib/discord-bot-guilds';
 
 export const dynamic = 'force-dynamic';
 const DISCORD_API = 'https://discord.com/api/v10';
 
 export async function GET(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   const raw = req.cookies.get('dashboard_session')?.value;
   if (!raw) return NextResponse.json({ hasAccess: false, reason: 'not_authenticated' }, { status: 401 });
 

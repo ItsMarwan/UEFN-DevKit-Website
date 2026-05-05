@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWebsiteOnlyRequest } from '@/lib/website-only';
 import { fetchBotGuildIds, isBotInGuild } from '@/lib/discord-bot-guilds';
 
 const DISCORD_API = 'https://discord.com/api/v10';
@@ -13,6 +14,9 @@ interface GuildPayload {
 }
 
 export async function GET(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   const raw = req.cookies.get('dashboard_session')?.value;
   if (!raw) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWebsiteOnlyRequest } from '@/lib/website-only';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +19,9 @@ function getSessionToken(req: NextRequest): string | null {
 }
 
 export async function POST(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   const sessionToken = getSessionToken(req);
   if (!sessionToken) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });

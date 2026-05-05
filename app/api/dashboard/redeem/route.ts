@@ -1,5 +1,6 @@
 // app/api/dashboard/redeem/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { requireWebsiteOnlyRequest } from '@/lib/website-only';
 import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
@@ -41,6 +42,9 @@ async function verifyGuildAccess(accessToken: string, guildId: string): Promise<
 }
 
 export async function POST(req: NextRequest) {
+  const forbiddenResponse = requireWebsiteOnlyRequest(req);
+  if (forbiddenResponse) return forbiddenResponse;
+
   const accessToken = getSessionToken(req);
   if (!accessToken) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 

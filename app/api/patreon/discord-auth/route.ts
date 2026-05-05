@@ -1,6 +1,16 @@
 // app/api/patreon/discord-auth/route.ts
 // Initiates Discord OAuth for the Patreon page (separate from dashboard OAuth)
 // Stores the return URL so we can redirect back after auth
+/*
+  © 2026 UEFN DevKit.
+
+  This file is part of the UEFN DevKit project and is intended
+  for use only within uefndevkit.rweb.site and its official services.
+
+  Unauthorized use, copying, modification, or redistribution
+  of this file or its contents is strictly prohibited.
+*/
+
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';

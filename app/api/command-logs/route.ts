@@ -5,6 +5,16 @@
  * Proxies to Flask backend at /api/v1/command-logs
  */
 
+/*
+  © 2026 UEFN DevKit.
+
+  This file is part of the UEFN DevKit project and is intended
+  for use only within uefndevkit.rweb.site and its official services.
+
+  Unauthorized use, copying, modification, or redistribution
+  of this file or its contents is strictly prohibited.
+*/
+
 import { NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';

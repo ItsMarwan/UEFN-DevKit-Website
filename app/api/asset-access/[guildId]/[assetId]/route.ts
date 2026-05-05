@@ -1,3 +1,12 @@
+/*
+  © 2026 UEFN DevKit.
+
+  This file is part of the UEFN DevKit project and is intended
+  for use only within uefndevkit.rweb.site and its official services.
+
+  Unauthorized use, copying, modification, or redistribution
+  of this file or its contents is strictly prohibited.
+*/
 import { NextRequest, NextResponse } from 'next/server';
 import { getPublicAssetMetadata } from '@/lib/asset-access';
 import { requireWebsiteOnlyRequest } from '@/lib/website-only';

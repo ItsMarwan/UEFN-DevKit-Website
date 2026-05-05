@@ -3,6 +3,15 @@
 // Uses the real Supabase table structure:
 //   patreon_configs     — guild_id, access_token, campaign_id, auto_sync
 //   patreon_tier_roles  — guild_id, tier_name, role_id
+/*
+  © 2026 UEFN DevKit.
+
+  This file is part of the UEFN DevKit project and is intended
+  for use only within uefndevkit.rweb.site and its official services.
+
+  Unauthorized use, copying, modification, or redistribution
+  of this file or its contents is strictly prohibited.
+*/
 //   patreon_item_roles  — guild_id, item_name, role_id
 import { NextRequest, NextResponse } from 'next/server';
 import { isBotInGuild } from '@/lib/discord-bot-guilds';

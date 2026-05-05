@@ -1,6 +1,16 @@
 // app/api/dashboard/data/route.ts
 // Fetches endpoint data for the dashboard tabs. Session-cookie authenticated only.
 // GitHub readers cannot call this — no valid session = 401.
+/*
+  © 2026 UEFN DevKit.
+
+  This file is part of the UEFN DevKit project and is intended
+  for use only within uefndevkit.rweb.site and its official services.
+
+  Unauthorized use, copying, modification, or redistribution
+  of this file or its contents is strictly prohibited.
+*/
+
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWebsiteOnlyRequest } from '@/lib/website-only';
 import * as crypto from 'crypto';

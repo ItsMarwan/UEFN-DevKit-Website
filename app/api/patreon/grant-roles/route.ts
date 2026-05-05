@@ -1,3 +1,13 @@
+/*
+  © 2026 UEFN DevKit.
+
+  This file is part of the UEFN DevKit project and is intended
+  for use only within uefndevkit.rweb.site and its official services.
+
+  Unauthorized use, copying, modification, or redistribution
+  of this file or its contents is strictly prohibited.
+*/
+
 // app/api/patreon/grant-roles/route.ts
 // Verifies the logged-in Discord user's Patreon membership via Flask server
 // and grants the corresponding Discord role(s) using the bot token.
@@ -7,6 +17,16 @@
 // - Compares emails internally on the server
 // - Grants roles if membership is found
 // - Returns results without exposing Patreon data to client
+
+/*
+  © 2026 UEFN DevKit.
+
+  This file is part of the UEFN DevKit project and is intended
+  for use only within uefndevkit.rweb.site and its official services.
+
+  Unauthorized use, copying, modification, or redistribution
+  of this file or its contents is strictly prohibited.
+*/
 
 import { NextRequest, NextResponse } from 'next/server';
 

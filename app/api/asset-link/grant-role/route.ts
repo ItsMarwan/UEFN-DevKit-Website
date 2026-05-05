@@ -5,6 +5,11 @@ export const dynamic = 'force-dynamic';
 
 const DISCORD_API = 'https://discord.com/api/v10';
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
+const DISCORD_ID_RE = /^\d{17,20}$/;
+
+function isValidDiscordId(id: unknown): id is string {
+  return typeof id === 'string' && DISCORD_ID_RE.test(id);
+}
 
 function getSessionToken(req: NextRequest): string | null {
   const raw = req.cookies.get('dashboard_session')?.value;
@@ -39,8 +44,8 @@ export async function POST(req: NextRequest) {
   }
 
   const { guildId, assetId, roleId } = body;
-  if (!guildId || !roleId) {
-    return NextResponse.json({ error: 'Missing guildId or roleId' }, { status: 400 });
+  if (!guildId || !isValidDiscordId(guildId) || !roleId || !isValidDiscordId(roleId)) {
+    return NextResponse.json({ error: 'Missing or invalid guildId or roleId' }, { status: 400 });
   }
 
   try {
@@ -56,6 +61,14 @@ export async function POST(req: NextRequest) {
 
     const user = await userRes.json();
     const userId = user.id;
+
+    if (!isValidDiscordId(userId)) {
+      console.error('[asset-link/grant-role] Invalid userId returned from Discord');
+      return NextResponse.json(
+        { error: 'Internal server error' },
+        { status: 500 }
+      );
+    }
 
     // Check if user is a member of the guild and fetch their member info
     const memberRes = await fetch(`${DISCORD_API}/guilds/${guildId}/members/${userId}`, {

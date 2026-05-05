@@ -157,11 +157,11 @@ export async function authenticateRequest(req: NextRequest): Promise<
 
   const hasAuthHeader = !!(req.headers.get("Authorization"));
   if (hasAuthHeader) {
-    console.warn("[auth] API key check failed:", apiKeyError);
+    console.warn("[auth] API key check failed");
     return {
       ok: false,
       status: 401,
-      message: isDev ? `API key rejected: ${apiKeyError}` : "Unauthorized",
+      message: isDev ? "API key rejected" : "Unauthorized",
     };
   }
 

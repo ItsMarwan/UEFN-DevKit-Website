@@ -3,6 +3,11 @@ import { requireWebsiteOnlyRequest } from '@/lib/website-only';
 
 export const dynamic = 'force-dynamic';
 const DISCORD_API = 'https://discord.com/api/v10';
+const DISCORD_ID_RE = /^\d{17,20}$/;
+
+function isValidDiscordId(id: unknown): id is string {
+  return typeof id === 'string' && DISCORD_ID_RE.test(id);
+}
 
 function getSessionToken(req: NextRequest): string | null {
   // Try asset_session first (no email required), then fall back to dashboard_session
@@ -79,8 +84,8 @@ export async function POST(req: NextRequest) {
   }
 
   const { guildId } = body;
-  if (!guildId) {
-    return NextResponse.json({ error: 'Missing guildId' }, { status: 400 });
+  if (!guildId || !isValidDiscordId(guildId)) {
+    return NextResponse.json({ error: 'Missing or invalid guildId' }, { status: 400 });
   }
 
   // Normalise into a batch — supports both legacy single-asset and new multi-asset callers
@@ -108,6 +113,16 @@ export async function POST(req: NextRequest) {
 
     const user = await userRes.json();
     const userId = user.id;
+
+    if (!isValidDiscordId(userId)) {
+      console.error('[asset-link/check-eligibility] Invalid userId returned from Discord');
+      const noBot: AssetCheckResult[] = assets.map((a) => ({
+        assetId: a.id,
+        eligible: false,
+        reason: 'Unable to verify server membership at this time.',
+      }));
+      return NextResponse.json(isBatch ? { results: noBot } : noBot[0], { status: 200 });
+    }
 
     // Verify guild membership once
     const guilds = await fetchDiscordUserGuilds(sessionToken);

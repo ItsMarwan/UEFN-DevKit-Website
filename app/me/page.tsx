@@ -11,6 +11,7 @@ import { OfflineBanner } from '@/components/OfflineBanner';
 import MaskedEmail from '@/components/MaskedEmail';
 import { extractErrorMessage } from '@/lib/api-error';
 
+// Interfaces
 interface Guild {
   id: string;
   name: string;
@@ -48,9 +49,9 @@ export default function MePage() {
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [errorMsg, setErrorMsg] = useState('');
   const [activeTab, setActiveTab] = useState<Tab>('servers');
-  // Prevent double-fetch from React StrictMode double-invoking effects
   const fetched = useRef(false);
 
+  // Session fetch logic
   useEffect(() => {
     if (fetched.current) return;
     fetched.current = true;
@@ -79,7 +80,6 @@ export default function MePage() {
         setGuilds(data.guilds || []);
         setLoadState('ready');
 
-        // Fetch authenticated servers
         if (data.user?.id) {
           try {
             const authRes = await fetch('/api/me/authenticated-servers', {
@@ -93,7 +93,6 @@ export default function MePage() {
               setAuthenticatedServers(authData.servers || []);
             }
           } catch (error) {
-            // Fail silently for authenticated servers fetch
             console.debug('Failed to fetch authenticated servers');
           }
         }
@@ -108,6 +107,7 @@ export default function MePage() {
     fetchSession();
   }, [router, showToast]);
 
+  // UI Helper functions
   const getAvatarUrl = (u: User) =>
     u.avatar
       ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png`
@@ -122,48 +122,73 @@ export default function MePage() {
     return 'Member';
   };
 
-  const getRoleColor = (guild: Guild) => {
-    if (guild.owner) return 'text-green-400';
-    if (guild.hasPerms) return 'text-blue-400';
-    return 'text-yellow-400';
+  const getRoleBadgeClasses = (guild: Guild) => {
+    if (guild.owner) return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+    if (guild.hasPerms) return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+    return 'bg-neutral-800 text-neutral-400 border-neutral-700';
   };
 
+  // Loading skeleton
   if (loadState === 'loading') {
     return (
-      <div className="bg-black text-white min-h-screen flex items-center justify-center">
-        <div className="animate-pulse max-w-4xl w-full p-6 rounded-xl border border-white/10 bg-black/40">
-          <div className="h-6 rounded bg-white/10 w-48 mb-4" />
-          <div className="h-4 rounded bg-white/10 w-64 mb-6" />
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="h-28 w-28 rounded-full bg-white/10" />
-            <div className="flex-1 space-y-2">
-              <div className="h-5 rounded bg-white/10 w-40" />
-              <div className="h-4 rounded bg-white/10 w-56" />
-              <div className="h-4 rounded bg-white/10 w-52" />
-              <div className="h-4 rounded bg-white/10 w-28" />
+      <div className="min-h-screen text-white selection:bg-blue-500/30">
+        <div className="max-w-5xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-12">
+            <div className="flex items-center gap-6">
+              <div className="w-24 h-24 rounded-full bg-neutral-800/50 animate-pulse ring-1 ring-white/5" />
+              <div className="space-y-4">
+                <div className="h-8 w-56 bg-neutral-800/50 rounded-lg animate-pulse" />
+                <div className="h-4 w-40 bg-neutral-800/50 rounded-lg animate-pulse" />
+                <div className="h-4 w-48 bg-neutral-800/50 rounded-lg animate-pulse" />
+              </div>
             </div>
+            <div className="w-24 h-10 bg-neutral-800/50 rounded-xl animate-pulse" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-20 rounded-xl bg-white/10" />
+
+          <div className="flex gap-2 mb-8">
+            <div className="w-32 h-10 bg-neutral-800/50 rounded-lg animate-pulse" />
+            <div className="w-48 h-10 bg-neutral-800/50 rounded-lg animate-pulse" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="p-6 rounded-2xl border border-white/5 bg-neutral-900/20 h-40 flex flex-col justify-between">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-neutral-800/50 animate-pulse flex-shrink-0" />
+                  <div className="flex-1 space-y-3 pt-1">
+                    <div className="h-5 w-3/4 bg-neutral-800/50 rounded animate-pulse" />
+                    <div className="h-4 w-1/2 bg-neutral-800/50 rounded animate-pulse" />
+                  </div>
+                </div>
+                <div className="flex justify-between items-center mt-4 pt-4 border-t border-white/5">
+                  <div className="h-6 w-16 bg-neutral-800/50 rounded-full animate-pulse" />
+                  <div className="h-8 w-20 bg-neutral-800/50 rounded-lg animate-pulse" />
+                </div>
+              </div>
             ))}
           </div>
-          <p className="text-white/60 mt-4">Loading your profile...</p>
         </div>
       </div>
     );
   }
 
+  // Error state
   if (loadState === 'error') {
     return (
-      <div className="bg-black text-white min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-400 mb-4">{errorMsg}</p>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-neutral-900/50 border border-neutral-800 rounded-2xl p-8 text-center backdrop-blur-sm">
+          <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-white mb-2">Connection Error</h2>
+          <p className="text-neutral-400 mb-8">{errorMsg}</p>
           <a
             href="/api/login?next=/me"
-            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg font-semibold"
+            className="inline-flex items-center justify-center w-full px-4 py-3 bg-white text-black hover:bg-neutral-200 transition-colors rounded-xl font-medium"
           >
-            Login Again
+            Log in again
           </a>
         </div>
       </div>
@@ -175,212 +200,234 @@ export default function MePage() {
     getGuildIcon(server.guild_icon, server.guild_id);
 
   return (
-    <div className="bg-black text-white min-h-screen">
+    <div className="min-h-screen text-neutral-200 selection:bg-blue-500/30 font-sans">
       <OfflineBanner health={botHealth} />
 
-      {/* Header with User Info */}
-      <section className="py-10 border-b border-white/10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                My Profile
-              </h1>
-              <p className="text-white/60 mt-1">
-                Your Discord account and server access
-              </p>
-            </div>
-            <a
-              href="/api/dashboard/logout"
-              className="px-4 py-2 text-sm bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-white/70 hover:text-white"
-            >
-              Logout
-            </a>
-          </div>
-
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        
+        {/* Profile Header */}
+        <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
           {user && (
-            <div className="mt-8 p-6 rounded-xl border border-white/10 bg-black/40">
-              <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
+              <div className="relative">
                 <Image
                   src={getAvatarUrl(user)}
                   alt={user.username}
-                  width={80}
-                  height={80}
-                  className="w-20 h-20 rounded-full border-2 border-blue-500/50"
+                  width={96}
+                  height={96}
+                  className="w-24 h-24 rounded-full ring-4 ring-neutral-900 border border-neutral-800 object-cover bg-neutral-900"
                 />
-                <div>
-                  <h2 className="text-xl font-semibold text-white">{user.username}</h2>
-                  <p className="text-white/60 text-sm">Discord ID: {user.id}</p>
-                  {user.email && (
-                    <MaskedEmail email={user.email} className="text-white/40 text-sm" />
-                  )}
-                </div>
+                <div className="absolute bottom-0 right-0 w-6 h-6 bg-emerald-500 rounded-full border-4 border-[#0a0a0a]"></div>
+              </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+                  {user.username}
+                </h1>
+                <p className="text-sm text-neutral-500 mt-1 font-mono">
+                  ID: {user.id}
+                </p>
+                {user.email && (
+                  <div className="mt-2 text-sm text-neutral-400">
+                    <MaskedEmail email={user.email} />
+                  </div>
+                )}
               </div>
             </div>
           )}
+          <a
+            href="/api/dashboard/logout"
+            className="px-5 py-2.5 text-sm font-medium bg-neutral-900/50 border border-neutral-800 hover:border-neutral-700 hover:bg-neutral-800 rounded-xl transition-all text-neutral-300 hover:text-white flex-shrink-0"
+          >
+            Sign out
+          </a>
+        </section>
+
+        {/* Navigation Tabs */}
+        <div className="flex p-1.5 space-x-1 bg-neutral-900/40 border border-neutral-800 rounded-2xl w-fit mb-8 backdrop-blur-sm">
+          <button
+            onClick={() => setActiveTab('servers')}
+            className={`flex items-center px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${
+              activeTab === 'servers'
+                ? 'bg-neutral-800 text-white shadow-sm border border-neutral-700/50'
+                : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 border border-transparent'
+            }`}
+          >
+            Your Servers
+            <span className={`ml-2.5 px-2 py-0.5 rounded-full text-xs ${activeTab === 'servers' ? 'bg-neutral-700 text-neutral-100' : 'bg-neutral-800 text-neutral-400'}`}>
+              {guilds.length}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('authenticated')}
+            className={`flex items-center px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${
+              activeTab === 'authenticated'
+                ? 'bg-neutral-800 text-white shadow-sm border border-neutral-700/50'
+                : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 border border-transparent'
+            }`}
+          >
+            Authenticated
+            <span className={`ml-2.5 px-2 py-0.5 rounded-full text-xs ${activeTab === 'authenticated' ? 'bg-neutral-700 text-neutral-100' : 'bg-neutral-800 text-neutral-400'}`}>
+              {authenticatedServers.length}
+            </span>
+          </button>
         </div>
-      </section>
 
-      {/* Tabs */}
-      <section className="py-6 border-b border-white/10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex gap-4">
-            <button
-              onClick={() => setActiveTab('servers')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                activeTab === 'servers'
-                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
-                  : 'text-white/60 hover:text-white border border-transparent'
-              }`}
-            >
-              Your Servers ({guilds.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('authenticated')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                activeTab === 'authenticated'
-                  ? 'bg-green-500/20 text-green-400 border border-green-500/50'
-                  : 'text-white/60 hover:text-white border border-transparent'
-              }`}
-            >
-              Authenticated Servers ({authenticatedServers.length})
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Servers Tab */}
-      {activeTab === 'servers' && (
-        <section className="py-12">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-white mb-6">
-              Your Servers ({guilds.length})
-            </h2>
-
+        {/* Servers View */}
+        {activeTab === 'servers' && (
+          <section className="animate-in fade-in slide-in-from-bottom-2 duration-500">
             {guilds.length === 0 ? (
-              <div className="text-center py-20">
-                <div className="text-6xl mb-4">🏝️</div>
-                <h3 className="text-xl font-bold text-white mb-2">No servers found</h3>
-                <p className="text-white/60 mb-6">
-                  UEFN DevKit isn&apos;t in any of your servers yet.
+              <div className="flex flex-col items-center justify-center py-24 px-4 text-center border border-dashed border-neutral-800 rounded-3xl bg-neutral-900/20">
+                <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 ring-1 ring-blue-500/20">
+                  <svg className="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">No servers found</h3>
+                <p className="text-neutral-400 mb-8 max-w-md">
+                  It looks like the bot isn't present in any of your servers yet. Invite it to get started.
                 </p>
                 <a
                   href="/invite"
-                  className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg font-semibold text-white hover:shadow-lg hover:shadow-blue-500/30 transition-all"
+                  className="px-6 py-3 bg-white text-black hover:bg-neutral-200 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2"
                 >
-                  Invite UEFN DevKit
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Invite Bot
                 </a>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {guilds.map((guild) => (
                   <div
                     key={guild.id}
-                    className="p-5 rounded-xl border border-white/10 bg-black/40 hover:border-blue-500/30 transition-all"
+                    className="group relative p-5 rounded-2xl bg-neutral-900/30 border border-neutral-800 hover:border-neutral-700 hover:bg-neutral-900/60 transition-all duration-300 flex flex-col h-full"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-start gap-4">
                       {guildIcon(guild) ? (
                         <Image
                           src={guildIcon(guild)!}
                           alt={guild.name}
                           width={48}
                           height={48}
-                          className="w-12 h-12 rounded-xl flex-shrink-0"
+                          className="w-12 h-12 rounded-xl object-cover border border-neutral-800 flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-white font-bold text-lg">{guild.name.charAt(0)}</span>
+                        <div className="w-12 h-12 rounded-xl bg-neutral-800 border border-neutral-700 flex items-center justify-center flex-shrink-0">
+                          <span className="text-neutral-300 font-semibold text-lg uppercase">
+                            {guild.name.charAt(0)}
+                          </span>
                         </div>
                       )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-white truncate">{guild.name}</h3>
-                        <p className="text-sm text-white/60">Server ID: {guild.id}</p>
+                      <div className="flex-1 min-w-0 pt-0.5">
+                        <h3 className="font-medium text-neutral-100 truncate group-hover:text-white transition-colors">
+                          {guild.name}
+                        </h3>
+                        <p className="text-xs text-neutral-500 font-mono mt-1">
+                          {guild.id}
+                        </p>
                       </div>
-                      <div className="text-right">
-                        <span className={`text-sm font-medium ${getRoleColor(guild)}`}>
-                          {getRoleText(guild)}
-                        </span>
-                        {guild.hasPerms && (
-                          <div className="mt-1">
-                            <Link
-                              href={`/dashboard/${guild.id}`}
-                              className="text-xs px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors"
-                            >
-                              Manage
-                            </Link>
-                          </div>
-                        )}
-                      </div>
+                    </div>
+                    
+                    <div className="mt-auto pt-6 flex items-center justify-between">
+                      <span className={`text-xs px-2.5 py-1 rounded-full border ${getRoleBadgeClasses(guild)}`}>
+                        {getRoleText(guild)}
+                      </span>
+                      
+                      {guild.hasPerms && (
+                        <Link
+                          href={`/dashboard/${guild.id}`}
+                          className="text-sm px-4 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/5"
+                        >
+                          Manage
+                        </Link>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
-      {/* Authenticated Servers Tab */}
-      {activeTab === 'authenticated' && (
-        <section className="py-12">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-white mb-6">
-              Authenticated Servers ({authenticatedServers.length})
-            </h2>
-
+        {/* Authenticated Servers View */}
+        {activeTab === 'authenticated' && (
+          <section className="animate-in fade-in slide-in-from-bottom-2 duration-500">
             {authenticatedServers.length === 0 ? (
-              <div className="text-center py-20">
-                <div className="text-6xl mb-4">🔐</div>
-                <h3 className="text-xl font-bold text-white mb-2">No authenticated servers</h3>
-                <p className="text-white/60 mb-6">
-                  You haven&apos;t authenticated with any servers yet. Visit a server&apos;s Patreon verification page to get started.
+              <div className="flex flex-col items-center justify-center py-24 px-4 text-center border border-dashed border-neutral-800 rounded-3xl bg-neutral-900/20">
+                <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 ring-1 ring-emerald-500/20">
+                  <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">No authenticated servers</h3>
+                <p className="text-neutral-400 mb-2 max-w-md">
+                  You haven't authenticated with any servers yet. 
+                </p>
+                <p className="text-sm text-neutral-500">
+                  Visit a server's verification page to get started.
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {authenticatedServers.map((server) => (
                   <div
                     key={server.guild_id}
-                    className="p-5 rounded-xl border border-white/10 bg-black/40 hover:border-green-500/30 transition-all"
+                    className="p-5 rounded-2xl bg-neutral-900/30 border border-neutral-800 hover:border-emerald-500/30 transition-all duration-300"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-start gap-4">
                       {authServerIcon(server) ? (
                         <Image
                           src={authServerIcon(server)!}
                           alt={server.guild_name}
                           width={48}
                           height={48}
-                          className="w-12 h-12 rounded-xl flex-shrink-0"
+                          className="w-12 h-12 rounded-xl object-cover border border-neutral-800 flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-white/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-white font-bold text-lg">{server.guild_name.charAt(0)}</span>
+                        <div className="w-12 h-12 rounded-xl bg-neutral-800 border border-neutral-700 flex items-center justify-center flex-shrink-0">
+                          <span className="text-neutral-300 font-semibold text-lg uppercase">
+                            {server.guild_name.charAt(0)}
+                          </span>
                         </div>
                       )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-white truncate">{server.guild_name}</h3>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {server.role_names.map((role, idx) => (
-                            <span
-                              key={idx}
-                              className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded border border-green-500/30"
-                            >
-                              {role}
-                            </span>
-                          ))}
+                      
+                      <div className="flex-1 min-w-0 pt-0.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-medium text-neutral-100 truncate">
+                            {server.guild_name}
+                          </h3>
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-md text-xs font-medium flex-shrink-0">
+                            <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                            </svg>
+                            Verified
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <span className="text-sm font-medium text-green-400">✓ Verified</span>
+                        
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {server.role_names.length > 0 ? (
+                            server.role_names.map((role, idx) => (
+                              <span
+                                key={idx}
+                                className="text-xs px-2.5 py-1 bg-neutral-800/80 text-neutral-300 rounded-md border border-neutral-700"
+                              >
+                                {role}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-xs text-neutral-500 italic">No roles assigned</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </div>
-        </section>
-      )}
+          </section>
+        )}
+      </main>
     </div>
   );
 }

@@ -121,24 +121,56 @@ export const Navigation = memo(function Navigation() {
                 </Link>
               ))}
 
-              {/* Discord auth / user avatar */}
+                            {/* Discord auth / user avatar */}
               {sessionChecked && (
                 sessionUser ? (
-                  /* Logged in — show avatar linking to profile */
-                  <Link
-                    href="/me"
-                    className="ml-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all"
-                    title={sessionUser.username}
-                  >
-                    <Image
-                      src={avatarUrl(sessionUser)}
-                      alt={sessionUser.username}
-                      width={28}
-                      height={28}
-                      className="w-7 h-7 rounded-full ring-2 ring-blue-500/50"
-                    />
-                    <span className="text-white/80 text-sm font-medium hidden lg:inline">{sessionUser.username}</span>
-                  </Link>
+                  /* Logged in — show avatar with dropdown */
+                  <div className="relative group ml-3">
+                    <Link
+                      href="/me"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all"
+                      title={sessionUser.username}
+                    >
+                      <Image
+                        src={avatarUrl(sessionUser)}
+                        alt={sessionUser.username}
+                        width={28}
+                        height={28}
+                        className="w-7 h-7 rounded-full ring-2 ring-blue-500/50"
+                      />
+                      <span className="text-white/80 text-sm font-medium hidden lg:inline">{sessionUser.username}</span>
+                      <svg className="w-4 h-4 text-white/50 hidden lg:block transition-transform duration-200 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </Link>
+
+                    {/* Dropdown Menu */}
+                    <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="w-48 bg-[#0a0a0a]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl p-1.5 flex flex-col transform origin-top-right transition-transform duration-200 group-hover:scale-100 scale-95">
+                        <Link 
+                          href="/me" 
+                          className="px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2.5 font-medium"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          Profile
+                        </Link>
+                        
+                        <div className="h-px w-full bg-white/10 my-1.5" />
+                        
+                        <a 
+                          href="/api/dashboard/logout" 
+                          className="px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors flex items-center gap-2.5 font-medium"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                          Sign out
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                 ) : (
                   /* Not logged in — Discord login button */
                   <button

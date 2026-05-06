@@ -50,11 +50,11 @@ export default function NotFound() {
           </div>
           <div className="text-center">
             <span className="block text-white font-medium mb-1">Status</span>
-            <Link href="#" className="text-sm text-neutral-500 hover:text-blue-400 transition-colors">System Online</Link> {/* ADD STAUS PAGE*/}
+            <Link href="/status" className="text-sm text-neutral-500 hover:text-blue-400 transition-colors">System Online</Link> {/* ADD STAUS PAGE*/}
           </div>
           <div className="text-center">
             <span className="block text-white font-medium mb-1">Docs</span>
-            <Link href="/docs" className="text-sm text-neutral-500 hover:text-blue-400 transition-colors">Command Docs</Link>
+            <Link href="/commands" className="text-sm text-neutral-500 hover:text-blue-400 transition-colors">Command Docs</Link>
           </div>
         </div>
       </div>

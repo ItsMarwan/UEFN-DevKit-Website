@@ -1,4 +1,4 @@
-// app/api/me/authenticated-servers/route.ts/*
+/*
   © 2026 UEFN DevKit.
 
   This file is part of the UEFN DevKit project and is intended

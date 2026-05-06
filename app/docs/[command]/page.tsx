@@ -45,7 +45,7 @@ export default function CommandDocPage({ params }: PageProps) {
       <div className="min-h-screen bg-black flex flex-col items-center justify-center pt-24">
         <h1 className="text-6xl font-bold text-white mb-4">404</h1>
         <p className="text-xl text-white/60 mb-8">Command not found</p>
-        <Link href="/docs" className="px-6 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:shadow-lg hover:shadow-blue-500/50 transition-all">
+        <Link href="/commands" className="px-6 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:shadow-lg hover:shadow-blue-500/50 transition-all">
           Back to Commands
         </Link>
       </div>
@@ -72,8 +72,8 @@ export default function CommandDocPage({ params }: PageProps) {
       {/* Breadcrumb */}
       <div className="bg-black/50 border-b border-white/10 sticky top-20 z-40 backdrop-blur">
         <div className="max-w-5xl mx-auto px-4 py-4">
-          <Link href="/docs" className="text-blue-400 hover:text-blue-300 transition-colors">
-            ← Back to Docs
+          <Link href="/commands" className="text-blue-400 hover:text-blue-300 transition-colors">
+            ← Back to Commands
           </Link>
         </div>
       </div>

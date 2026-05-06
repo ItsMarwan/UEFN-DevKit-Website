@@ -73,7 +73,7 @@ export default function DocsOverviewPage() {
             <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
               <h2 className="text-3xl font-bold mb-4">Documentation links</h2>
               <div className="space-y-4">
-                <Link href="/docs" className="block rounded-2xl border border-blue-500/20 bg-blue-500/10 px-4 py-4 text-white transition hover:bg-blue-500/15">
+                <Link href="/commands" className="block rounded-2xl border border-blue-500/20 bg-blue-500/10 px-4 py-4 text-white transition hover:bg-blue-500/15">
                   View command documentation
                 </Link>
                 <Link href="/docs/api" className="block rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-white/70 transition hover:bg-white/10">

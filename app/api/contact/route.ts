@@ -15,7 +15,13 @@ function escapeHtml(unsafe: string | undefined | null): string {
 
 function sanitizeUrl(url: string | undefined | null): string {
   const safeUrl = escapeHtml(url);
-  if (safeUrl.trim().toLowerCase().startsWith('javascript:')) {
+  const normalizedUrl = safeUrl.trim().toLowerCase();
+  
+  if (
+    normalizedUrl.startsWith('javascript:') ||
+    normalizedUrl.startsWith('data:') ||
+    normalizedUrl.startsWith('vbscript:')
+  ) {
     return '#';
   }
   return safeUrl;
@@ -129,7 +135,6 @@ export async function POST(req: Request) {
       ${message}
     `;
 
-    // 5. Send Email
     await transporter.sendMail({
       from: `"${safeName.replace(/"/g, '')} (UEFN Form)" <${EMAIL_FROM || EMAIL_SMTP_USER}>`,
       replyTo: email,
